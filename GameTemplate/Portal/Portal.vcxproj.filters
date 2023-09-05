@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="PortalEngine.h" />
+    <ClInclude Include="PortalEnginePreCompile.h" />
+    <ClInclude Include="graphics\RenderingEngine.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\IRenderer.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\ModelRender.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\SpriteRender.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\FontRender.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\light\DirectionalLight.h">
+      <Filter>graphics\light</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\light\SpotLight.h">
+      <Filter>graphics\light</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\light\PointLight.h">
+      <Filter>graphics\light</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelRender\Level2DRender.h">
+      <Filter>LevelRender</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelRender\Level3DRender.h">
+      <Filter>LevelRender</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PortalEngine.cpp" />
+    <ClCompile Include="PortalEnginePreCompile.cpp" />
+    <ClCompile Include="graphics\RenderingEngine.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\light\DirectionalLight.cpp">
+      <Filter>graphics\light</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\FontRender.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\ModelRender.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\light\PointLight.cpp">
+      <Filter>graphics\light</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\light\SpotLight.cpp">
+      <Filter>graphics\light</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\SpriteRender.cpp">
+      <Filter>graphics\light</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelRender\Level2DRender.cpp">
+      <Filter>LevelRender</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelRender\Level3DRender.cpp">
+      <Filter>LevelRender</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{b4d20d91-5758-40eb-a349-73520a42c795}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\light">
+      <UniqueIdentifier>{33073f46-d3cc-4cd0-b29e-5cd9ac1a0539}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LevelRender">
+      <UniqueIdentifier>{1ca18342-aba1-4713-9c94-b268ff0fb42e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
