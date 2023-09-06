@@ -7,6 +7,11 @@ public:
 	~GameCamera();
 
 	/// <summary>
+	/// 初期化処理。
+	/// </summary>
+	void Init();
+
+	/// <summary>
 	/// 更新処理。
 	/// </summary>
 	void Update();
@@ -19,10 +24,10 @@ public:
 	/// <summary>
 	/// 回転処理。
 	/// </summary>
-	void SetRotation();
+	void SetRotation(const Vector3& rotSpeed);
 
 private:
 	Vector3 m_targetPos;
-	Vector3 m_rotSpeed;
+	Vector3	m_rotSpeed;		//回転量。
 };
 

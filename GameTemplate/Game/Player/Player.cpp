@@ -18,8 +18,17 @@ Player::~Player()
 
 bool Player::Start()
 {
+	//モデルの設定。
 	m_modelRender.Init("Assets/modelData/unityChan.tkm");
 	m_modelRender.Update();
+
+	//カメラの設定。
+	m_gameCamera.Init();
+	m_gameCamera.SetPosition(m_position);
+	m_gameCamera.SetRotation(Vector3(0.0f, 0.0f, 0.0f));
+
+	//文字の設定。
+	a.SetPosition(Vector3(400.0f, 0.0f, 0.0f));
 
 	return true;
 }
@@ -30,11 +39,18 @@ void Player::Update()
 
 	State();
 
+	Vector3 vec = g_camera3D->GetForward();
+
 	wchar_t text[256];
 	swprintf_s(text, 256,
-		L"CX:%.2f, \nCZ:%.2f",
+		L"CX:%.2f \nCZ:%.2f \nX:%.2f \nY:%.2f \nZ:%.2f \nPX:%.2f \nPZ:%.2f",
 		g_camera3D->GetForward().x,
-		g_camera3D->GetForward().z
+		g_camera3D->GetForward().z,
+		vec.x,
+		vec.y,
+		vec.z,
+		m_position.x,
+		m_position.z
 	);
 	a.SetText(text);
 }
@@ -56,6 +72,11 @@ void Player::Move()
 	Vector3 input;
 	input.x = g_pad[0]->GetLStickXF();
 	input.z = g_pad[0]->GetLStickYF();
+
+	//入力がないなら、処理しない。
+	if (fabsf(input.x) < 0.01f && fabsf(input.z) < 0.01f) {
+		return;
+	}
 
 	//カメラの前方向を取得。
 	Vector3 cameraForward = g_camera3D->GetForward();
@@ -84,8 +105,22 @@ void Player::Move()
 
 void Player::Rotation()
 {
+	//右スティックの入力を取得。
+	Vector3 input;
+	input.x = -g_pad[0]->GetRStickXF();
+	input.y = g_pad[0]->GetRStickYF();
+
+	//入力がないなら、処理しない。
+	if (fabsf(input.x) < 0.01f && fabsf(input.y) < 0.01f) {
+		return;
+	}
+
 	//カメラの回転を設定。
-	m_gameCamera.SetRotation();
+	m_gameCamera.SetRotation(input);
+
+	//カメラの前方向に回転する。
+	m_rotation.SetRotationYFromDirectionXZ(g_camera3D->GetForward());
+	m_modelRender.SetRotation(m_rotation);
 }
 
 void Player::State()
@@ -126,12 +161,12 @@ void Player::ProcessIdleStateTransition()
 
 void Player::ProcessWalkStateTransition()
 {
-	ProcessCommonStateTransition
+	ProcessCommonStateTransition();
 }
 
 void Player::ProcessRunStateTransition()
 {
-	ProcessCommonStateTransition
+	ProcessCommonStateTransition();
 }
 
 void Player::ProcessCrouchStateTransition()
