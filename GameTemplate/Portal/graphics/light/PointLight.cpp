@@ -3,9 +3,9 @@
 
 namespace nsPortalEngine {
 
-	void PointLight::Update()
+	void PointLight::Update(const int num)
 	{
-		RenderingEngine::GetInstance()->GetLightCB().pointLig = m_pointLight;
+		RenderingEngine::GetInstance()->GetLightCB().pointLig[num] = m_pointLight;
 	}
 
 }

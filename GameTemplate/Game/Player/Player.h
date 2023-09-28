@@ -1,4 +1,5 @@
 #pragma once
+class PortalGun;
 #include "GameCamera.h"
 
 class Player : public IGameObject
@@ -12,8 +13,11 @@ public:
 		enState_Idle,
 		enState_Walk,
 		enState_Run,
-		enState_Crouch,
+		enState_Crouch_Idle,
+		enState_Crouch_Walk,
+		enState_Crouch_Jump,
 		enState_Jump,
+		enState_Num,
 	};
 
 public:
@@ -30,14 +34,29 @@ private:
 	void Input();
 
 	/// <summary>
-	/// 移動処理。
+	/// XZ軸の移動処理。
 	/// </summary>
-	void Move();
+	void MoveXZ();
+
+	/// <summary>
+	/// Y軸の移動処理。
+	/// </summary>
+	void MoveY();
 
 	/// <summary>
 	/// 回転処理。
 	/// </summary>
 	void Rotation();
+
+	/// <summary>
+	/// ポータルの発射処理。
+	/// </summary>
+	void Shot();
+
+	/// <summary>
+	/// アニメーション処理。
+	/// </summary>
+	void PlayAnimation();
 
 	/// <summary>
 	/// ステート処理。
@@ -65,9 +84,19 @@ private:
 	void ProcessRunStateTransition();
 
 	/// <summary>
-	/// しゃがみ状態の遷移処理。
+	/// しゃがみ待機状態の遷移処理。
 	/// </summary>
-	void ProcessCrouchStateTransition();
+	void ProcessCrouchIdleStateTransition();
+
+	/// <summary>
+	/// しゃがみ歩き状態の遷移処理。
+	/// </summary>
+	void ProcessCrouchWalkStateTransition();
+
+	/// <summary>
+	/// しゃがみジャンプ状態の遷移処理。
+	/// </summary>
+	void ProcessCrouchJumpStateTransition();
 
 	/// <summary>
 	/// ジャンプ状態の遷移処理。
@@ -75,11 +104,21 @@ private:
 	void ProcessJumpStateTransition();
 
 private:
-	ModelRender			m_modelRender;		//モデルレンダー。
-	Vector3				m_position;			//座標。
-	Quaternion			m_rotation;			//回転。
-	GameCamera			m_gameCamera;		//ゲームカメラ。
-	PlayerState			m_playerState;		//プレイヤーステート。
+	ModelRender				m_modelRender;					//モデルレンダー。
+	CharacterController		m_characterController;			//キャラクターコントローラー。
+	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
+
+	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
+
+	Vector3					m_position;						//座標。
+	Vector3					m_moveSpeed;					//移動速度。
+	Quaternion				m_rotation;						//回転。
+
+	GameCamera				m_gameCamera;					//ゲームカメラ。
+	PlayerState				m_playerState = enState_Idle;	//プレイヤーステート。
+
+	float					m_walkSpeed = 0.0f;				//移動速度。
+	float					m_gravityAccel = 0.0f;			//重力加速。
 
 
 	FontRender a;

@@ -35,7 +35,7 @@ namespace nsPortalEngine {
 			SetPosition(pos);
 			SetColor(color);
 			SetRange(range);
-			Update();
+			Update(num);
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ namespace nsPortalEngine {
 		/// <summary>
 		/// 更新処理。
 		/// </summary>
-		void Update();
+		void Update(const int num);
 
 	private:
 		PointLig	m_pointLight;		//ポイントライト

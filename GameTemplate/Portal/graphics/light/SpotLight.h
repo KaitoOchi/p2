@@ -39,7 +39,7 @@ namespace nsPortalEngine {
 			SetRange(range);
 			SetDirection(dir);
 			SetAngle(angle);
-			Update();
+			Update(num);
 		}
 
 		/// <summary>
@@ -154,7 +154,7 @@ namespace nsPortalEngine {
 		/// <summary>
 		/// 更新処理。
 		/// </summary>
-		void Update();
+		void Update(const int num);
 
 	private:
 		SpotLig		m_spotLight;		//スポットライト

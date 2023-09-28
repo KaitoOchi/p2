@@ -41,6 +41,12 @@ namespace nsPortalEngine {
 		void Draw(RenderContext& rc);
 
 		/// <summary>
+		/// 描画処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		void PortalDraw(RenderContext& rc);
+
+		/// <summary>
 		/// アニメーションの再生。
 		/// </summary>
 		/// <param name="animNo">アニメーション番号</param>
@@ -161,6 +167,13 @@ namespace nsPortalEngine {
 		);
 
 		/// <summary>
+		/// シャドウ用モデルの初期化。
+		/// </summary>
+		/// <param name="tkmFilePath"></param>
+		/// <param name="modelUpAxis"></param>
+		void InitShadowModel(const char* tkmFilePath, EnModelUpAxis modelUpAxis);
+
+		/// <summary>
 		/// モデルの更新処理。
 		/// </summary>
 		void UpdateWorldMatrix();
@@ -172,14 +185,25 @@ namespace nsPortalEngine {
 		/// <param name="rc"></param>
 		void OnForwardRender(RenderContext& rc) override;
 
+		/// <summary>
+		/// ポータル用レンダーの描画処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		void OnPortalRender(RenderContext& rc, Camera& camera) override;
+
+		//シャドウマップの描画処理。
+		void OnRenderShadowMap(RenderContext& rc, Camera& camera) override;
+
 	private:
 		Skeleton	m_skeleton;					//スケルトン。
 		Animation	m_animation;				//アニメーション。
 		Model		m_model;					//モデル。
+		Model		m_portalModel;				//ポータル越しのモデル。
+		Model		m_shadowModel;				//シャドウモデル。
 		Vector3		m_position;					//座標。
 		Vector3		m_scale = Vector3::One;		//拡大率。
 		Quaternion	m_rotation;					//回転。
-		float		m_animationSpeed = 0.0f;	//アニメーション速度。
+		float		m_animationSpeed = 1.0f;	//アニメーション速度。
 	};
 
 }

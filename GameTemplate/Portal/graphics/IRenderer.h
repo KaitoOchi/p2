@@ -18,6 +18,24 @@ namespace nsPortalEngine {
 		}
 
 		/// <summary>
+		/// ポータル用パスから呼ばれる処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		virtual void OnPortalRender(RenderContext& rc, Camera& camera)
+		{
+
+		}
+
+		/// <summary>
+		/// シャドウマップ用パスから呼ばれる処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		virtual void OnRenderShadowMap(RenderContext& rc, Camera& camera)
+		{
+
+		}
+
+		/// <summary>
 		/// 2D描画パスから呼ばれる処理。
 		/// </summary>
 		/// <param name="rc"></param>

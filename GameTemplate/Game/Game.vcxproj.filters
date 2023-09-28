@@ -17,13 +17,19 @@
     <ClCompile Include="system\system.cpp">
       <Filter>system</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Player\GameCamera.cpp">
       <Filter>Player</Filter>
     </ClCompile>
     <ClCompile Include="Player\Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Fade.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\PortalGun.cpp">
       <Filter>Player</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,6 +45,12 @@
       <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="Player\Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Fade.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\PortalGun.h">
       <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>

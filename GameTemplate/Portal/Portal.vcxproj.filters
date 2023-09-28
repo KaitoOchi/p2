@@ -33,6 +33,12 @@
     <ClInclude Include="LevelRender\Level3DRender.h">
       <Filter>LevelRender</Filter>
     </ClInclude>
+    <ClInclude Include="PostEffect\PostEffect.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="PostEffect\Bloom.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PortalEngine.cpp" />
@@ -64,6 +70,12 @@
     <ClCompile Include="LevelRender\Level3DRender.cpp">
       <Filter>LevelRender</Filter>
     </ClCompile>
+    <ClCompile Include="PostEffect\PostEffect.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="PostEffect\Bloom.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="graphics">
@@ -74,6 +86,9 @@
     </Filter>
     <Filter Include="LevelRender">
       <UniqueIdentifier>{1ca18342-aba1-4713-9c94-b268ff0fb42e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostEffect">
+      <UniqueIdentifier>{a80f704f-4ef5-4f98-bde8-2dcf4d5765f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

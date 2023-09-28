@@ -150,7 +150,7 @@ namespace nsPortalEngine {
 		Vector2 m_pivot = Sprite::DEFAULT_PIVOT;	//ピボット。
 		Vector3 m_position;							//座標。
 		Vector4 m_color = g_vec4White;				//色。
-		wchar_t m_text[MAX_TEXT_SIZE];				//文字。
+		wchar_t m_text[MAX_TEXT_SIZE] = L"";		//文字。
 		float	m_rotation = 0.0f;					//拡大率。
 		float	m_scale = 1.0f;						//回転。
 	};

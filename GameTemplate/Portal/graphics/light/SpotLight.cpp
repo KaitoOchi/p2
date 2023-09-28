@@ -3,9 +3,9 @@
 
 namespace nsPortalEngine {
 
-	void SpotLight::Update()
+	void SpotLight::Update(const int num)
 	{
-		RenderingEngine::GetInstance()->GetLightCB().spotLig = m_spotLight;
+		RenderingEngine::GetInstance()->GetLightCB().spotLig[num] = m_spotLight;
 	}
 
 }
