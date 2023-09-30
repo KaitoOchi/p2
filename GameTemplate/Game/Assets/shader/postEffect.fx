@@ -57,36 +57,14 @@ float4 SetColor(float4 color);
 
 float4 PSBloomFinal(PSInput In) : SV_Target0
 {
-	//�{�P�摜���T���v�����O���āA���ς�����ďo�͂���
-	float4 combineColor0 = g_bokeTexture_0.Sample(Sampler, In.uv);
-	float4 combineColor1 = g_bokeTexture_1.Sample(Sampler, In.uv);
-	float4 combineColor2 = g_bokeTexture_2.Sample(Sampler, In.uv);
-	float4 combineColor3 = g_bokeTexture_3.Sample(Sampler, In.uv);
+	//ボケ画像をサンプリングしてする。
+	float4 combineColor = g_bokeTexture_0.Sample(Sampler, In.uv);
+	combineColor += g_bokeTexture_1.Sample(Sampler, In.uv);
+	combineColor += g_bokeTexture_2.Sample(Sampler, In.uv);
+	combineColor += g_bokeTexture_3.Sample(Sampler, In.uv);
 
-	combineColor0 = SetColor(combineColor0);
-	combineColor1 = SetColor(combineColor1);
-	combineColor2 = SetColor(combineColor2);
-	combineColor3 = SetColor(combineColor3);
-	combineColor0 += combineColor1;
-	combineColor0 += combineColor2;
-	combineColor0 += combineColor3;
-
-	return combineColor0;
-}
-
-float4 SetColor(float4 color)
-{
-	color /= 10.0f;
-
-	if (color.r > 1.0f){
-		color.r = 1.0f;
-	}
-	if (color.g > 1.0f){
-		color.g = 1.0f;
-	}
-	if (color.b > 1.0f){
-		color.b = 1.0f;
-	}
-	
-	return color;
+	//平均を取って出力。
+	combineColor /= 4.0f;
+	combineColor.a = 1.0f;
+	return combineColor;
 }

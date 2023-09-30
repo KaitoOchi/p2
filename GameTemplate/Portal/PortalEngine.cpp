@@ -15,6 +15,8 @@ namespace nsPortalEngine {
 		g_engine = nullptr;
 
 		RenderingEngine::DeleteInstance();
+
+		CollisionObjectManager::DeleteInstance();
 	}
 
 	void PortalEngine::Init(const InitData& initData)
@@ -34,6 +36,9 @@ namespace nsPortalEngine {
 
 		//レンダリングエンジンの生成。
 		RenderingEngine::CreateInstance();
+
+		//コリジョンオブジェクトマネージャーの生成。
+		CollisionObjectManager::CreateInstance();
 	}
 
 	void PortalEngine::Execute()

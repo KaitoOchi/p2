@@ -1,7 +1,10 @@
 #pragma once
 class PortalGun;
-#include "GameCamera.h"
+class GameCamera;
 
+/// <summary>
+/// プレイヤー。
+/// </summary>
 class Player : public IGameObject
 {
 public:
@@ -26,6 +29,23 @@ public:
 	bool Start();
 	void Update();
 	void Render(RenderContext& rc);
+
+public:
+	/// <summary>
+	/// 座標を取得。
+	/// </summary>
+	const Vector3& GetPosition() const
+	{
+		return m_position;
+	}
+
+	/// <summary>
+	/// 回転を取得。
+	/// </summary>
+	const Quaternion& GetRotation() const
+	{
+		return m_rotation;
+	}
 
 private:
 	/// <summary>
@@ -109,12 +129,11 @@ private:
 	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
 
 	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
+	GameCamera*				m_gameCamera = nullptr;			//ゲームカメラ。
 
 	Vector3					m_position;						//座標。
 	Vector3					m_moveSpeed;					//移動速度。
 	Quaternion				m_rotation;						//回転。
-
-	GameCamera				m_gameCamera;					//ゲームカメラ。
 	PlayerState				m_playerState = enState_Idle;	//プレイヤーステート。
 
 	float					m_walkSpeed = 0.0f;				//移動速度。

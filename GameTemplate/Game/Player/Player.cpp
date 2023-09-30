@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Player.h"
 #include "PortalGun.h"
+#include "GameCamera.h"
 
 namespace
 {
@@ -38,14 +39,12 @@ bool Player::Start()
 	//モデルの設定。
 	m_modelRender.Init("Assets/modelData/unityChan.tkm", m_animationClips, enState_Num, enModelUpAxisY, true, true);
 	m_modelRender.Update();
-
 	m_characterController.Init(25.0f, 50.0f, m_position);
 
-	//カメラの設定。
-	m_gameCamera.Init();
-
 	//ポータルガンの設定。
-	m_portalGun = NewGO<PortalGun>(0, "portalGun");
+	m_portalGun = NewGO<PortalGun>(3, "portalGun");
+	//カメラの設定。
+	m_gameCamera = NewGO<GameCamera>(2, "gameCamera");
 
 	//文字の設定。
 	a.SetPosition(Vector3(400.0f, 0.0f, 0.0f));
@@ -63,7 +62,6 @@ void Player::Update()
 	State();
 
 	m_modelRender.Update();
-
 
 	Vector3 vec = g_camera3D->GetForward();
 
@@ -95,12 +93,11 @@ void Player::Input()
 	//カメラの座標を設定。
 	if (m_playerState == enState_Crouch_Idle || 
 		m_playerState == enState_Crouch_Walk ) {
-		m_gameCamera.SetCrouchState(true);
+		m_gameCamera->SetCrouchState(true);
 	}
 	else {
-		m_gameCamera.SetCrouchState(false);
+		m_gameCamera->SetCrouchState(false);
 	}
-	m_gameCamera.SetPosition(m_position);
 
 	Rotation();
 
@@ -173,9 +170,6 @@ void Player::MoveY()
 
 void Player::Rotation()
 {
-	//カメラの回転を設定。
-	m_gameCamera.SetRotation();
-
 	//カメラの前方向に回転する。
 	m_rotation.SetRotationYFromDirectionXZ(g_camera3D->GetForward());
 	m_modelRender.SetRotation(m_rotation);
@@ -185,11 +179,11 @@ void Player::Shot()
 {
 	//青ポータルを設置。
 	if (g_pad[0]->IsTrigger(enButtonLB1)) {
-		m_portalGun->SetPortal(PortalGun::enPortalType_Blue, m_position, m_rotation);
+		m_portalGun->SetPortal(PortalGun::enPortalType_Blue, m_position);
 	}
 	//赤ポータルを設置。
 	else if (g_pad[0]->IsTrigger(enButtonRB1)) {
-		m_portalGun->SetPortal(PortalGun::enPortalType_Red, m_position, m_rotation);
+		m_portalGun->SetPortal(PortalGun::enPortalType_Red, m_position);
 	}
 }
 

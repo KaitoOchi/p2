@@ -41,12 +41,6 @@ namespace nsPortalEngine {
 		void Draw(RenderContext& rc);
 
 		/// <summary>
-		/// 描画処理。
-		/// </summary>
-		/// <param name="rc"></param>
-		void PortalDraw(RenderContext& rc);
-
-		/// <summary>
 		/// アニメーションの再生。
 		/// </summary>
 		/// <param name="animNo">アニメーション番号</param>
@@ -189,7 +183,7 @@ namespace nsPortalEngine {
 		/// ポータル用レンダーの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		void OnPortalRender(RenderContext& rc, Camera& camera) override;
+		void OnPortalRender(RenderContext& rc, const int num) override;
 
 		//シャドウマップの描画処理。
 		void OnRenderShadowMap(RenderContext& rc, Camera& camera) override;
@@ -198,7 +192,7 @@ namespace nsPortalEngine {
 		Skeleton	m_skeleton;					//スケルトン。
 		Animation	m_animation;				//アニメーション。
 		Model		m_model;					//モデル。
-		Model		m_portalModel;				//ポータル越しのモデル。
+		Model		m_portalModel[PORTAL_NUM];	//ポータル越しのモデル。
 		Model		m_shadowModel;				//シャドウモデル。
 		Vector3		m_position;					//座標。
 		Vector3		m_scale = Vector3::One;		//拡大率。

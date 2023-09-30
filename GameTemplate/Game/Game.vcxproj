@@ -233,6 +233,8 @@
     <ClCompile Include="Player\Player.cpp" />
     <ClCompile Include="Player\PortalGun.cpp" />
     <ClCompile Include="Scene\Fade.cpp" />
+    <ClCompile Include="Scene\Setting.cpp" />
+    <ClCompile Include="Scene\Title.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -246,6 +248,8 @@
     <ClInclude Include="Player\PortalGun.h" />
     <ClInclude Include="Scene\Fade.h" />
     <ClInclude Include="Scene\Game.h" />
+    <ClInclude Include="Scene\Setting.h" />
+    <ClInclude Include="Scene\Title.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="system\system.h" />
   </ItemGroup>

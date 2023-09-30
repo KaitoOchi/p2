@@ -21,7 +21,7 @@ namespace nsPortalEngine {
 		/// ポータル用パスから呼ばれる処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		virtual void OnPortalRender(RenderContext& rc, Camera& camera)
+		virtual void OnPortalRender(RenderContext& rc, const int num)
 		{
 
 		}

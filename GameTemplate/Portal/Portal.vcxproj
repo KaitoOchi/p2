@@ -117,7 +117,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);K2_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -156,6 +156,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="collision\CollisionObject.h" />
     <ClInclude Include="graphics\FontRender.h" />
     <ClInclude Include="graphics\IRenderer.h" />
     <ClInclude Include="graphics\light\DirectionalLight.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="PostEffect\PostEffect.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="collision\CollisionObject.cpp" />
     <ClCompile Include="graphics\FontRender.cpp" />
     <ClCompile Include="graphics\light\DirectionalLight.cpp" />
     <ClCompile Include="graphics\light\PointLight.cpp" />

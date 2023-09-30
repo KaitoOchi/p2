@@ -25,8 +25,10 @@ namespace nsPortalEngine {
 	void RenderingEngine::Init()
 	{
 		m_lightCB.directionLig.ligDirection = Vector3(1.0f, -1.0f, 1.0f);
-		m_lightCB.directionLig.ligColor = Vector3(0.1f, 0.1f, 0.1f);
-		m_lightCB.directionLig.ambient = 0.2f;
+		m_lightCB.directionLig.ligColor = Vector3(0.3f, 0.1f, 0.1f);
+		m_lightCB.directionLig.ambient = 0.3f;
+
+		m_postEffect.SetBloomThreshold(50.0f);
 
 		InitRenderTarget();
 
@@ -109,9 +111,9 @@ namespace nsPortalEngine {
 				const_cast<float*>(RENDER_TARGET_CLEAR_COLOR)
 			);
 
-			m_portalCamera[0].SetPosition(Vector3(200.0f, 300.0f, 300.0f));
-			m_portalCamera[0].SetTarget(Vector3(0.0f, 0.0f, 0.0f));
-			m_portalCamera[0].Update();
+			m_portalCamera[i].SetPosition(Vector3(200.0f, 300.0f, 300.0f));
+			m_portalCamera[i].SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+			m_portalCamera[i].Update();
 		}
 	}
 
@@ -187,25 +189,25 @@ namespace nsPortalEngine {
 
 	void RenderingEngine::DrawForwardRendering(RenderContext& rc)
 	{
-		////ポータルの数だけオフスクリーンレンダリングを行う。
-		//for (int i = 0; i < PORTAL_NUM; i++) {
+		//ポータルの数だけオフスクリーンレンダリングを行う。
+		for (int i = 0; i < PORTAL_NUM; i++) {
 
-		//	//ポータル用レンダーターゲットの書き込み待ち。
-		//	rc.WaitUntilToPossibleSetRenderTarget(m_portalRenderTarget[i]);
-		//	//ポータル用レンダーターゲットの設定。
-		//	rc.SetRenderTargetAndViewport(m_portalRenderTarget[i]);
-		//	//ポータル用レンダーターゲットをクリア。
-		//	rc.ClearRenderTargetView(m_portalRenderTarget[i]);
+			//ポータル用レンダーターゲットの書き込み待ち。
+			rc.WaitUntilToPossibleSetRenderTarget(m_portalRenderTarget[i]);
+			//ポータル用レンダーターゲットの設定。
+			rc.SetRenderTargetAndViewport(m_portalRenderTarget[i]);
+			//ポータル用レンダーターゲットをクリア。
+			rc.ClearRenderTargetView(m_portalRenderTarget[i]);
 
-		//	//オフスクリーンレンダリング。
-		//	for (auto& renderObj : m_renderObjects)
-		//	{
-		//		renderObj->OnForwardRender(rc);
-		//	}
+			//オフスクリーンレンダリング。
+			for (auto& renderObj : m_renderObjects)
+			{
+				renderObj->OnPortalRender(rc, i);
+			}
 
-		//	//ポータル用レンダーターゲットの書き込み終了待ち。
-		//	rc.WaitUntilFinishDrawingToRenderTarget(m_portalRenderTarget[i]);
-		//}
+			//ポータル用レンダーターゲットの書き込み終了待ち。
+			rc.WaitUntilFinishDrawingToRenderTarget(m_portalRenderTarget[i]);
+		}
 
 
 		//メインレンダーターゲットの書き込み待ち。

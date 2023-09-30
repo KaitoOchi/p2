@@ -21,6 +21,7 @@ namespace nsPortalEngine {
 		const bool isShadowCaster,
 		const bool isShadowReceiver)
 	{
+
 		InitSkeleton(filePath);
 
 		InitAnimation(animationClips, numAnimationClips);
@@ -74,8 +75,9 @@ namespace nsPortalEngine {
 		}
 
 		m_model.Init(modelInitData);
-		m_portalModel.Init(modelInitData);
-
+		for (int i = 0; i < PORTAL_NUM; i++) {
+			m_portalModel[i].Init(modelInitData);
+		}
 
 		//‰e‚ð—^‚¦‚é‚È‚çB
 		if (isShadowCaster) {
@@ -115,8 +117,10 @@ namespace nsPortalEngine {
 		if (m_shadowModel.IsInited()) {
 			m_shadowModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
 		}
-		if (m_portalModel.IsInited()) {
-			m_portalModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
+		if (m_portalModel[0].IsInited()) {
+			for (int i = 0; i < PORTAL_NUM; i++) {
+				m_portalModel[i].UpdateWorldMatrix(m_position, m_rotation, m_scale);
+			}
 		}
 	}
 
@@ -153,10 +157,10 @@ namespace nsPortalEngine {
 		}
 	}
 
-	void ModelRender::OnPortalRender(RenderContext& rc, Camera& camera)
+	void ModelRender::OnPortalRender(RenderContext& rc, const int num)
 	{
-		if (m_model.IsInited()) {
-			m_portalModel.Draw(rc, camera, 1);
+		if (m_portalModel[num].IsInited()) {
+			m_portalModel[num].Draw(rc, 1);
 		}
 	}
 }

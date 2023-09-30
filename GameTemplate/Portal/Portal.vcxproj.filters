@@ -39,6 +39,9 @@
     <ClInclude Include="PostEffect\Bloom.h">
       <Filter>PostEffect</Filter>
     </ClInclude>
+    <ClInclude Include="collision\CollisionObject.h">
+      <Filter>collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PortalEngine.cpp" />
@@ -76,6 +79,9 @@
     <ClCompile Include="PostEffect\Bloom.cpp">
       <Filter>PostEffect</Filter>
     </ClCompile>
+    <ClCompile Include="collision\CollisionObject.cpp">
+      <Filter>collision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="graphics">
@@ -89,6 +95,9 @@
     </Filter>
     <Filter Include="PostEffect">
       <UniqueIdentifier>{a80f704f-4ef5-4f98-bde8-2dcf4d5765f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="collision">
+      <UniqueIdentifier>{2a114e49-26d5-4f53-96ca-ade5823656a3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,5 +1,8 @@
 #pragma once
 
+/// <summary>
+/// ゲームメインクラス。
+/// </summary>
 class Game : public IGameObject
 {
 public:
@@ -10,9 +13,9 @@ public:
 	void Render(RenderContext& rc);
 
 private:
-	PhysicsStaticObject m_physicsStaticObject;
-	ModelRender m_modelRender;
-	PointLight m_pointLight;
-	SpotLight m_spotLight;
+	PhysicsStaticObject		m_physicsStaticObject;
+	ModelRender				m_modelRender;
+	PointLight				m_pointLight;
+	SpotLight				m_spotLight;
 };
 
