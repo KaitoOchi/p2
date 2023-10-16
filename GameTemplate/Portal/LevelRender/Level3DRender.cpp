@@ -2,7 +2,6 @@
 #include "Level3DRender.h"
 #include "level3D/TklFile.h"
 
-
 namespace nsPortalEngine {
 
 	LevelRender::LevelRender()

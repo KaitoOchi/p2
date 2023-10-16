@@ -2,6 +2,7 @@
 #include "system/system.h"
 
 #include "Game.h"
+#include "PortalCamera.h"
 
 /// <summary>
 /// メイン関数
@@ -13,13 +14,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	NewGO<Game>(0, "game");
 
+	//ポータルカメラを生成。
+	PortalCamera* portalCamera = NewGO<PortalCamera>(3, "portalCamera");
+	//レンダリングエンジンにポータルカメラのポインタを入れる。
+	RenderingEngine::GetInstance()->SetPortalCameraPointer(portalCamera);
+
 	// ここからゲームループ。
 	while (DispatchWindowMessage())
 	{
 		PortalEngine::GetInstance()->Execute();
 	}
 
+	DeleteGO(portalCamera);
 	PortalEngine::DeleteInstance();
+	CollisionObjectManager::DeleteInstance();
 
 	return 0;
 }

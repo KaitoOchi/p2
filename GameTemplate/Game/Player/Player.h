@@ -13,14 +13,15 @@ public:
 	/// </summary>
 	enum PlayerState
 	{
-		enState_Idle,
-		enState_Walk,
-		enState_Run,
-		enState_Crouch_Idle,
-		enState_Crouch_Walk,
-		enState_Crouch_Jump,
-		enState_Jump,
-		enState_Num,
+		enState_Idle,			//待機。
+		enState_Walk,			//歩き。
+		enState_Run,			//走り。
+		enState_Crouch_Idle,	//しゃがみ待機。
+		enState_Crouch_Walk,	//しゃがみ歩き。
+		enState_Crouch_Jump,	//しゃがみジャンプ。
+		enState_Jump,			//ジャンプ。
+		enState_Dead,
+		enState_Num,			//数。
 	};
 
 public:
@@ -31,6 +32,13 @@ public:
 	void Render(RenderContext& rc);
 
 public:
+	/// <summary>
+	/// 受けるダメージを設定。
+	/// </summary>
+	/// <param name="damage">受けるダメージ量</param>
+	/// <param name="dir">のけぞる方向</param>
+	void ReceiveDamage(const int damage, const Vector3& dir);
+
 	/// <summary>
 	/// 座標を取得。
 	/// </summary>
@@ -46,6 +54,37 @@ public:
 	{
 		return m_rotation;
 	}
+
+	/// <summary>
+	/// ポータルに入っている状態を設定。
+	/// </summary>
+	/// <param name="flag"></param>
+	void SetIsPortal(const bool flag)
+	{
+		m_characterController.SetIsPortal(flag);
+	}
+
+	/// <summary>
+	/// キャラコンを取得。
+	/// </summary>
+	const CharacterController& GetCharacterController() const
+	{
+		return m_characterController;
+	}
+
+	/// <summary>
+	/// 当たり判定を取得。
+	/// </summary>
+	/// <returns></returns>
+	btCollisionObject* GetCollision()
+	{
+		return m_characterController.GetRigidBody()->GetBody();
+	}
+
+	/// <summary>
+	/// ポータルへのワープ処理。
+	/// </summary>
+	void SetWarp(const Vector3& pos, const Quaternion& rot);
 
 private:
 	/// <summary>
@@ -67,11 +106,6 @@ private:
 	/// 回転処理。
 	/// </summary>
 	void Rotation();
-
-	/// <summary>
-	/// ポータルの発射処理。
-	/// </summary>
-	void Shot();
 
 	/// <summary>
 	/// アニメーション処理。
@@ -123,23 +157,28 @@ private:
 	/// </summary>
 	void ProcessJumpStateTransition();
 
+	/// <summary>
+	/// 死亡状態の遷移処理。
+	/// </summary>
+	void ProcessDeadStateTransition();
+
 private:
 	ModelRender				m_modelRender;					//モデルレンダー。
 	CharacterController		m_characterController;			//キャラクターコントローラー。
 	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
-
 	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
 	GameCamera*				m_gameCamera = nullptr;			//ゲームカメラ。
-
 	Vector3					m_position;						//座標。
 	Vector3					m_moveSpeed;					//移動速度。
+	Vector3					m_addMoveSpeed;					//追加する移動速度。
 	Quaternion				m_rotation;						//回転。
 	PlayerState				m_playerState = enState_Idle;	//プレイヤーステート。
-
+	int						m_hp = 0;						//HP。
 	float					m_walkSpeed = 0.0f;				//移動速度。
 	float					m_gravityAccel = 0.0f;			//重力加速。
+	float					m_deadTimer = 0.0f;				//死亡時間。
 
 
-	FontRender a;
+	FontRender a; //デバッグ用。
 };
 

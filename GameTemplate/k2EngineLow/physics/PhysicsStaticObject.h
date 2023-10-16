@@ -41,6 +41,28 @@ namespace nsK2EngineLow {
 			return m_rigidBody.GetBody();
 		}
 		/// <summary>
+		/// 座標を設定。
+		/// </summary>
+		/// <param name="pos">座標</param>
+		void SetPosition(const Vector3& pos)
+		{
+			auto& btTrans = m_rigidBody.GetBody()->getWorldTransform();
+			btVector3 btPos;
+			btPos = btVector3(pos.x, pos.y, pos.z);
+			btTrans.setOrigin(btPos);
+		}
+		/// <summary>
+		/// 回転を設定。
+		/// </summary>
+		/// <param name="rot"></param>
+		void SetRotation(const Quaternion& rot)
+		{
+			auto& btTrans = m_rigidBody.GetBody()->getWorldTransform();
+			btQuaternion btRot;
+			btRot = btQuaternion(rot.x, rot.y, rot.z, rot.w);
+			btTrans.setRotation(btRot);
+		}
+		/// <summary>
 		/// 剛体を破棄。
 		/// </summary>
 		void Release()

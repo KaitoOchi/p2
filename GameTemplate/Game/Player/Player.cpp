@@ -1,32 +1,41 @@
 #include "stdafx.h"
 #include "Player.h"
 #include "PortalGun.h"
+#include "PortalFrame.h"
 #include "GameCamera.h"
 
 namespace
 {
-	const float WALK_SPEED = 100.0f;			//移動速度。
-	const float DASH_SPEED = 300.0f;			//ダッシュ速度。
-	const float CROUCH_SPEED = 40.0f;			//しゃがみ速度。
-	const float JUMP_POWER = 125.0f;			//ジャンプ量。
-	const float GRAVITY = 10.0f;				//重力。
-	const float GRAVITY_ACCEL = 0.5f;			//重力加速。
-	const float INTERPOLATE_TIME = 0.2f;		//線形補間。
+	const int		MAX_HP = 100;									//最大HP。
+	const float		CHARACON_RADIUS = 10.0f;						//キャラコンの半径。
+	const float		CHARACON_HEIGHT = 60.0f;						//キャラコンの高さ。
+	const float		WALK_SPEED = 100.0f;							//移動速度。
+	const float		DASH_SPEED = 300.0f;							//ダッシュ速度。
+	const float		CROUCH_SPEED = 40.0f;							//しゃがみ速度。
+	const float		JUMP_POWER = 125.0f;							//ジャンプ量。
+	const float		GRAVITY = 10.0f;								//重力。
+	const float		GRAVITY_ACCEL = 0.5f;							//重力加速。
+	const float		INTERPOLATE_TIME = 0.2f;						//線形補間。
+	const float		KNOCKBACK_POWER = 300.0f;						//ダメージを受けたときのノックバックパワー。
+	const float		ADDMOVESPEED_MIN = 0.1f;						//追加の移動速度を終了する値。
+	const float		ADDMOVESPEED_DIV = 5.0f;						//追加の移動速度を除算する値。
+	const float		DEAD_TIMER = 2.0f;								//死亡時間。
 }
 
 Player::Player()
 {
-
+	m_hp = MAX_HP;
 }
 
 Player::~Player()
 {
-
+	DeleteGO(m_portalGun);
+	DeleteGO(m_gameCamera);
 }
 
 bool Player::Start()
 {
-	//アニメーションクリップ
+	//アニメーションクリップ。
 	m_animationClips[enState_Idle].Load("Assets/animData/UnityChan/idle.tka");
 	m_animationClips[enState_Idle].SetLoopFlag(true);
 	m_animationClips[enState_Walk].Load("Assets/animData/UnityChan/walk.tka");
@@ -39,7 +48,9 @@ bool Player::Start()
 	//モデルの設定。
 	m_modelRender.Init("Assets/modelData/unityChan.tkm", m_animationClips, enState_Num, enModelUpAxisY, true, true);
 	m_modelRender.Update();
-	m_characterController.Init(25.0f, 50.0f, m_position);
+
+	//キャラクターコントローラーの設定。
+	m_characterController.Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
 
 	//ポータルガンの設定。
 	m_portalGun = NewGO<PortalGun>(3, "portalGun");
@@ -55,16 +66,19 @@ bool Player::Start()
 
 void Player::Update()
 {
-	Input();
+	if (m_playerState != enState_Dead) {
 
-	PlayAnimation();
+		Input();
+
+		PlayAnimation();
+
+		m_modelRender.Update();
+	}
 
 	State();
 
-	m_modelRender.Update();
-
+	////////////// todo debug
 	Vector3 vec = g_camera3D->GetForward();
-
 	wchar_t text[256];
 	swprintf_s(text, 256,
 		L"PlayerX:%.2f \nPlayerY:%.2f \nPlayerZ:%.2f \nForwardX:%.2f \nForwardY:%.2f \nForwardZ:%.2f \nAnim:%d",
@@ -77,31 +91,39 @@ void Player::Update()
 		m_playerState
 	);
 	a.SetText(text);
+
+	if (g_pad[0]->IsTrigger(enButtonB))
+	{
+		ReceiveDamage(10, g_camera3D->GetForward());
+	}
+	/////////////
 }
 
 void Player::Input()
 {
+	//移動速度を初期化。
 	m_moveSpeed = Vector3::Zero;
 
 	MoveXZ();
 
 	MoveY();
 
+	//追加の移動速度を加算。
+	m_moveSpeed += m_addMoveSpeed;
+	//キャラコンの実行。
 	m_position = m_characterController.Execute(m_moveSpeed, 1.0f / 60.0f);
 	//m_modelRender.SetPosition(m_position);
 
-	//カメラの座標を設定。
-	if (m_playerState == enState_Crouch_Idle || 
-		m_playerState == enState_Crouch_Walk ) {
-		m_gameCamera->SetCrouchState(true);
-	}
-	else {
-		m_gameCamera->SetCrouchState(false);
-	}
-
 	Rotation();
 
-	Shot();
+	if (m_addMoveSpeed.x < ADDMOVESPEED_MIN && m_addMoveSpeed.y < ADDMOVESPEED_MIN && m_addMoveSpeed.z < ADDMOVESPEED_MIN) {
+		//追加の移動速度を初期化。
+		m_addMoveSpeed = Vector3::Zero;
+	}
+	else {
+		//追加の移動速度を減算。
+		m_addMoveSpeed -= m_addMoveSpeed / ADDMOVESPEED_DIV;
+	}
 }
 
 void Player::MoveXZ()
@@ -175,20 +197,19 @@ void Player::Rotation()
 	m_modelRender.SetRotation(m_rotation);
 }
 
-void Player::Shot()
+void Player::SetWarp(const Vector3& pos, const Quaternion& rot)
 {
-	//青ポータルを設置。
-	if (g_pad[0]->IsTrigger(enButtonLB1)) {
-		m_portalGun->SetPortal(PortalGun::enPortalType_Blue, m_position);
-	}
-	//赤ポータルを設置。
-	else if (g_pad[0]->IsTrigger(enButtonRB1)) {
-		m_portalGun->SetPortal(PortalGun::enPortalType_Red, m_position);
-	}
+	m_position = pos;
+	//m_rotation.Add(rot);
+
+	m_characterController.SetPosition(m_position);
+
+	m_gameCamera->SetWarp(rot);
 }
 
 void Player::PlayAnimation()
 {
+	//アニメーションを再生。
 	switch (m_playerState)
 	{
 	case enState_Idle:
@@ -249,6 +270,15 @@ void Player::State()
 
 void Player::ProcessCommonStateTransition()
 {
+	//カメラの座標を設定。
+	if (m_playerState == enState_Crouch_Idle ||
+		m_playerState == enState_Crouch_Walk) {
+		m_gameCamera->SetCrouchState(true);
+	}
+	else {
+		m_gameCamera->SetCrouchState(false);
+	}
+
 	//しゃがみボタンが押されたら。
 	if (g_pad[0]->IsPress(enButtonY)) {
 
@@ -336,6 +366,32 @@ void Player::ProcessJumpStateTransition()
 
 		ProcessCommonStateTransition();
 	}
+}
+
+void Player::ProcessDeadStateTransition()
+{
+	m_deadTimer += g_gameTime->GetFrameDeltaTime();
+
+	if (m_deadTimer > DEAD_TIMER) {
+		return;
+	}
+}
+
+void Player::ReceiveDamage(const int damage, const Vector3& dir)
+{
+	//ダメージを減らす。
+	m_hp -= damage;
+
+	//ダメージが0になったら。
+	if (m_hp < 0) {
+		//死亡状態にする。
+		m_playerState = enState_Dead;
+	}
+
+	//後ろにのけぞる。
+	Vector3 knockback = dir * KNOCKBACK_POWER;
+	knockback.y = 0.0f;
+	m_addMoveSpeed += knockback;
 }
 
 void Player::Render(RenderContext& rc)

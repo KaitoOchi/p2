@@ -6,7 +6,7 @@ namespace
 {
 	const float CAMERA_NEAR = 1.0f;				//近平面。
 	const float CAMERA_FAR = 10000.0f;			//遠平面。
-	const float TARGET_FORWARD = 2500.0f;		//注視点の前方向。
+	const float TARGET_FORWARD = 250.0f;		//注視点の前方向。
 	const float ROT_SPEED = 0.03f;				//回転速度。
 	const float CAMERA_HEIGHT = 75.0f;			//カメラの高さ。
 	const float CAMERA_HEIGHT_CROUCH = 20.0f;	//しゃがみ状態の高さ。
@@ -27,11 +27,12 @@ GameCamera::~GameCamera()
 
 bool GameCamera::Start()
 {
+	//プレイヤーオブジェクトを検索。
+	m_player = FindGO<Player>("player");
+
 	//近平面と遠平面を設定。
 	g_camera3D->SetNear(CAMERA_NEAR);
 	g_camera3D->SetFar(CAMERA_FAR);
-
-	m_player = FindGO<Player>("player");
 
 	return true;
 }
@@ -112,10 +113,24 @@ void GameCamera::Rotation()
 	m_targetPos.y = sin(m_rotSpeed.y);
 	m_targetPos.z = sin(m_rotSpeed.x) * cos(m_rotSpeed.y);
 
-	//注視点を設定。
+	//注視点を正規化する。
 	m_targetPos.Normalize();
+	//注視点を前方向に移動させる。
 	m_targetPos *= TARGET_FORWARD;
+	//注視点をプレイヤーの方向に移動させる。
 	m_targetPos += m_position;
 
 	g_camera3D->SetTarget(m_targetPos);
+}
+
+void GameCamera::SetWarp(const Quaternion& rot)
+{
+	//クォータニオンをオイラー角に変換。
+	Vector3 euler = CalcQuaternionToEuler(rot);
+	//float y = Math::DegToRad(euler.y + 180.0f);
+	float y = Math::DegToRad(euler.y + 180.0f);
+
+	m_rotSpeed.x += y;
+
+	Rotation();
 }

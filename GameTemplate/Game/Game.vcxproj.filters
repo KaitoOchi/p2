@@ -10,6 +10,15 @@
     <Filter Include="Player">
       <UniqueIdentifier>{400b295e-390c-4d68-9440-a01f74dea4d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Portal">
+      <UniqueIdentifier>{6e8fba1d-1cb4-4cd7-89a9-71461757ea71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{0fb49b03-0c6c-40da-90fe-9826b049dac6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stage">
+      <UniqueIdentifier>{d7beb786-b7e5-4260-97db-f42c4fbcfc22}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -23,20 +32,32 @@
     <ClCompile Include="Player\Player.cpp">
       <Filter>Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Scene\Fade.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Player\PortalGun.cpp">
-      <Filter>Player</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Title.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Setting.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Portal\PortalCamera.cpp">
+      <Filter>Portal</Filter>
+    </ClCompile>
+    <ClCompile Include="Portal\PortalFrame.cpp">
+      <Filter>Portal</Filter>
+    </ClCompile>
+    <ClCompile Include="Portal\PortalGun.cpp">
+      <Filter>Portal</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Game.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Turret.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage\Stage.cpp">
+      <Filter>Stage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,14 +77,26 @@
     <ClInclude Include="Scene\Fade.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Player\PortalGun.h">
-      <Filter>Player</Filter>
-    </ClInclude>
     <ClInclude Include="Scene\Title.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Setting.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Portal\PortalCamera.h">
+      <Filter>Portal</Filter>
+    </ClInclude>
+    <ClInclude Include="Portal\PortalFrame.h">
+      <Filter>Portal</Filter>
+    </ClInclude>
+    <ClInclude Include="Portal\PortalGun.h">
+      <Filter>Portal</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Turret.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage\Stage.h">
+      <Filter>Stage</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

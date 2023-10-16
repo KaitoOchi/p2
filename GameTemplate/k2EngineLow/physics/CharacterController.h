@@ -67,6 +67,16 @@ namespace nsK2EngineLow {
 		{
 			return m_isOnGround;
 		}
+
+		/// <summary>
+		/// ポータルに入っているフラグを設定。
+		/// </summary>
+		/// <param name="portal"></param>
+		void SetIsPortal(const bool portal)
+		{
+			m_isPortal = portal;
+		}
+
 		/*!
 		* @brief	コライダーを取得。
 		*/
@@ -90,6 +100,7 @@ namespace nsK2EngineLow {
 		Vector3 			m_position;						//!<座標。
 		bool 				m_isJump = false;				//!<ジャンプ中？
 		bool				m_isOnGround = true;			//!<地面の上にいる？
+		bool				m_isPortal = false;				//ポータルの中にいるかどうか。
 		CCapsuleCollider	m_collider;						//!<コライダー。
 		float				m_radius = 0.0f;				//!<カプセルコライダーの半径。
 		float				m_height = 0.0f;				//!<カプセルコライダーの高さ。

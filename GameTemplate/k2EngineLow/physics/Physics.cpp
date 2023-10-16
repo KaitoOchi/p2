@@ -30,6 +30,8 @@ namespace nsK2EngineLow {
 		struct MyRayResultCallback : public btCollisionWorld::RayResultCallback
 		{
 			Vector3 hitPos;
+			Vector3 hitNormal;
+			btCollisionObject* hitCollision;
 			Vector3 rayStart;
 			Vector3 rayEnd;
 			bool isHit = false;
@@ -39,6 +41,11 @@ namespace nsK2EngineLow {
 				if (rayResult.m_hitFraction < hitFraction) {
 					// ‚±‚¿‚ç‚Ì•û‚ª‹ß‚¢B
 					hitPos.Lerp(rayResult.m_hitFraction, rayStart, rayEnd);
+					//–@ü‚ðŽæ“¾B
+					hitNormal.x = rayResult.m_hitNormalLocal.getX();
+					hitNormal.y = rayResult.m_hitNormalLocal.getY();
+					hitNormal.z = rayResult.m_hitNormalLocal.getZ();
+					hitCollision = const_cast<btCollisionObject*>(rayResult.m_collisionObject);
 				}
 				isHit = true;
 				return rayResult.m_hitFraction;
@@ -62,7 +69,7 @@ namespace nsK2EngineLow {
 		);
 		return result.isHit;
 	}
-	bool PhysicsWorld::RayTest(const Vector3& rayStart, const Vector3& rayEnd, Vector3& hitPos) const
+	bool PhysicsWorld::RayTest(const Vector3& rayStart, const Vector3& rayEnd, RayHitObject& hit) const
 	{
 		btVector3 start, end;
 		start.setValue(rayStart.x, rayStart.y, rayStart.z);
@@ -72,7 +79,10 @@ namespace nsK2EngineLow {
 		cb.rayEnd = rayEnd;
 		m_dynamicWorld->rayTest(start, end, cb);
 		if (cb.isHit) {
-			hitPos = cb.hitPos;
+			hit.collision =cb.hitCollision;
+			hit.position = cb.hitPos;
+			hit.normal = cb.hitNormal;
+			hit.fraction = cb.hitFraction;
 		}
 		return cb.isHit;
 	}

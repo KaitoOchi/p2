@@ -1048,13 +1048,38 @@ namespace nsK2EngineLow {
 		return result;
 	}
 
-
 	/// <summary>
 	/// 内積を計算。
 	/// </summary>
 	static inline float Dot(const Vector4& v0, const Vector4& v1)
 	{
 		return v0.Dot(v1);
+	}
+
+	/// <summary>
+	/// クォータニオンをオイラー角に変換。
+	/// </summary>
+	static inline Vector3 CalcQuaternionToEuler(const Quaternion& q) {
+		// 回転行列を計算する
+		float m[3][3];
+		m[0][0] = 1 - 2 * (q.y * q.y + q.z * q.z);
+		m[0][1] = 2 * (q.x * q.y - q.w * q.z);
+		m[0][2] = 2 * (q.x * q.z + q.w * q.y);
+		m[1][0] = 2 * (q.x * q.y + q.w * q.z);
+		m[1][1] = 1 - 2 * (q.x * q.x + q.z * q.z);
+		m[1][2] = 2 * (q.y * q.z - q.w * q.x);
+		m[2][0] = 2 * (q.x * q.z - q.w * q.y);
+		m[2][1] = 2 * (q.y * q.z + q.w * q.x);
+		m[2][2] = 1 - 2 * (q.x * q.x + q.y * q.y);
+		// 回転行列からオイラー角を計算する
+		Vector3 euler;
+		euler.x = std::atan2(m[1][2], m[2][2]);
+		euler.y = std::asin(-m[0][2]);
+		euler.z = std::atan2(m[0][1], m[0][0]);
+		euler.x = euler.x * 180 / Math::PI;
+		euler.y = euler.y * 180 / Math::PI;
+		euler.z = euler.z * 180 / Math::PI;
+		return euler;
 	}
 
 

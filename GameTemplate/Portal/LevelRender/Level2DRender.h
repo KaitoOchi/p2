@@ -4,6 +4,9 @@ namespace nsPortalEngine {
 
 	struct CaslData;
 
+	/// <summary>
+	/// レベルオブジェクトデータ。
+	/// </summary>
 	struct Level2DObjectData {
 
 		Vector3		position = Vector3::Zero;			//座標。
@@ -11,8 +14,8 @@ namespace nsPortalEngine {
 		Vector3		scale = Vector3::One;				//拡大率。
 		int			width = 0;							//横幅。
 		int			height = 0;							//縦幅。
-		const char* name;								//名前。
-		const char* ddsFilePath;						//ddsファイルのファイルパス。
+		const char* name = "";							//名前。
+		const char* ddsFilePath = "";					//ddsファイルのファイルパス。
 		Vector2		pivot = Sprite::DEFAULT_PIVOT;		//ピボット。
 
 		/// <summary>

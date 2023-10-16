@@ -129,7 +129,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>k2EngineLow.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>k2EngineLow.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -170,7 +170,9 @@
     <ClInclude Include="PortalEngine.h" />
     <ClInclude Include="PortalEnginePreCompile.h" />
     <ClInclude Include="PostEffect\Bloom.h" />
+    <ClInclude Include="PostEffect\DoF.h" />
     <ClInclude Include="PostEffect\PostEffect.h" />
+    <ClInclude Include="PostEffect\PostEffectComponentBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="collision\CollisionObject.cpp" />
@@ -189,7 +191,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PostEffect\Bloom.cpp" />
+    <ClCompile Include="PostEffect\DoF.cpp" />
     <ClCompile Include="PostEffect\PostEffect.cpp" />
+    <ClCompile Include="PostEffect\PostEffectComponentBase.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

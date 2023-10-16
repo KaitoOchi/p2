@@ -2,6 +2,9 @@
 
 namespace nsPortalEngine {
 
+	/// <summary>
+	/// スプライトレンダー。
+	/// </summary>
 	class SpriteRender : public IRenderer
 	{
 	public:
@@ -26,6 +29,7 @@ namespace nsPortalEngine {
 		void SetPosition(const Vector3& pos)
 		{
 			m_position = pos;
+			m_position.z = 0.0f;
 		}
 
 		/// <summary>
@@ -62,6 +66,7 @@ namespace nsPortalEngine {
 		void SetScale(const Vector3& scale)
 		{
 			m_scale = scale;
+			m_scale.z = 0.0f;
 		}
 
 		/// <summary>

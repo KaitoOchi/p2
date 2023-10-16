@@ -17,6 +17,7 @@ namespace nsK2EngineLow {
 		struct SweepResultGround : public btCollisionWorld::ConvexResultCallback
 		{
 			bool isHit = false;									//衝突フラグ。
+			bool isPortal = false;					//ポータルに入っているかどうか。
 			Vector3 hitPos = Vector3(0.0f, -FLT_MAX, 0.0f);		//衝突点。
 			Vector3 startPos;									//レイの始点。
 			Vector3 hitNormal;									//衝突点の法線。
@@ -26,6 +27,11 @@ namespace nsK2EngineLow {
 																//衝突したときに呼ばれるコールバック関数。
 			virtual	btScalar	addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 			{
+				//ポータルに入ってるかつ、ポータル以外に衝突したら。
+				if (isPortal && convexResult.m_hitCollisionObject->getUserIndex() != enCollisionAttr_PortalFrame) {
+					return 0.0f;
+				}
+
 				if (convexResult.m_hitCollisionObject == me
 					|| convexResult.m_hitCollisionObject->getUserIndex() == enCollisionAttr_Character
 					|| convexResult.m_hitCollisionObject->getInternalType() == btCollisionObject::CO_GHOST_OBJECT
@@ -62,6 +68,7 @@ namespace nsK2EngineLow {
 		struct SweepResultWall : public btCollisionWorld::ConvexResultCallback
 		{
 			bool isHit = false;						//衝突フラグ。
+			bool isPortal = false;					//ポータルに入っているかどうか。
 			Vector3 hitPos;							//衝突点。
 			Vector3 startPos;						//レイの始点。
 			float dist = FLT_MAX;					//衝突点までの距離。一番近い衝突点を求めるため。FLT_MAXは単精度の浮動小数点が取りうる最大の値。
@@ -70,6 +77,11 @@ namespace nsK2EngineLow {
 													//衝突したときに呼ばれるコールバック関数。
 			virtual	btScalar	addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 			{
+				//ポータルに入ってるかつ、ポータル以外に衝突したら。
+				if (isPortal && convexResult.m_hitCollisionObject->getUserIndex() != enCollisionAttr_PortalFrame) {
+					return 0.0f;
+				}
+
 				if (convexResult.m_hitCollisionObject == me
 					|| convexResult.m_hitCollisionObject->getInternalType() == btCollisionObject::CO_GHOST_OBJECT
 					) {
@@ -145,6 +157,7 @@ namespace nsK2EngineLow {
 		Vector3 originalXZDir = addPos;
 		originalXZDir.y = 0.0f;
 		originalXZDir.Normalize();
+
 		//XZ平面での衝突検出と衝突解決を行う。
 		{
 			int loopCount = 0;
@@ -175,6 +188,7 @@ namespace nsK2EngineLow {
 				SweepResultWall callback;
 				callback.me = m_rigidBody.GetBody();
 				callback.startPos = posTmp;
+				callback.isPortal = m_isPortal;
 				//衝突検出。
 				PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collider.GetBody(), start, end, callback);
 
@@ -232,7 +246,7 @@ namespace nsK2EngineLow {
 			addPos.Subtract(nextPosition, m_position);
 
 			m_position = nextPosition;	//移動の仮確定。
-										//レイを作成する。
+			//レイを作成する。
 			btTransform start, end;
 			start.setIdentity();
 			end.setIdentity();
@@ -262,6 +276,7 @@ namespace nsK2EngineLow {
 			end.setOrigin(btVector3(endPos.x, endPos.y, endPos.z));
 			SweepResultGround callback;
 			callback.me = m_rigidBody.GetBody();
+			callback.isPortal = m_isPortal;
 			Vector3CopyFrom(callback.startPos, start.getOrigin());
 
 			//衝突検出。
@@ -281,6 +296,7 @@ namespace nsK2EngineLow {
 				}
 			}
 		}
+
 		//移動確定。
 		m_position = nextPosition;
 		btRigidBody* btBody = m_rigidBody.GetBody();

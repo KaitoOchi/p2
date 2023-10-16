@@ -2,20 +2,23 @@
 
 namespace nsPortalEngine {
 
+	/// <summary>
+	/// スポットライト。
+	/// </summary>
 	class SpotLight : Noncopyable
 	{
 	public:
 		/// <summary>
-		/// スポットライト用の構造体
+		/// スポットライト用の構造体。
 		/// </summary>
 		struct SpotLig
 		{
-			Vector3 spPosition;		//座標
+			Vector3 spPosition;		//座標。
 			float pad0 = 0.0f;
-			Vector3 spColor;		//カラー
-			float spRange = 0.0f;	//影響範囲
-			Vector3 spDirection;	//方向
-			float spAngle = 0.0f;	//射出角度
+			Vector3 spColor;		//カラー。
+			float spRange = 0.0f;	//影響範囲。
+			Vector3 spDirection;	//方向。
+			float spAngle = 0.0f;	//射出角度。
 		};
 
 	public:
@@ -31,8 +34,14 @@ namespace nsPortalEngine {
 		/// <param name="range">影響範囲</param>
 		/// <param name="dir">方向</param>
 		/// <param name="angle">射出角度</param>
-		void SetSpotLight(const int num, const Vector3& pos, const Vector3& color, const float range, const Vector3& dir, const float angle)
-		{
+		void SetSpotLight(
+			const int num,
+			const Vector3& pos,
+			const Vector3& color,
+			const float range,
+			const Vector3& dir,
+			const float angle
+		){
 			SetNumber(num);
 			SetPosition(pos);
 			SetColor(color);
@@ -157,7 +166,7 @@ namespace nsPortalEngine {
 		void Update(const int num);
 
 	private:
-		SpotLig		m_spotLight;		//スポットライト
-		int			m_spNum = 0;	//番号
+		SpotLig		m_spotLight;	//スポットライト。
+		int			m_spNum = 0;	//番号。
 	};
 }

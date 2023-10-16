@@ -13,10 +13,10 @@ namespace nsPortalEngine {
 		/// </summary>
 		struct PointLig
 		{
-			Vector3 ptPosition;		//座標
+			Vector3 ptPosition;		//座標。
 			float pad0 = 0.0f;
-			Vector3 ptColor;		//カラー
-			float ptRange = 0.0f;	//影響範囲
+			Vector3 ptColor;		//カラー。
+			float ptRange = 0.0f;	//影響範囲。
 		};
 
 		PointLight() {};

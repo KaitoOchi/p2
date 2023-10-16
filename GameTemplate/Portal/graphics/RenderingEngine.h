@@ -4,6 +4,7 @@
 #include "graphics/light/PointLight.h"
 #include "graphics/light/SpotLight.h"
 #include "PostEffect/PostEffect.h"
+#include "../Game/Portal/PortalCamera.h"
 
 namespace nsPortalEngine {
 
@@ -35,14 +36,14 @@ namespace nsPortalEngine {
 		/// </summary>
 		struct LightCB
 		{
-			DirectionalLight::DirectionLig directionLig;
-			Vector3 eyePos;
+			DirectionalLight::DirectionLig directionLig;		//ディレクションライト。
+			Vector3 eyePos;										//視点の位置。
 			float pad0 = 0.0f;
-			PointLight::PointLig pointLig[POINT_LIGHT_NUM];
-			SpotLight::SpotLig spotLig[SPOT_LIGHT_NUM];
-			ShadowCB shadowCB;
-			int ptNum = POINT_LIGHT_NUM;
-			int spNum = SPOT_LIGHT_NUM;
+			PointLight::PointLig pointLig[POINT_LIGHT_NUM];		//ポイントライト。
+			SpotLight::SpotLig spotLig[SPOT_LIGHT_NUM];			//スポットライト。
+			ShadowCB shadowCB;									//シャドウ。
+			int ptNum = POINT_LIGHT_NUM;						//ポイントライトの数。
+			int spNum = SPOT_LIGHT_NUM;							//スポットライトの数。
 		};
 
 	private:
@@ -87,6 +88,15 @@ namespace nsPortalEngine {
 		void AddRenderObject(IRenderer* renderObject)
 		{
 			m_renderObjects.emplace_back(renderObject);
+		}
+
+		/// <summary>
+		/// ポータルカメラのポインタを設定。
+		/// </summary>
+		/// <param name="portalCamera"></param>
+		void SetPortalCameraPointer(PortalCamera* portalCamera)
+		{
+			m_portalCamera = portalCamera;
 		}
 
 		/// <summary>
@@ -172,10 +182,25 @@ namespace nsPortalEngine {
 		void InitShadowMapRenderTarget();
 
 		/// <summary>
+		/// ZPrepass用レンダーターゲットの初期化処理。
+		/// </summary>
+		void InitZPrepassRenderTarget();
+
+		/// <summary>
+		/// 定数バッファの更新処理。
+		/// </summary>
+		void UpdateCB();
+
+		/// <summary>
+		/// ZPrepassの描画処理。
+		/// </summary>
+		void DrawZPrepass(RenderContext& rc);
+
+		/// <summary>
 		/// シャドウマップの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		void RenderShadowMap(RenderContext& rc);
+		void DrawShadowMap(RenderContext& rc);
 
 		/// <summary>
 		/// フォワードレンダリングの描画処理。
@@ -195,13 +220,13 @@ namespace nsPortalEngine {
 		RenderTarget			m_2DRenderTarget;					//2D用レンダーターゲット。
 		RenderTarget			m_portalRenderTarget[PORTAL_NUM];	//ポータル用レンダーターゲット。
 		RenderTarget			m_shadowMapRenderTarget;			//シャドウマップ用レンダーターゲット。
+		RenderTarget			m_zprepassRenderTarget;				//ZPrepass用レンダーターゲット。
 		Sprite					m_2DSprite;                         //2Dスプライト。
 		Sprite					m_mainSprite;						//メインスプライト。
 		GaussianBlur			m_shadowBlur;						//シャドウ用ガウシアンブラー。
 		Camera					m_lightCamera;						//ライトカメラ。
-		Camera					m_portalCamera[PORTAL_NUM];			//ポータルカメラ。
 		PostEffect				m_postEffect;						//ポストエフェクト。
 		LightCB					m_lightCB;							//ライト用構造体。
+		PortalCamera*			m_portalCamera = nullptr;			//ポータル用カメラ。
 	};
-
 }

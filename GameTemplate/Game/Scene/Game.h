@@ -13,9 +13,7 @@ public:
 	void Render(RenderContext& rc);
 
 private:
-	PhysicsStaticObject		m_physicsStaticObject;
-	ModelRender				m_modelRender;
-	PointLight				m_pointLight;
-	SpotLight				m_spotLight;
+	PointLight				m_pointLight;				//ポイントライト。
+	SpotLight				m_spotLight;				//スポットライト。
 };
 

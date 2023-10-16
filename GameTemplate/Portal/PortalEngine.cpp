@@ -15,14 +15,13 @@ namespace nsPortalEngine {
 		g_engine = nullptr;
 
 		RenderingEngine::DeleteInstance();
-
-		CollisionObjectManager::DeleteInstance();
 	}
 
 	void PortalEngine::Init(const InitData& initData)
 	{
-		//g_engine = &m_k2EngineLow;
+		g_engine = &m_k2EngineLow;
 
+		//エンジンの初期化。
 		m_k2EngineLow.Init(
 			initData.hwnd,
 			initData.frameBufferWidth,
@@ -45,7 +44,7 @@ namespace nsPortalEngine {
 	{
 		auto& renderContext = g_graphicsEngine->GetRenderContext();
 
-		// フレームの開始時に呼び出す必要がある処理を実行
+		// フレームの開始時に呼び出す必要がある処理を実行。
 		g_engine->BeginFrame();
 
 		// ゲームオブジェクトマネージャーの更新処理を呼び出す。

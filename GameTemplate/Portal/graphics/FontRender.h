@@ -2,6 +2,9 @@
 
 namespace nsPortalEngine {
 
+	/// <summary>
+	/// フォントレンダー。
+	/// </summary>
 	class FontRender : public IRenderer
 	{
 	public:
@@ -127,8 +130,8 @@ namespace nsPortalEngine {
 		void SetShadowParam(
 			const bool isDrawShadow,
 			const float shadowOffset,
-			const Vector4& shadowColor)
-		{
+			const Vector4& shadowColor
+		){
 			m_font.SetShadowParam(isDrawShadow, shadowOffset, shadowColor);
 		}
 

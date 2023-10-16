@@ -24,10 +24,16 @@ namespace nsPortalEngine {
 			const char* filePath,
 			AnimationClip* animationClip = nullptr,
 			const int numAnimationClip = 0,
-			EnModelUpAxis enModelUpAxis = enModelUpAxisZ,
+			const EnModelUpAxis enModelUpAxis = enModelUpAxisZ,
 			const bool isShadowCaster = false,
 			const bool isShadowReceiver = false
 		);
+
+		/// <summary>
+		/// ModelInitDataを使用した初期化処理。
+		/// </summary>
+		/// <param name="modelInitData"></param>
+		void InitModelInitData(ModelInitData& modelInitData);
 
 		/// <summary>
 		/// 更新処理。
@@ -165,7 +171,20 @@ namespace nsPortalEngine {
 		/// </summary>
 		/// <param name="tkmFilePath"></param>
 		/// <param name="modelUpAxis"></param>
-		void InitShadowModel(const char* tkmFilePath, EnModelUpAxis modelUpAxis);
+		void InitShadowModel(const char* tkmFilePath, const EnModelUpAxis modelUpAxis);
+
+		/// <summary>
+		/// ZPrepass用モデルの初期化。
+		/// </summary>
+		/// <param name="tkmFilePath"></param>
+		/// <param name="modelUpAxis"></param>
+		void InitZPrepassModel(const char* tkmFilePath, const EnModelUpAxis modelUpAxis);
+
+		/// <summary>
+		/// モデルにあるスケルトンを設定。
+		/// </summary>
+		/// <param name="modelInitData"></param>
+		void SetModelHasSkeleton(ModelInitData& modelInitData);
 
 		/// <summary>
 		/// モデルの更新処理。
@@ -183,10 +202,20 @@ namespace nsPortalEngine {
 		/// ポータル用レンダーの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		void OnPortalRender(RenderContext& rc, const int num) override;
+		void OnPortalRender(RenderContext& rc, const int num, Camera& camera) override;
 
-		//シャドウマップの描画処理。
+		/// <summary>
+		/// シャドウマップの描画処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		/// <param name="camera"></param>
 		void OnRenderShadowMap(RenderContext& rc, Camera& camera) override;
+
+		/// <summary>
+		/// ZPrepassの描画処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		void OnRenderToZPrepass(RenderContext& rc) override;
 
 	private:
 		Skeleton	m_skeleton;					//スケルトン。
@@ -194,6 +223,7 @@ namespace nsPortalEngine {
 		Model		m_model;					//モデル。
 		Model		m_portalModel[PORTAL_NUM];	//ポータル越しのモデル。
 		Model		m_shadowModel;				//シャドウモデル。
+		Model		m_zprepassModel;			//ZPrepassモデル。
 		Vector3		m_position;					//座標。
 		Vector3		m_scale = Vector3::One;		//拡大率。
 		Quaternion	m_rotation;					//回転。

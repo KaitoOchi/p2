@@ -18,6 +18,17 @@ namespace nsK2EngineLow {
 		DebugWireframe m_debugWireFrame;
 		bool m_isDrawDebugWireFrame = false;
 #endif
+	public:
+		/// <summary>
+		/// レイと衝突したオブジェクトの情報。
+		/// </summary>
+		struct RayHitObject
+		{
+			btCollisionObject*	collision;	//コリジョン。
+			Vector3				position;	//座標。
+			Vector3				normal;		//法線。
+			float				fraction;	//衝突時間。
+		};
 
 	public:
 		static void CreateInstance()
@@ -120,7 +131,7 @@ namespace nsK2EngineLow {
 		/// <param name="rayEnd">レイの終点</param>
 		/// <param name="hitPos">交点の格納先</param>
 		/// <returns>trueが返ってきたら衝突している。</returns>
-		bool RayTest(const Vector3& rayStart, const Vector3& rayEnd, Vector3& hitPos) const;
+		bool RayTest(const Vector3& rayStart, const Vector3& rayEnd, RayHitObject& hit) const;
 		/*!
 		* @brief	コリジョンオブジェクトをワールドに登録。
 		*@param[in]	colliObj	コリジョンオブジェクト。
@@ -136,6 +147,10 @@ namespace nsK2EngineLow {
 		void RemoveCollisionObject(btCollisionObject& colliObj)
 		{
 			m_dynamicWorld->removeCollisionObject(&colliObj);
+		}
+		void RemoveCollisionObject(btCollisionObject* colliObj)
+		{
+			m_dynamicWorld->removeCollisionObject(colliObj);
 		}
 
 		void ContactTest(

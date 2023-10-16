@@ -9,7 +9,7 @@ namespace nsPortalEngine {
 		std::function<bool(Level2DObjectData& objData)> hookFunc
 	)
 	{
-		//Caslファイルをロードする
+		//Caslファイルをロードする。
 		CaslFile casl;
 		casl.Load(filePath);
 

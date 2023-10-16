@@ -95,5 +95,5 @@ float CookTorranceSpecular(float3 dir, float3 toEye, float3 normal, float metall
     float m = PI * NdotV * NdotH;
 
     // ここまで求めた、値を利用して、Cook-Torranceモデルの鏡面反射を求める
-    return max(F * D * G / m, 0.0);
+    return saturate(F * D * G / m);
 }

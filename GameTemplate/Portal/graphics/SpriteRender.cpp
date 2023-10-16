@@ -15,7 +15,7 @@ namespace nsPortalEngine {
 		initData.m_height = static_cast<UINT>(h);
 		initData.m_alphaBlendMode = alpha;
 
-		//spriteを初期化。
+		//スプライトを初期化。
 		m_sprite.Init(initData);
 
 	}

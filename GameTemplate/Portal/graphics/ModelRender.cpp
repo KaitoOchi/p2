@@ -17,7 +17,7 @@ namespace nsPortalEngine {
 		const char* filePath,
 		AnimationClip* animationClips,
 		int numAnimationClips,
-		EnModelUpAxis enModelUpAxis,
+		const EnModelUpAxis enModelUpAxis,
 		const bool isShadowCaster,
 		const bool isShadowReceiver)
 	{
@@ -28,7 +28,17 @@ namespace nsPortalEngine {
 
 		InitModel(filePath, enModelUpAxis, isShadowCaster, isShadowReceiver);
 
+		InitZPrepassModel(filePath, enModelUpAxis);
+
 		UpdateWorldMatrix();
+	}
+
+	void ModelRender::InitModelInitData(ModelInitData& modelInitData)
+	{
+		//スケルトンを設定。
+		SetModelHasSkeleton(modelInitData);
+
+		m_model.Init(modelInitData);
 	}
 
 	void ModelRender::InitSkeleton(const char* filePath)
@@ -48,7 +58,7 @@ namespace nsPortalEngine {
 		}
 	}
 
-	void ModelRender::InitModel(const char* filePath, EnModelUpAxis enModelUpAxis, const bool isShadowCaster, const bool isShadowReceiver)
+	void ModelRender::InitModel(const char* filePath, const EnModelUpAxis enModelUpAxis, const bool isShadowCaster, const bool isShadowReceiver)
 	{
 		//通常モデルを初期化。
 		ModelInitData modelInitData;
@@ -59,14 +69,10 @@ namespace nsPortalEngine {
 		modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
 		modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetShadowBlur().GetBokeTexture();
 
-		//アニメーション有りモデルなら
-		if (m_skeleton.IsInited()) {
-			//スケルトンを指定する。
-			modelInitData.m_skeleton = &m_skeleton;
-			modelInitData.m_vsSkinEntryPointFunc = "VSSkinMain";
-		}
+		//スケルトンを設定。
+		SetModelHasSkeleton(modelInitData);
 
-		//影を設定
+		//影を設定。
 		if (isShadowReceiver) {
 			modelInitData.m_psEntryPointFunc = "PSMainShadow";
 		}
@@ -75,6 +81,7 @@ namespace nsPortalEngine {
 		}
 
 		m_model.Init(modelInitData);
+
 		for (int i = 0; i < PORTAL_NUM; i++) {
 			m_portalModel[i].Init(modelInitData);
 		}
@@ -98,14 +105,38 @@ namespace nsPortalEngine {
 		shadowModelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetShadowCB();
 		shadowModelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetShadowCB());
 
+		//スケルトンを設定。
+		SetModelHasSkeleton(shadowModelInitData);
 
+		//シャドウモデルを初期化。
+		m_shadowModel.Init(shadowModelInitData);
+	}
+
+	void ModelRender::InitZPrepassModel(
+		const char* tkmFilePath,
+		EnModelUpAxis modelUpAxis)
+	{
+		ModelInitData zprepassModelInitData;
+		zprepassModelInitData.m_fxFilePath = "Assets/shader/zprepass.fx";
+		zprepassModelInitData.m_tkmFilePath = tkmFilePath;
+		zprepassModelInitData.m_modelUpAxis = modelUpAxis;
+		zprepassModelInitData.m_colorBufferFormat[0] = DXGI_FORMAT_R32G32_FLOAT;
+
+		//スケルトンを設定。
+		SetModelHasSkeleton(zprepassModelInitData);
+
+		//ZPrepassモデルを初期化。
+		m_zprepassModel.Init(zprepassModelInitData);
+	}
+
+	void ModelRender::SetModelHasSkeleton(ModelInitData& modelInitData)
+	{
+		//アニメーション有りモデルなら。
 		if (m_skeleton.IsInited()) {
 			//スケルトンを指定する。
-			shadowModelInitData.m_skeleton = &m_skeleton;
-			shadowModelInitData.m_vsSkinEntryPointFunc = "VSSkinMain";
+			modelInitData.m_skeleton = &m_skeleton;
+			modelInitData.m_vsSkinEntryPointFunc = "VSSkinMain";
 		}
-
-		m_shadowModel.Init(shadowModelInitData);
 	}
 
 	void ModelRender::UpdateWorldMatrix()
@@ -116,6 +147,9 @@ namespace nsPortalEngine {
 		}
 		if (m_shadowModel.IsInited()) {
 			m_shadowModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
+		}
+		if (m_zprepassModel.IsInited()) {
+			m_zprepassModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
 		}
 		if (m_portalModel[0].IsInited()) {
 			for (int i = 0; i < PORTAL_NUM; i++) {
@@ -157,10 +191,17 @@ namespace nsPortalEngine {
 		}
 	}
 
-	void ModelRender::OnPortalRender(RenderContext& rc, const int num)
+	void ModelRender::OnRenderToZPrepass(RenderContext& rc)
+	{
+		if (m_zprepassModel.IsInited()) {
+			m_zprepassModel.Draw(rc);
+		}
+	}
+
+	void ModelRender::OnPortalRender(RenderContext& rc, const int num, Camera& camera)
 	{
 		if (m_portalModel[num].IsInited()) {
-			m_portalModel[num].Draw(rc, 1);
+			m_portalModel[num].Draw(rc, camera, 1);
 		}
 	}
 }
