@@ -1,5 +1,8 @@
 #pragma once
 
+/// <summary>
+/// ステージクラス。
+/// </summary>
 class Stage : public IGameObject
 {
 public:

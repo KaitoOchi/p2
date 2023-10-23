@@ -1,4 +1,5 @@
 #pragma once
+#include <random>
 
 namespace nsK2EngineLow {
 	class Math {
@@ -49,6 +50,20 @@ namespace nsK2EngineLow {
 		template<> static inline float Lerp(float rate, float t0, float t1)
 		{
 			return t0 + (t1 - t0) * rate;
+		}
+
+		/// <summary>
+		/// —”‚ğ¶¬B
+		/// </summary>
+		/// <param name="first"></param>
+		/// <param name="last"></param>
+		/// <returns>first‚©‚çlast‚Ü‚Å‚ÌŠÔ‚Å’l‚ğŒˆ‚ß‚é</returns>
+		const static inline float Random(const int first, const int last)
+		{
+			std::random_device rnd;
+			std::mt19937 mt(rnd());
+			std::uniform_int_distribution<> randValue(first, last);
+			return randValue(mt);
 		}
 	};
 }

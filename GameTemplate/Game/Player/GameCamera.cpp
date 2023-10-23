@@ -12,6 +12,8 @@ namespace
 	const float CAMERA_HEIGHT_CROUCH = 20.0f;	//しゃがみ状態の高さ。
 	const float ANGLE_Y = 1.2f;					//カメラの上下回転の上限値
 	const float CROUCH_SPEED = 5.0f;			//しゃがみ速度。
+	const float CROUCH_TIMER_START = 0.0f;		//しゃがみ開始の時間。
+	const float CROUCH_TIMER_END = 1.0f;		//しゃがみ終了の時間。
 }
 
 
@@ -39,6 +41,20 @@ bool GameCamera::Start()
 
 void GameCamera::Update()
 {
+	if (m_isDead) {
+		return;
+	}
+
+	//プレイヤーが死亡したら。
+	if (m_player->GetPlayerState() == Player::enState_Dead) {
+		m_isCrouch = false;
+		m_isDead = true;
+		g_camera3D->Move(Vector3(0.0f, -50.0f, 0.0f));
+		g_camera3D->SetUp(Vector3(-1.0f, 0.0f, 0.0f));
+		g_camera3D->Update();
+		return;
+	}
+
 	Move();
 
 	Rotation();
@@ -52,7 +68,7 @@ void GameCamera::Move()
 	m_position = m_player->GetPosition();
 
 	//しゃがみの座標を設定。
-	if (m_crouchTimer >= 0.0f && m_crouchTimer <= 1.0f) {
+	if (m_crouchTimer >= CROUCH_TIMER_START && m_crouchTimer <= CROUCH_TIMER_END) {
 		//しゃがみの始点を設定。
 		Vector3 cameraPos = m_position;
 		cameraPos.y += CAMERA_HEIGHT;
@@ -66,27 +82,27 @@ void GameCamera::Move()
 
 	//しゃがみ状態なら。
 	if (m_isCrouch) {
-
-		if (m_crouchTimer < 1.0f) {
+		//しゃがんでいる時間が経過するまで。
+		if (m_crouchTimer < CROUCH_TIMER_END) {
 			//線形補間でしゃがみを開始する。
 			m_crouchTimer += g_gameTime->GetFrameDeltaTime() * CROUCH_SPEED;
 			m_position.Lerp(m_crouchTimer, m_firstCrouchPos, m_lastCrouchPos);
 		}
 		else {
-			m_crouchTimer = 1.0f;
+			m_crouchTimer = CROUCH_TIMER_END;
 			m_position.y += CAMERA_HEIGHT_CROUCH;
 		}
 	}
 	//しゃがみ状態でないなら。
 	else {
-
-		if (m_crouchTimer > 0.0f) {
+		//しゃがみ終了の時間まで。
+		if (m_crouchTimer > CROUCH_TIMER_START) {
 			//線形補間でしゃがみを解除する。
 			m_crouchTimer -= g_gameTime->GetFrameDeltaTime() * CROUCH_SPEED;
 			m_position.Lerp(m_crouchTimer, m_firstCrouchPos, m_lastCrouchPos);
 		}
 		else {
-			m_crouchTimer = 0.0f;
+			m_crouchTimer = CROUCH_TIMER_START;
 			m_position.y += CAMERA_HEIGHT;
 		}
 	}

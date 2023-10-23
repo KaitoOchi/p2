@@ -9,6 +9,15 @@ namespace nsPortalEngine {
 	{
 	public:
 		/// <summary>
+		/// GBufferパスから呼ばれる処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		virtual void OnRenderGBuffer(RenderContext& rc)
+		{
+
+		}
+
+		/// <summary>
 		/// フォワードレンダーパスから呼ばれる処理。
 		/// </summary>
 		/// <param name="rc"></param>

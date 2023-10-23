@@ -8,6 +8,19 @@ namespace nsPortalEngine {
 	class ModelRender : public IRenderer
 	{
 	public:
+		/// <summary>
+		/// モデルの初期化モード。
+		/// </summary>
+		enum ModelInitMode
+		{
+			enModelInitMode_DiferredLighting,		//ディファードライティング。
+			enModelInitMode_ForwardLighting,		//フォワードレンダリング。
+			enModelInitMode_UnDrawMainCamera,		//メインカメラに描画されない。
+			enModelInitMode_Outline,				//輪郭線。
+			enModelInitMode_Dithering,				//ディザリング。
+		};
+
+	public:
 		ModelRender();
 		~ModelRender();
 
@@ -20,13 +33,15 @@ namespace nsPortalEngine {
 		/// <param name="enModelUpAxis">モデルの上方向</param>
 		/// <param name="isShadowCaster">trueなら影を与える</param>
 		/// <param name="isShadowReceiver">trueなら影を落とす</param>
+		/// <param name="enModelInitMode">モデルの初期化モード</param>
 		void Init(
 			const char* filePath,
 			AnimationClip* animationClip = nullptr,
 			const int numAnimationClip = 0,
 			const EnModelUpAxis enModelUpAxis = enModelUpAxisZ,
 			const bool isShadowCaster = false,
-			const bool isShadowReceiver = false
+			const bool isShadowReceiver = false,
+			const ModelInitMode enModelInitMode = enModelInitMode_DiferredLighting
 		);
 
 		/// <summary>
@@ -71,7 +86,13 @@ namespace nsPortalEngine {
 		/// <returns></returns>
 		Model& GetModel()
 		{
-			return m_model;
+			if (m_gBufferModel.IsInited()) {
+				return m_gBufferModel;
+			}
+			else if (m_forwardRenderModel.IsInited()) {
+				return m_forwardRenderModel;
+			}
+			return m_zprepassModel;
 		}
 
 		/// <summary>
@@ -159,11 +180,13 @@ namespace nsPortalEngine {
 		/// <param name="enModelUpAxis"></param>
 		/// <param name="isShadowCaster"></param>
 		/// <param name="isShadowReceiver"></param>
+		/// <param name="enModelInitMode">モデルの初期化モード</param>
 		void InitModel(
 			const char* filePath,
 			EnModelUpAxis enModelUpAxis,
 			const bool isShadowCaster,
-			const bool isShadowReceiver
+			const bool isShadowReceiver,
+			const ModelInitMode enModelInitMode = enModelInitMode_DiferredLighting
 		);
 
 		/// <summary>
@@ -193,6 +216,12 @@ namespace nsPortalEngine {
 
 	private:
 		/// <summary>
+		/// ディファードライティングの描画処理。
+		/// </summary>
+		/// <param name="rc"></param>
+		void OnRenderGBuffer(RenderContext& rc) override;
+
+		/// <summary>
 		/// フォワードレンダーの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
@@ -218,16 +247,17 @@ namespace nsPortalEngine {
 		void OnRenderToZPrepass(RenderContext& rc) override;
 
 	private:
-		Skeleton	m_skeleton;					//スケルトン。
-		Animation	m_animation;				//アニメーション。
-		Model		m_model;					//モデル。
-		Model		m_portalModel[PORTAL_NUM];	//ポータル越しのモデル。
-		Model		m_shadowModel;				//シャドウモデル。
-		Model		m_zprepassModel;			//ZPrepassモデル。
-		Vector3		m_position;					//座標。
-		Vector3		m_scale = Vector3::One;		//拡大率。
-		Quaternion	m_rotation;					//回転。
-		float		m_animationSpeed = 1.0f;	//アニメーション速度。
+		Skeleton						m_skeleton;					//スケルトン。
+		Animation						m_animation;				//アニメーション。
+		Model							m_gBufferModel;				//GBufferモデル。
+		Model							m_forwardRenderModel;		//フォワードレンダリング用モデル。
+		std::array<Model, PORTAL_NUM>	m_portalModel;				//ポータル越しのモデル。
+		Model							m_shadowModel;				//シャドウモデル。
+		Model							m_zprepassModel;			//ZPrepassモデル。
+		Vector3							m_position;					//座標。
+		Vector3							m_scale = Vector3::One;		//拡大率。
+		Quaternion						m_rotation;					//回転。
+		float							m_animationSpeed = 1.0f;	//アニメーション速度。
 	};
 
 }

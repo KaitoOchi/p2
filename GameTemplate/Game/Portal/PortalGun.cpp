@@ -13,6 +13,7 @@ namespace
 
 PortalGun::PortalGun()
 {
+	//ポータルフレームを初期化。
 	for (int i = 0; i < PORTAL_NUM; i++) {
 		m_portalFrame[i] = nullptr;
 	}
@@ -67,12 +68,11 @@ void PortalGun::SetPortal(const PortalFrame::PortalType type)
 	//カメラの前方向を取得。
 	Vector3 forward = g_camera3D->GetForward();
 
+	//当たったオブジェクトの詳細。
+	PhysicsWorld::RayHitObject hit;
 	//レイの視点と終点を設定。
 	Vector3 rayStartPos = g_camera3D->GetPosition();
 	Vector3 rayEndPos = rayStartPos + (forward * RAY_LENGTH);
-	//当たったオブジェクトの詳細。
-	PhysicsWorld::RayHitObject hit;
-
 	//レイを飛ばす。
 	bool isHit = PhysicsWorld::GetInstance()->RayTest(rayStartPos, rayEndPos, hit);
 

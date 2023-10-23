@@ -20,7 +20,7 @@ public:
 		enState_Crouch_Walk,	//しゃがみ歩き。
 		enState_Crouch_Jump,	//しゃがみジャンプ。
 		enState_Jump,			//ジャンプ。
-		enState_Dead,
+		enState_Dead,			//死亡。
 		enState_Num,			//数。
 	};
 
@@ -65,6 +65,15 @@ public:
 	}
 
 	/// <summary>
+	/// プレイヤーステートを取得。
+	/// </summary>
+	/// <returns></returns>
+	const PlayerState GetPlayerState() const
+	{
+		return m_playerState;
+	}
+
+	/// <summary>
 	/// キャラコンを取得。
 	/// </summary>
 	const CharacterController& GetCharacterController() const
@@ -91,72 +100,58 @@ private:
 	/// 入力処理。
 	/// </summary>
 	void Input();
-
 	/// <summary>
 	/// XZ軸の移動処理。
 	/// </summary>
 	void MoveXZ();
-
 	/// <summary>
 	/// Y軸の移動処理。
 	/// </summary>
 	void MoveY();
-
 	/// <summary>
 	/// 回転処理。
 	/// </summary>
 	void Rotation();
-
 	/// <summary>
 	/// アニメーション処理。
 	/// </summary>
 	void PlayAnimation();
-
 	/// <summary>
 	/// ステート処理。
 	/// </summary>
 	void State();
-
 	/// <summary>
 	/// 共通遷移処理。
 	/// </summary>
 	void ProcessCommonStateTransition();
-
 	/// <summary>
 	/// 待機状態の遷移処理。
 	/// </summary>
 	void ProcessIdleStateTransition();
-
 	/// <summary>
 	/// 歩き状態の遷移処理。
 	/// </summary>
 	void ProcessWalkStateTransition();
-
 	/// <summary>
 	/// 走り状態の遷移処理。
 	/// </summary>
 	void ProcessRunStateTransition();
-
 	/// <summary>
 	/// しゃがみ待機状態の遷移処理。
 	/// </summary>
 	void ProcessCrouchIdleStateTransition();
-
 	/// <summary>
 	/// しゃがみ歩き状態の遷移処理。
 	/// </summary>
 	void ProcessCrouchWalkStateTransition();
-
 	/// <summary>
 	/// しゃがみジャンプ状態の遷移処理。
 	/// </summary>
 	void ProcessCrouchJumpStateTransition();
-
 	/// <summary>
 	/// ジャンプ状態の遷移処理。
 	/// </summary>
 	void ProcessJumpStateTransition();
-
 	/// <summary>
 	/// 死亡状態の遷移処理。
 	/// </summary>

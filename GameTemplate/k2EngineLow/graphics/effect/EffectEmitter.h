@@ -9,6 +9,15 @@ namespace nsK2EngineLow {
 	{
 	public:
 		/// <summary>
+		/// エフェクトの種類。
+		/// </summary>
+		enum EffectType
+		{
+			enEffect_Turret_Shot,
+		};
+
+	public:
+		/// <summary>
 		/// コンストラクタ。
 		/// </summary>
 		EffectEmitter();

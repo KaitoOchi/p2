@@ -64,23 +64,28 @@ float SpcFresnel(float f0, float u)
 /// <param name="dir">光源に向かうベクトル</param>
 /// <param name="toEye">視点に向かうベクトル</param>
 /// <param name="normal">法線ベクトル</param>
-/// <param name="metallic">金属度</param>
-float CookTorranceSpecular(float3 dir, float3 toEye, float3 normal, float metallic)
+/// <param name="smooth">滑らかさ</param>
+float CookTorranceSpecular(
+    float3 dir,
+    float3 toEye,
+    float3 normal,
+    float smooth
+)
 {
-    float microfacet = 0.76f;
+    float microfacet = min(0.5f, 1.0f - smooth);
 
     // 金属度を垂直入射の時のフレネル反射率として扱う。
     // 金属度が高いほどフレネル反射は大きくなる。
-    float f0 = metallic;
+    float f0 = 0.5f;
 
     // ライトに向かうベクトルと視線に向かうベクトルのハーフベクトルを求める。
     float3 H = normalize(dir + toEye);
 
     // 各種ベクトルがどれくらい似ているかを内積を利用して求める。
-    float NdotH = max(0.001f,min(dot(normal, H),1.0f));
-    float VdotH = max(0.001f,min(dot(toEye, H), 1.0f));
-    float NdotL = max(0.001f,min(dot(normal, dir), 1.0f));
-    float NdotV = max(0.001f,min(dot(normal, toEye), 1.0f));
+    float NdotH = max(0.001f, min(dot(normal, H), 1.0f));
+    float VdotH = max(0.001f, min(dot(toEye, H),  1.0f));
+    float NdotL = max(0.001f, min(dot(normal, dir), 1.0f));
+    float NdotV = max(0.001f, min(dot(normal, toEye), 1.0f));
 
     // D項をベックマン分布を用いて計算する。
     float D = Beckmann(microfacet, NdotH);

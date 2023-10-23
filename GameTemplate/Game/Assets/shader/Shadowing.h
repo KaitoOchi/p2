@@ -5,7 +5,7 @@
 /// <summary>
 /// シャドウを計算。
 /// </summary>
-float4 ShadowMap(float4 posInLVP, float4 albedo)
+float ShadowMap(Texture2D<float4>shadowMap, float4 posInLVP)
 {
     //ライトビュースクリーン空間からUV空間に座標変換。
     float2 shadowMapUV = posInLVP.xy / posInLVP.w;
@@ -13,14 +13,15 @@ float4 ShadowMap(float4 posInLVP, float4 albedo)
     shadowMapUV += 0.5f;
 
     //ライトビュースクリーン空間でのZ値を計算する。
-    float zInLVP = posInLVP.z;
+    float zInLVP = posInLVP.z / posInLVP.w;
 
     if(shadowMapUV.x > 0.0f && shadowMapUV.x < 1.0f
-        && shadowMapUV.y > 0.0f && shadowMapUV.y < 1.0f)
+        && shadowMapUV.y > 0.0f && shadowMapUV.y < 1.0f
+		&& zInLVP < 0.98f && zInLVP > 0.02f)
     {
 		//VSMの実装。
 		//シャドウマップから値をサンプリング。
-		float2 shadowValue = g_shadowMap.Sample(g_sampler,shadowMapUV).xy;
+		float2 shadowValue = shadowMap.Sample(g_sampler, shadowMapUV).xy;
 
 		//このピクセルが遮蔽されているか調べる。
 		if(zInLVP > shadowValue.r && zInLVP <= 5.0f){
@@ -37,13 +38,15 @@ float4 ShadowMap(float4 posInLVP, float4 albedo)
 			//光が届く確率を求める。
 			float lit_factor = variance / (variance + md * md);
 
+			return 1.0f - lit_factor;
+
 			//シャドウカラーを求める。
-			float3 shadowColor = albedo.xyz * 0.5f;
+			//float3 shadowColor = albedo.xyz * 0.5f;
 
 			//光が当たる確率を使って通常カラーとシャドウカラーを線形補間。
-			albedo.xyz = lerp( shadowColor, albedo.xyz, lit_factor);
+			//albedo.xyz = lerp( shadowColor, albedo.xyz, lit_factor);
 		}
     }
 
-	return albedo;
+	return 0.0f;
 }

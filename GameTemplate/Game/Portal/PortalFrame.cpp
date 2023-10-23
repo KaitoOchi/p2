@@ -13,7 +13,7 @@ namespace
 
 PortalFrame::PortalFrame()
 {
-	m_position = Vector3(-200.0f, 75.0f, -100.0f);
+	m_position = Vector3(0.0f, -1000.0f, 0.0f);
 }
 
 PortalFrame::~PortalFrame()
@@ -35,9 +35,11 @@ bool PortalFrame::Start()
 	//ModelInitDataを使用して初期化する。
 	ModelInitData modelInitData;
 	modelInitData.m_tkmFilePath = "Assets/modelData/portal/portalFrame.tkm";
-	modelInitData.m_fxFilePath = "Assets/shader/portalRenderTexture.fx";
+	modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
+	modelInitData.m_psEntryPointFunc = "PSMainPortalFrame";
 	//テクスチャをポータル用レンダーターゲットに設定する。
 	modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetPortalRenderTarget(static_cast<int>(m_portalType)).GetRenderTargetTexture();
+	modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
 	m_portalFrameModelRender.InitModelInitData(modelInitData);
 	m_portalFrameModelRender.SetPosition(m_position);
 	m_portalFrameModelRender.Update();

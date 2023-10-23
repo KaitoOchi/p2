@@ -16,7 +16,7 @@ struct PSInput
 	float2 uv	: TEXCOORD0;
 };
 
-//ï¿½ï¿½ï¿½_ï¿½Vï¿½Fï¿½[ï¿½_ï¿½[
+//???_?V?F?[?_?[
 PSInput VSMain(VSInput In)
 {
 	PSInput psIn;
@@ -26,7 +26,7 @@ PSInput VSMain(VSInput In)
 	return psIn;
 }
 
-Texture2D<float4> mainRenderTargetTexture : register(t0);	//ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Ìƒeï¿½Nï¿½Xï¿½`ï¿½ï¿½
+Texture2D<float4> mainRenderTargetTexture : register(t0);	//???C???????_?????O?^?[?Q?b?g??e?N?X?`??
 sampler Sampler : register(s0);
 
 cbuffer SamplingLuminanceCb : register(b1)
@@ -34,13 +34,13 @@ cbuffer SamplingLuminanceCb : register(b1)
 	float threshold;
 };
 
-//ï¿½Pï¿½xï¿½ï¿½ï¿½oï¿½p
+//?P?x???o?p
 float4 PSLuminance(PSInput In) : SV_Target0
 {
-	//ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½O
+	//???C???????_?????O?^?[?Q?b?g????J???[???T???v?????O
 	float4 color = mainRenderTargetTexture.Sample(Sampler, In.uv);
 
-	//ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ï¿½Ì–ï¿½ï¿½é‚³ï¿½ï¿½ï¿½vï¿½Z
+	//?T???v?????O?????J???[????????v?Z
 	float t = dot(color.xyz, float3(0.2125f, 0.7154f, 0.0721f));
 
 	clip(t - threshold);
@@ -57,13 +57,13 @@ float4 SetColor(float4 color);
 
 float4 PSBloomFinal(PSInput In) : SV_Target0
 {
-	//ãƒœã‚±ç”»åƒã‚’ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã—ã¦ã™ã‚‹ã€‚
+	//ƒ{ƒP‰æ‘œ‚ğƒTƒ“ƒvƒŠƒ“ƒO‚µ‚Ä‚·‚éB
 	float4 combineColor = g_bokeTexture_0.Sample(Sampler, In.uv);
 	combineColor += g_bokeTexture_1.Sample(Sampler, In.uv);
 	combineColor += g_bokeTexture_2.Sample(Sampler, In.uv);
 	combineColor += g_bokeTexture_3.Sample(Sampler, In.uv);
 
-	//å¹³å‡ã‚’å–ã£ã¦å‡ºåŠ›ã€‚
+	//•½‹Ï‚ğæ‚Á‚Äo—ÍB
 	combineColor /= 4.0f;
 	combineColor.a = 1.0f;
 	return combineColor;

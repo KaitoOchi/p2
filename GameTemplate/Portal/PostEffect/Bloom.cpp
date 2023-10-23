@@ -27,9 +27,9 @@ namespace nsPortalEngine {
 
 		//ガウシアンブラーを初期化。
 		m_gaussianBlur[0].Init(&m_luminanceRenderTarget.GetRenderTargetTexture());
-		m_gaussianBlur[1].Init(&m_gaussianBlur[0].GetBokeTexture());
-		m_gaussianBlur[2].Init(&m_gaussianBlur[1].GetBokeTexture());
-		m_gaussianBlur[3].Init(&m_gaussianBlur[2].GetBokeTexture());
+		for (int i = 1; i < GAUSSIANBLUE_NUM; i++) {
+			m_gaussianBlur[i].Init(&m_gaussianBlur[i - 1].GetBokeTexture());
+		}
 
 		//輝度抽出用のスプライトを初期化。
 		InitLuminanceSprite(mainRenderTarget);
@@ -71,10 +71,9 @@ namespace nsPortalEngine {
 	{
 		//ボケ画像を合成して書き込むためのスプライトを初期化。
 		SpriteInitData finalSpriteInitData;
-		finalSpriteInitData.m_textures[0] = &m_gaussianBlur[0].GetBokeTexture();
-		finalSpriteInitData.m_textures[1] = &m_gaussianBlur[1].GetBokeTexture();
-		finalSpriteInitData.m_textures[2] = &m_gaussianBlur[2].GetBokeTexture();
-		finalSpriteInitData.m_textures[3] = &m_gaussianBlur[3].GetBokeTexture();
+		for (int i = 0; i < GAUSSIANBLUE_NUM; i++) {
+			finalSpriteInitData.m_textures[i] = &m_gaussianBlur[i].GetBokeTexture();
+		}
 
 		// スプライトの幅と高さはluminnceRenderTargetと同じ。
 		finalSpriteInitData.m_width = mainRenderTarget.GetWidth();
@@ -109,10 +108,9 @@ namespace nsPortalEngine {
 		// レンダリングターゲットへの書き込み終了待ち
 		rc.WaitUntilFinishDrawingToRenderTarget(m_luminanceRenderTarget);
 
-		m_gaussianBlur[0].ExecuteOnGPU(rc, BLUR_POWER);
-		m_gaussianBlur[1].ExecuteOnGPU(rc, BLUR_POWER);
-		m_gaussianBlur[2].ExecuteOnGPU(rc, BLUR_POWER);
-		m_gaussianBlur[3].ExecuteOnGPU(rc, BLUR_POWER);
+		for (int i = 0; i < GAUSSIANBLUE_NUM; i++) {
+			m_gaussianBlur[i].ExecuteOnGPU(rc, BLUR_POWER);
+		}
 
 		// 4枚のボケ画像を合成してメインレンダリングターゲットに加算合成
 		// レンダリングターゲットとして利用できるまで待つ

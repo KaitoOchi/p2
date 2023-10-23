@@ -17,8 +17,7 @@ bool Stage::Start()
 {
 	//地面モデルの設定。
 	m_modelRender.Init("Assets/modelData/stage/tile.tkm", 0, 0, enModelUpAxisZ, true, true);
-	m_modelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-	m_modelRender.Update();
+	//モデルから静的オブジェクトを作成。
 	m_physicsStaticObject.CreateFromModel(m_modelRender.GetModel(), m_modelRender.GetModel().GetWorldMatrix());
 
 	//タレットの生成。

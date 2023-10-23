@@ -4,6 +4,7 @@
 
 PortalCamera::PortalCamera()
 {
+	//ポータルフレームを初期化。
 	for (int i = 0; i < PORTAL_NUM; i++) {
 		m_portalFrame[i] = nullptr;
 	}
@@ -50,28 +51,30 @@ void PortalCamera::SetPortalCamera()
 		//もう一方のポータルの法線。
 		Vector3 anotherPortalNormal = m_portalFrame[anotherPortalNum]->GetNormal();
 
+		Vector3 playerTarget = g_camera3D->GetTarget();
+		playerTarget.y = 0.0f;
+		playerTarget.Normalize();
+
 		//プレイヤーからポータルに向かうベクトルを計算。
 		Vector3 diff = thisPortalPos - g_camera3D->GetPosition();
 		diff.y = 0.0f;
 
 		//カメラの近平面を設定。
-		m_portalCamera[thisPortalNum].SetNear(diff.Length());
+		//m_portalCamera[thisPortalNum].SetNear(diff.Length());
 
 		//カメラの座標を設定。
 		//カメラの座標はもう一方のポータルの座標 - プレイヤーからポータルに向かうベクトルの反対。
-		Vector3 cameraPos = diff * -1.0f;
-		cameraPos += anotherPortalPos;
+		Vector3 cameraPos = anotherPortalPos - diff;
 		m_portalCamera[thisPortalNum].SetPosition(cameraPos);
 
-		//正規化をする。
 		diff.Normalize();
 
 		//カメラの注視点を設定。
 		//カメラの注視点はもう一方のポータルの座標 + プレイヤーからポータルに向かうベクトル。
-		Vector3 targetPos = diff * 100.0f;
-		targetPos += anotherPortalPos;
-
+		Vector3 targetPos = anotherPortalPos + (diff * 1000.0f);
 		m_portalCamera[thisPortalNum].SetTarget(targetPos);
+
+
 		m_portalCamera[thisPortalNum].Update();
 	}
 }

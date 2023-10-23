@@ -6,7 +6,7 @@ namespace nsPortalEngine {
 	namespace
 	{
 		const int GAUSSIANBLUE_NUM = 4;		//ガウシアンブラーの数。
-		const float BLUR_POWER = 3.0f;		//ブラーの力。
+		const float BLUR_POWER = 1.0f;		//ブラーの力。
 	}
 
 	/// <summary>

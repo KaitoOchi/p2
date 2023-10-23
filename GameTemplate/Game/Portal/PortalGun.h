@@ -37,9 +37,9 @@ private:
 	void SetPortalGunModel();
 
 private:
-	PortalFrame*	m_portalFrame[PORTAL_NUM];			//ポータル。
-	PortalCamera*	m_portalCamera = nullptr;			//ポータル用カメラ。
-	ModelRender		m_portalGunModelRender;				//ポータルガンモデル。
-	SpriteRender	m_crossHairSpriteRender;			//クロスヘア。
+	std::array<PortalFrame*, PORTAL_NUM>	m_portalFrame;					//ポータル。
+	PortalCamera*							m_portalCamera = nullptr;		//ポータル用カメラ。
+	ModelRender								m_portalGunModelRender;			//ポータルガンモデル。
+	SpriteRender							m_crossHairSpriteRender;		//クロスヘア。
 };	
 

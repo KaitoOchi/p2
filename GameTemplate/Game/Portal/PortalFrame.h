@@ -101,7 +101,6 @@ private:
 	/// “–‚½‚è”»’è‚Ìˆ—B
 	/// </summary>
 	void Collision();
-
 	/// <summary>
 	/// “–‚½‚Á‚½‚Æ‚«‚Ìˆ—B
 	/// </summary>

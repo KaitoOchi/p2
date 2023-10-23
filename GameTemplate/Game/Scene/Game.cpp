@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Game.h"
-
 #include "Player.h"
 #include "PortalFrame.h"
 #include "PortalCamera.h"
@@ -22,6 +21,9 @@ Game::~Game()
 
 bool Game::Start()
 {
+	//タレットの射撃エフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_Turret_Shot, u"Assets/effect/turret/turret_shot.efk");
+
 	//フレームレートを固定
 	//g_engine->SetFrameRateMode(K2EngineLow::enFrameRateMode_Fix, 60);
 
@@ -37,7 +39,7 @@ bool Game::Start()
 	//ポータルを生成。
 	PortalFrame* portalFrame[PORTAL_NUM];
 	for (int i = 0; i < PORTAL_NUM; i++) {
-		portalFrame[i] = NewGO<PortalFrame>(0, "portalFrame");
+		portalFrame[i] = NewGO<PortalFrame>(2, "portalFrame");
 
 		//ポータルカメラにポータルのポインタを設定。
 		portalCamera->SetPortalFramePointer(portalFrame[i], i);
@@ -53,20 +55,20 @@ bool Game::Start()
 	//ポイントライトを設定。
 	m_pointLight.SetPointLight(
 		0,
-		Vector3(-100.0f, 1.0f, 100.0f),
-		Vector3(1.0f, 0.0f, 0.0f),
-		100.0f
+		Vector3(-100.0f, 50.0f, -100.0f),
+		Vector3(0.0f, 0.0f, 1.0f),
+		200.0f
 	);
 	RenderingEngine::GetInstance()->GetLightCB().ptNum = 1;
 
 	//スポットライトを設定。
 	m_spotLight.SetSpotLight(
 		0,
-		Vector3(-100.0f, 10.0f, -100.0f),
-		Vector3(0.0f, 5.0f, 5.0f),
-		100.0f,
+		Vector3(-100.0f, 20.0f, 100.0f),
+		Vector3(0.0f, 2.0f, 2.0f),
+		300.0f,
 		Vector3(1.0f, -1.0f, 1.0f),
-		45.0f
+		70.0f
 	);
 	RenderingEngine::GetInstance()->GetLightCB().spNum = 1;
 

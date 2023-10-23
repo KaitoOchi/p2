@@ -30,6 +30,8 @@ namespace nsPortalEngine {
 	{
 		m_bloom->Render(rc, mainRenderTarget);
 
+		RenderingEngine::GetInstance()->SetMainRenderTargetAndDepthStencilBuffer(rc);
+
 		rc.WaitUntilToPossibleSetRenderTarget(mainRenderTarget);
 		//ここでエフェクトドロー。
 		EffectEngine::GetInstance()->Draw();

@@ -46,7 +46,15 @@ bool Player::Start()
 	m_animationClips[enState_Jump].SetLoopFlag(false);
 
 	//モデルの設定。
-	m_modelRender.Init("Assets/modelData/unityChan.tkm", m_animationClips, enState_Num, enModelUpAxisY, true, true);
+	m_modelRender.Init(
+		"Assets/modelData/unityChan.tkm",
+		m_animationClips,
+		enState_Num,
+		enModelUpAxisY,
+		true,
+		true,
+		ModelRender::enModelInitMode_UnDrawMainCamera
+	);
 	m_modelRender.Update();
 
 	//キャラクターコントローラーの設定。
@@ -66,6 +74,7 @@ bool Player::Start()
 
 void Player::Update()
 {
+	//プレイヤーが死亡していないなら。
 	if (m_playerState != enState_Dead) {
 
 		Input();
@@ -112,7 +121,7 @@ void Player::Input()
 	m_moveSpeed += m_addMoveSpeed;
 	//キャラコンの実行。
 	m_position = m_characterController.Execute(m_moveSpeed, 1.0f / 60.0f);
-	//m_modelRender.SetPosition(m_position);
+	m_modelRender.SetPosition(m_position);
 
 	Rotation();
 
@@ -163,6 +172,7 @@ void Player::MoveXZ()
 		if (m_playerState == enState_Run) {
 			m_walkSpeed = DASH_SPEED;
 		}
+		//しゃがみ歩き。
 		else if (m_playerState == enState_Crouch_Walk) {
 			m_walkSpeed = CROUCH_SPEED;
 		}
@@ -171,14 +181,16 @@ void Player::MoveXZ()
 		}
 	}
 
+	//移動速度をステートに応じて乗算。
 	m_moveSpeed *= m_walkSpeed;
 }
 
 void Player::MoveY()
 {
+	//ジャンプ中なら。
 	if (m_playerState == enState_Jump ||
 		m_playerState == enState_Crouch_Jump) {
-		//ジャンプする。
+		//移動速度を加算。
 		m_moveSpeed.y += JUMP_POWER;
 	}
 
@@ -372,6 +384,7 @@ void Player::ProcessDeadStateTransition()
 {
 	m_deadTimer += g_gameTime->GetFrameDeltaTime();
 
+	//死亡時間が経過したら。
 	if (m_deadTimer > DEAD_TIMER) {
 		return;
 	}

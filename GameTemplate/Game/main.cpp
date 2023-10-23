@@ -4,6 +4,14 @@
 #include "Game.h"
 #include "PortalCamera.h"
 
+
+// priority
+// 0..Default
+// 1..Player
+// 2..GameCamera, PortalFrame
+// 3..PortalCamera, PortalGun
+//
+
 /// <summary>
 /// ƒƒCƒ“ŠÖ”
 /// </summary>

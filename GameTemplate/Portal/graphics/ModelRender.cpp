@@ -19,16 +19,15 @@ namespace nsPortalEngine {
 		int numAnimationClips,
 		const EnModelUpAxis enModelUpAxis,
 		const bool isShadowCaster,
-		const bool isShadowReceiver)
+		const bool isShadowReceiver,
+		const ModelInitMode enModelInitMode)
 	{
 
 		InitSkeleton(filePath);
 
 		InitAnimation(animationClips, numAnimationClips);
 
-		InitModel(filePath, enModelUpAxis, isShadowCaster, isShadowReceiver);
-
-		InitZPrepassModel(filePath, enModelUpAxis);
+		InitModel(filePath, enModelUpAxis, isShadowCaster, isShadowReceiver, enModelInitMode);
 
 		UpdateWorldMatrix();
 	}
@@ -38,7 +37,9 @@ namespace nsPortalEngine {
 		//スケルトンを設定。
 		SetModelHasSkeleton(modelInitData);
 
-		m_model.Init(modelInitData);
+		InitZPrepassModel(modelInitData.m_tkmFilePath, modelInitData.m_modelUpAxis);
+
+		m_gBufferModel.Init(modelInitData);
 	}
 
 	void ModelRender::InitSkeleton(const char* filePath)
@@ -58,16 +59,21 @@ namespace nsPortalEngine {
 		}
 	}
 
-	void ModelRender::InitModel(const char* filePath, const EnModelUpAxis enModelUpAxis, const bool isShadowCaster, const bool isShadowReceiver)
+	void ModelRender::InitModel(
+		const char* filePath,
+		const EnModelUpAxis enModelUpAxis,
+		const bool isShadowCaster,
+		const bool isShadowReceiver,
+		const ModelInitMode enModelInitMode
+	)
 	{
 		//通常モデルを初期化。
 		ModelInitData modelInitData;
 		modelInitData.m_tkmFilePath = filePath;
 		modelInitData.m_modelUpAxis = enModelUpAxis;
-		modelInitData.m_fxFilePath = "Assets/shader/model.fx";
 		modelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetLightCB();
 		modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
-		modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetShadowBlur().GetBokeTexture();
+		modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
 
 		//スケルトンを設定。
 		SetModelHasSkeleton(modelInitData);
@@ -80,9 +86,47 @@ namespace nsPortalEngine {
 			modelInitData.m_psEntryPointFunc = "PSMain";
 		}
 
-		m_model.Init(modelInitData);
+		switch (enModelInitMode)
+		{
+		//ディファードライティング。
+		case enModelInitMode_DiferredLighting:
+			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
+			m_gBufferModel.Init(modelInitData);
+
+			InitZPrepassModel(filePath, enModelUpAxis);
+			break;
+
+		//フォワードレンダリング。
+		case enModelInitMode_ForwardLighting:
+			modelInitData.m_fxFilePath = "Assets/shader/ForwardLighting.fx";
+			m_forwardRenderModel.Init(modelInitData);
+
+			InitZPrepassModel(filePath, enModelUpAxis);
+			break;
+
+		//メインカメラに描画しない。
+		case enModelInitMode_UnDrawMainCamera:
+			break;
+
+		//輪郭線。
+		case enModelInitMode_Outline:
+			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
+			modelInitData.m_psEntryPointFunc = "PSMainOutline";
+			m_gBufferModel.Init(modelInitData);
+			break;
+
+		//ディザリング。
+		case enModelInitMode_Dithering:
+			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
+			modelInitData.m_psEntryPointFunc = "PSMainDithering";
+			m_gBufferModel.Init(modelInitData);
+
+			InitZPrepassModel(filePath, enModelUpAxis);
+			break;
+		}
 
 		for (int i = 0; i < PORTAL_NUM; i++) {
+			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
 			m_portalModel[i].Init(modelInitData);
 		}
 
@@ -98,7 +142,7 @@ namespace nsPortalEngine {
 	)
 	{
 		ModelInitData shadowModelInitData;
-		shadowModelInitData.m_fxFilePath = "Assets/shader/shadowMap.fx";
+		shadowModelInitData.m_fxFilePath = "Assets/shader/preProcess/shadowMap.fx";
 		shadowModelInitData.m_tkmFilePath = tkmFilePath;
 		shadowModelInitData.m_modelUpAxis = modelUpAxis;
 		shadowModelInitData.m_colorBufferFormat[0] = DXGI_FORMAT_R32G32_FLOAT;
@@ -117,7 +161,7 @@ namespace nsPortalEngine {
 		EnModelUpAxis modelUpAxis)
 	{
 		ModelInitData zprepassModelInitData;
-		zprepassModelInitData.m_fxFilePath = "Assets/shader/zprepass.fx";
+		zprepassModelInitData.m_fxFilePath = "Assets/shader/preProcess/zPrepass.fx";
 		zprepassModelInitData.m_tkmFilePath = tkmFilePath;
 		zprepassModelInitData.m_modelUpAxis = modelUpAxis;
 		zprepassModelInitData.m_colorBufferFormat[0] = DXGI_FORMAT_R32G32_FLOAT;
@@ -142,8 +186,11 @@ namespace nsPortalEngine {
 	void ModelRender::UpdateWorldMatrix()
 	{
 		//モデルの更新処理。
-		if (m_model.IsInited()) {
-			m_model.UpdateWorldMatrix(m_position, m_rotation, m_scale);
+		if (m_gBufferModel.IsInited()) {
+			m_gBufferModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
+		}
+		if (m_forwardRenderModel.IsInited()) {
+			m_forwardRenderModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
 		}
 		if (m_shadowModel.IsInited()) {
 			m_shadowModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
@@ -165,7 +212,7 @@ namespace nsPortalEngine {
 
 		//スケルトンの更新処理。
 		if (m_skeleton.IsInited()) {
-			m_skeleton.Update(m_model.GetWorldMatrix());
+			m_skeleton.Update(m_portalModel[0].GetWorldMatrix());
 		}
 
 		//アニメーションの更新処理。
@@ -177,10 +224,17 @@ namespace nsPortalEngine {
 		RenderingEngine::GetInstance()->AddRenderObject(this);
 	}
 
+	void ModelRender::OnRenderGBuffer(RenderContext& rc)
+	{
+		if (m_gBufferModel.IsInited()) {
+			m_gBufferModel.Draw(rc);
+		}
+	}
+
 	void ModelRender::OnForwardRender(RenderContext& rc)
 	{
-		if (m_model.IsInited()) {
-			m_model.Draw(rc, 1);
+		if (m_forwardRenderModel.IsInited()) {
+			m_forwardRenderModel.Draw(rc, 1);
 		}
 	}
 

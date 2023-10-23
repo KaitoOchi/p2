@@ -32,7 +32,6 @@ private:
 	/// 移動処理。
 	/// </summary>
 	void Move();
-
 	/// <summary>
 	/// 回転処理。
 	/// </summary>
@@ -46,6 +45,7 @@ private:
 	Vector3		m_firstCrouchPos;		//しゃがみ開始の座標。
 	Vector3		m_lastCrouchPos;		//しゃがみ終了の座標。
 	bool		m_isCrouch = false;		//しゃがみ状態か。
+	bool		m_isDead = false;		//死亡状態か。
 	float		m_crouchTimer = 0.0f;	//しゃがみ状態のタイマー。
 };
 
