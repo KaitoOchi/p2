@@ -63,6 +63,10 @@ void PortalGun::Update()
 	//SetPortalGunModel();
 }
 
+/// <summary>
+/// ポータルの設置処理。
+/// </summary>
+/// <param name="type">ポータルタイプ</param>
 void PortalGun::SetPortal(const PortalFrame::PortalType type)
 {
 	//カメラの前方向を取得。
@@ -88,6 +92,9 @@ void PortalGun::SetPortal(const PortalFrame::PortalType type)
 	m_portalFrame[num]->SetPortalFrame(portalPos, hit.normal);
 }
 
+/// <summary>
+/// モデルの設定処理。
+/// </summary>
 void PortalGun::SetPortalGunModel()
 {
 	//カメラの前方向を取得。

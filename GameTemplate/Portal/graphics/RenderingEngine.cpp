@@ -5,8 +5,10 @@ namespace nsPortalEngine {
 
 	namespace
 	{
-		const Vector3 SHADOW_CAMERA_POS = Vector3(200.0f, 3000.0f, 200.0f);		//シャドウカメラの位置。
-		const float RENDER_TARGET_CLEAR_COLOR[4] = { 0.5f, 0.5f, 0.5f, 1.0f };	//クリアカラー。
+		const Vector3	SHADOW_CAMERA_POS = Vector3(200.0f, 3000.0f, 200.0f);		//シャドウカメラの位置。
+		const int		SHADOW_TEXTURE_SIZE = 4096.0f;								//シャドウテクスチャのサイズ。
+		const float		RENDER_TARGET_CLEAR_COLOR[4] = { 0.5f, 0.5f, 0.5f, 1.0f };	//クリアカラー。
+		const float		SHADOW_BLUR_POWER = 5.0f;									//シャドウブラーの強さ。
 	}
 
 	RenderingEngine* RenderingEngine::m_instance = nullptr;
@@ -33,6 +35,7 @@ namespace nsPortalEngine {
 
 		InitDeferredLightingSprite();
 
+		//ポストエフェクトの初期化。
 		m_postEffect.Init(m_mainRenderTarget, m_zprepassRenderTarget);
 		m_postEffect.SetBloomThreshold(3.0f);
 	}
@@ -217,8 +220,8 @@ namespace nsPortalEngine {
 		//シャドウマップ用レンダーターゲットの初期化。
 		float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_shadowMapRenderTarget.Create(
-			4096,
-			4096,
+			SHADOW_TEXTURE_SIZE,
+			SHADOW_TEXTURE_SIZE,
 			1,
 			1,
 			DXGI_FORMAT_R32G32_FLOAT,
@@ -323,7 +326,7 @@ namespace nsPortalEngine {
 		//レンダーターゲットの書き込み終了待ち。
 		rc.WaitUntilFinishDrawingToRenderTarget(m_shadowMapRenderTarget);
 
-		m_shadowBlur.ExecuteOnGPU(rc, 5.0f);
+		m_shadowBlur.ExecuteOnGPU(rc, SHADOW_BLUR_POWER);
 	}
 
 	void RenderingEngine::DrawGBuffer(RenderContext& rc)

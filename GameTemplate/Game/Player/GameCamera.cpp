@@ -14,6 +14,7 @@ namespace
 	const float CROUCH_SPEED = 5.0f;			//しゃがみ速度。
 	const float CROUCH_TIMER_START = 0.0f;		//しゃがみ開始の時間。
 	const float CROUCH_TIMER_END = 1.0f;		//しゃがみ終了の時間。
+	const float WARP_ANGLE_ADD = 180.0f;		//ワープ時に加算する回転量。
 }
 
 
@@ -45,16 +46,6 @@ void GameCamera::Update()
 		return;
 	}
 
-	//プレイヤーが死亡したら。
-	if (m_player->GetPlayerState() == Player::enState_Dead) {
-		m_isCrouch = false;
-		m_isDead = true;
-		g_camera3D->Move(Vector3(0.0f, -50.0f, 0.0f));
-		g_camera3D->SetUp(Vector3(-1.0f, 0.0f, 0.0f));
-		g_camera3D->Update();
-		return;
-	}
-
 	Move();
 
 	Rotation();
@@ -62,6 +53,9 @@ void GameCamera::Update()
 	g_camera3D->Update();
 }
 
+/// <summary>
+/// 移動処理。
+/// </summary>
 void GameCamera::Move()
 {
 	//プレイヤーの座標を取得。
@@ -110,6 +104,9 @@ void GameCamera::Move()
 	g_camera3D->SetPosition(m_position);
 }
 
+/// <summary>
+/// 回転処理。
+/// </summary>
 void GameCamera::Rotation()
 {
 	//右スティックの入力を取得。
@@ -139,14 +136,14 @@ void GameCamera::Rotation()
 	g_camera3D->SetTarget(m_targetPos);
 }
 
-void GameCamera::SetWarp(const Quaternion& rot)
+/// <summary>
+/// ワープ処理。
+/// </summary>
+/// <param name="angle">回転量</param>
+void GameCamera::SetWarp(const float angle)
 {
-	//クォータニオンをオイラー角に変換。
-	Vector3 euler = CalcQuaternionToEuler(rot);
-	//float y = Math::DegToRad(euler.y + 180.0f);
-	float y = Math::DegToRad(euler.y + 180.0f);
-
-	m_rotSpeed.x += y;
+	//ポータルの角度に応じて回転を変更。
+	m_rotSpeed.x += Math::DegToRad(WARP_ANGLE_ADD - angle);
 
 	Rotation();
 }

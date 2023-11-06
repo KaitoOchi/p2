@@ -42,3 +42,16 @@ struct ShadowCB
 	float3 lightPos;		//ライトの座標。
 	float4x4 mLVP;			//ライトビュープロジェクション行列。
 };
+
+//ライト用の定数バッファ。
+cbuffer LightCB : register(b1) {
+
+	DirectionLig dirLig;		//ディレクションライト用の構造体。
+	float3 eyePos;				//視点の位置。
+	PointLig ptLig[4];			//ポイントライト用の構造体。
+	SpotLig spLig[4];			//スポットライト用の構造体。
+	ShadowCB shadow;			//シャドウ用の構造体。
+    float4x4 mViewProjInv;      //ビュープロジェクション行列の逆行列。
+	int ptNum;					//ポイントライトの数。
+	int spNum;					//スポットライトの数。
+}

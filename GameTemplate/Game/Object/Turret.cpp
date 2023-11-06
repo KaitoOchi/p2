@@ -4,14 +4,15 @@
 
 namespace
 {
-	const Vector3	TURRET_HEIGHT = Vector3(0.0f, 25.0f, 0.0f);				//タレットの高さ。
-	const Vector3	TURRET_COLLISION_SIZE = Vector3(200.0f, 20.0f, 200.0f);	//索敵範囲。
+	const Vector3	TURRET_HEIGHT = Vector3(0.0f, 50.0f, 0.0f);				//タレットの高さ。
 	const int		DAMAGE_AMOUNT = 10;										//ダメージ量。
-	const int		SHOOTING_RANGE = 5;										//発射時のばらつき。
-	const float		TURRET_COLLISION_FORWARD = 200.0f;						//コリジョンの前方向。
+	const int		SHOOTING_RANGE = 10;									//発射時のばらつき。
+	const float		SEARCH_LENGTH = pow(600.0f, 2.0f);						//索敵する距離。
+	const float		TURRET_COLLISION_FORWARD = 10.0f;						//コリジョンの前方向。
 	const float		SEARCH_COOLDOWN = 1.0f;									//発見時のクールダウン。
 	const float		DAMAGE_COOLDOWN = 0.1f;									//射撃時の硬直時間。
 	const float		MISSING_COOLDOWN = 3.0f;								//見失う際の経過時間。
+	const float		TURRET_POV = (30.0f / 100.0f) * Math::PI;					//タレットの視野角。
 }
 
 Turret::Turret()
@@ -29,13 +30,14 @@ bool Turret::Start()
 	//モデルの初期化。
 	m_modelRender.Init("Assets/modelData/unityChan.tkm", 0, 0, enModelUpAxisZ, true, true, ModelRender::enModelInitMode_Dithering);
 	m_modelRender.SetPosition(m_position);
+	m_modelRender.SetRotation(m_rotation);
 	m_modelRender.Update();
 
-	//当たり判定を初期化。
-	m_collisionObject = NewGO<CollisionObject>(0, "collision");
-	m_collisionObject->CreateBox(m_position, m_rotation, TURRET_COLLISION_SIZE);
-	m_collisionObject->SetName("portal_red");
-	m_collisionObject->SetPosition(m_position + (m_forward * TURRET_COLLISION_FORWARD) + TURRET_HEIGHT);
+	//コリジョン用のモデルを初期化。
+	ModelInitData modelInitData;
+	modelInitData.m_tkmFilePath = "Assets/modelData/object/turret/turret_collision.tkm";
+	Model turretModel;
+	turretModel.Init(modelInitData);
 
 	//プレイヤーの検索。
 	m_player = FindGO<Player>("player");
@@ -45,32 +47,82 @@ bool Turret::Start()
 
 void Turret::Update()
 {
-	Collision();
+	SearchPlayer();
 
 	State();
 
-	wchar_t text[256];
-	swprintf_s(text, 256,
-		L"State:%d \nTime:%0.2f",
-		m_state,
-		m_progressTimer
-	);
-	a.SetPosition(Vector3(-300.0f, -200.0f, 0.0f));
-	a.SetText(text);
+	m_modelRender.SetRotation(m_rotation);
+	m_modelRender.Update();
 
 }
 
-void Turret::Collision()
+/// <summary>
+/// タレットの索敵処理。
+/// </summary>
+void Turret::SearchPlayer()
 {
-	//プレイヤーと接触しているなら。
-	if (m_collisionObject->IsHit(const_cast<CharacterController&>(m_player->GetCharacterController()))) {
-		m_isHit = true;
-	}
-	else {
+	//プレイヤーからタレットに伸びるベクトルを求める。
+	Vector3 diff = m_player->GetPosition() - m_position;
+
+	//プレイヤーとの距離が離れていたら。
+	if (diff.LengthSq() >= SEARCH_LENGTH) {
 		m_isHit = false;
+		return;
 	}
+
+	diff.Normalize();
+	//角度を計算。
+	float angle = acosf(diff.Dot(m_forward));
+
+	//プレイヤーが視界内にいなかったら。
+	if (TURRET_POV <= fabsf(angle)) {
+		m_isHit = false;
+		return;
+	}
+
+	//壁と衝突しているなら。
+	if (WallAndHit()) {
+		m_isHit = false;
+		return;
+	}
+
+	//当たっている判定。
+	m_isHit = true;
 }
 
+/// <summary>
+/// 壁との衝突処理。
+/// </summary>
+/// <returns></returns>
+bool Turret::WallAndHit()
+{
+	Vector3 playerPos = m_player->GetPosition();
+	playerPos.y += 75.0f;
+	Vector3 turretPos = m_position;
+	turretPos.y += 75.0f;
+
+	PhysicsWorld::RayHitObject hit;
+
+	//レイを飛ばす。
+	bool isHit = PhysicsWorld::GetInstance()->RayTest(playerPos, turretPos, hit);
+
+	//何も当たっていない。
+	if (!isHit) {
+		return false;
+	}
+
+	//プレイヤーと衝突しているなら。
+	if (hit.collision == m_player->GetCollision()) {
+		return false;
+	}
+
+	//壁と衝突している。
+	return true;
+}
+
+/// <summary>
+/// ステート処理。
+/// </summary>
 void Turret::State()
 {
 	switch (m_state)
@@ -158,9 +210,16 @@ void Turret::ProcessShotStateTransition()
 	//衝突したオブジェクトがプレイヤーなら。
 	if (hit.collision == m_player->GetCollision()) {
 		//のけぞる方向。
-		Vector3 knockback = m_forward;
+		Vector3 knockback = endPos - startPos;
+		knockback.Normalize();
 		//ダメージを与える。
 		m_player->ReceiveDamage(DAMAGE_AMOUNT, knockback);
+
+		//プレイヤーが死亡したら。
+		if (m_player->GetPlayerState() == Player::enState_Dead) {
+			m_state = enTurretState_Idle;
+			m_progressTimer = 0.0f;
+		}
 	}
 
 	//射撃エフェクトの回転量を設定。
@@ -179,7 +238,7 @@ void Turret::ProcessShotStateTransition()
 	//クールダウンを設定。
 	m_progressTimer = DAMAGE_COOLDOWN;
 	//プレイヤーの座標を保存。
-	m_oldPlayerPos = m_player->GetPosition();
+	m_oldPlayerPos = g_camera3D->GetPosition();
 
 	//プレイヤーと当たり判定が衝突していないなら。
 	if (!m_isHit) {

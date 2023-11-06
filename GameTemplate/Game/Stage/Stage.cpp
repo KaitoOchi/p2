@@ -19,10 +19,14 @@ bool Stage::Start()
 	m_modelRender.Init("Assets/modelData/stage/tile.tkm", 0, 0, enModelUpAxisZ, true, true);
 	//モデルから静的オブジェクトを作成。
 	m_physicsStaticObject.CreateFromModel(m_modelRender.GetModel(), m_modelRender.GetModel().GetWorldMatrix());
+	m_physicsStaticObject.GetbtCollisionObject()->setUserIndex(enCollisionAttr_Wall);
 
 	//タレットの生成。
 	Turret* turret = NewGO<Turret>(0, "turret");
-	turret->SetPosition(Vector3(100.0f, 0.0f, 100.0f));
+	turret->SetPosition(Vector3(-450.0f, 0.0f, -400.0f));
+	Quaternion rot;
+	rot.AddRotationDegY(180.0f);
+	turret->SetRotation(rot);
 
 	return true;
 }

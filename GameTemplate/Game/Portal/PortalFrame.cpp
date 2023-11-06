@@ -37,6 +37,8 @@ bool PortalFrame::Start()
 	modelInitData.m_tkmFilePath = "Assets/modelData/portal/portalFrame.tkm";
 	modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
 	modelInitData.m_psEntryPointFunc = "PSMainPortalFrame";
+	modelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetLightCB();
+	modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
 	//テクスチャをポータル用レンダーターゲットに設定する。
 	modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetPortalRenderTarget(static_cast<int>(m_portalType)).GetRenderTargetTexture();
 	modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
@@ -63,6 +65,9 @@ void PortalFrame::Update()
 	Collision();
 }
 
+/// <summary>
+/// 当たり判定の処理。
+/// </summary>
 void PortalFrame::Collision()
 {
 	//当たり判定が無効なら。
@@ -119,15 +124,26 @@ void PortalFrame::Collision()
 	}
 }
 
+/// <summary>
+/// 当たったときの処理。
+/// </summary>
 void PortalFrame::IsHit()
 {
-	Quaternion rot = m_anotherPortalFrame->GetRotation();
+	//2つのポータルの角度を計算。
+	float angle = acosf(m_normal.Dot(m_anotherPortalFrame->GetNormal()));
+	angle = Math::RadToDeg(angle);
+
 	//もう一方のポータルの座標まで移動する。
-	m_player->SetWarp(m_anotherPortalFrame->GetPosition(), rot);
+	m_player->SetWarp(m_anotherPortalFrame->GetPosition(), angle);
 
 	m_isCollisionHit = false;
 }
 
+/// <summary>
+/// ポータルフレームを設定。
+/// </summary>
+/// <param name="pos">座標</param>
+/// <param name="normal">法線</param>
 void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 {
 	m_isEnable = true;

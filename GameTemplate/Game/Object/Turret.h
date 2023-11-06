@@ -44,13 +44,36 @@ public:
 	void SetRotation(const Quaternion& rot)
 	{
 		m_rotation = rot;
+
+		//前方向も設定。
+		SetForward(rot);
+	}
+
+	/// <summary>
+	/// 前方向を設定。
+	/// </summary>
+	/// <param name="rot"></param>
+	void SetForward(const Quaternion& rot)
+	{
+		m_rotation = rot;
+		m_rotation.Apply(m_forward);
+	}
+	void SetForward(const Vector3& forward)
+	{
+		m_forward = forward;
+		m_rotation.SetRotationYFromDirectionXZ(m_forward);
+
 	}
 
 private:
 	/// <summary>
 	/// 当たり判定の処理。
 	/// </summary>
-	void Collision();
+	void SearchPlayer();
+	/// <summary>
+	/// 壁との衝突判定。
+	/// </summary>
+	bool WallAndHit();
 	/// <summary>
 	/// ステート処理。
 	/// </summary>
@@ -83,7 +106,6 @@ private:
 private:
 	ModelRender			m_modelRender;					//モデル。
 	Player*				m_player = nullptr;				//プレイヤー。
-	CollisionObject*	m_collisionObject = nullptr;	//コリジョンオブジェクト。
 	Vector3				m_position;						//座標。
 	Vector3				m_forward;						//前方向。
 	Vector3				m_oldPlayerPos;					//過去のプレイヤーの座標。

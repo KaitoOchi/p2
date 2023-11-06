@@ -20,6 +20,11 @@ struct PSInput
     float2 uv   : TEXCOORD0;    //UV座標。
 };
 
+///////////////////////////////////////
+// モデルの頂点シェーダー関係の共通ヘッダー。
+///////////////////////////////////////
+#include "ModelVSCommon.h"
+
 ////////////////////////////////////////////////
 // レジスタ。
 ////////////////////////////////////////////////
@@ -51,39 +56,10 @@ cbuffer cb : register(b0)
     float4 screenParam;
 };
 
-//ライト用の定数バッファ。
-cbuffer LightCB : register(b1) {
-
-	DirectionLig dirLig;		//ディレクションライト用の構造体。
-	float3 eyePos;				//視点の位置。
-	PointLig ptLig[4];			//ポイントライト用の構造体。
-	SpotLig spLig[4];			//スポットライト用の構造体。
-	ShadowCB shadow;			//シャドウ用の構造体。
-    float4x4 mViewProjInv;      //ビュープロジェクション行列の逆行列。
-	int ptNum;					//ポイントライトの数。
-	int spNum;					//スポットライトの数。
-}
 
 ///////////////////////////////////////
 // 関数
 ///////////////////////////////////////
-/// <summary>
-/// UV座標と深度値からワールド座標を計算する。
-/// </summary>
-/// <param name="uv">uv座標</param>
-/// <param name="zInScreen">スクリーン座標系の深度値</param>
-/// <param name="mViewProjInv">ビュープロジェクション行列の逆行列</param>
-float3 CalcWorldPosFromUVZ(float2 uv, float zInScreen, float4x4 mViewProjInv)
-{
-	float3 screenPos;
-	screenPos.xy = (uv * float2(2.0f, -2.0f)) + float2( -1.0f, 1.0f);
-	screenPos.z = zInScreen;
-	
-	float4 worldPos = mul(mViewProjInv, float4(screenPos, 1.0f));
-	worldPos.xyz /= worldPos.w;
-	return worldPos.xyz;
-}
-
 /// <summary>
 /// ポイントライトを計算。
 /// </summary>
@@ -229,7 +205,7 @@ float4 PSMainCore(PSInput psIn)
     float smooth = metallicShadowSmooth.a;
 
     //ライティングなし。
-    if(lightingParam == 0.0f) {
+    if(lightingParam <= 0.0f) {
         return albedoColor;
     }
 
@@ -242,7 +218,7 @@ float4 PSMainCore(PSInput psIn)
     //ライトビュースクリーン空間を求める。
 	float4 posInLVP = mul(shadow.mLVP, float4(worldPos, 1.0f));
     //シャドウの計算。
-    float shadow =  ShadowMap(g_shadowMap, posInLVP) * shadowParam;
+    float shadowRate =  ShadowMap(g_shadowMap, posInLVP) * shadowParam;
 
     //ディレクションライトを計算。
 	float3 lig = CalcDirectionLight(
@@ -253,7 +229,7 @@ float4 PSMainCore(PSInput psIn)
         specColor,
         metallic,
         smooth
-    ) * (1.0f - shadow);
+    ) * (1.0f - shadowRate);
 
     //ポイントライトを計算。
     lig += CalcPointLight(

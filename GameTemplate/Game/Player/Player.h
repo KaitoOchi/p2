@@ -1,6 +1,7 @@
 #pragma once
 class PortalGun;
 class GameCamera;
+class Game;
 
 /// <summary>
 /// プレイヤー。
@@ -15,7 +16,6 @@ public:
 	{
 		enState_Idle,			//待機。
 		enState_Walk,			//歩き。
-		enState_Run,			//走り。
 		enState_Crouch_Idle,	//しゃがみ待機。
 		enState_Crouch_Walk,	//しゃがみ歩き。
 		enState_Crouch_Jump,	//しゃがみジャンプ。
@@ -38,6 +38,11 @@ public:
 	/// <param name="damage">受けるダメージ量</param>
 	/// <param name="dir">のけぞる方向</param>
 	void ReceiveDamage(const int damage, const Vector3& dir);
+
+	/// <summary>
+	/// リセット処理。
+	/// </summary>
+	void Reset();
 
 	/// <summary>
 	/// 座標を取得。
@@ -93,7 +98,7 @@ public:
 	/// <summary>
 	/// ポータルへのワープ処理。
 	/// </summary>
-	void SetWarp(const Vector3& pos, const Quaternion& rot);
+	void SetWarp(const Vector3& pos, const float angle);
 
 private:
 	/// <summary>
@@ -133,10 +138,6 @@ private:
 	/// </summary>
 	void ProcessWalkStateTransition();
 	/// <summary>
-	/// 走り状態の遷移処理。
-	/// </summary>
-	void ProcessRunStateTransition();
-	/// <summary>
 	/// しゃがみ待機状態の遷移処理。
 	/// </summary>
 	void ProcessCrouchIdleStateTransition();
@@ -159,8 +160,10 @@ private:
 
 private:
 	ModelRender				m_modelRender;					//モデルレンダー。
+	SpriteRender			m_damageSpriteRender;			//ダメージを受けたときのスプライト。
 	CharacterController		m_characterController;			//キャラクターコントローラー。
 	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
+	Game*					m_game = nullptr;				//ゲームクラス。
 	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
 	GameCamera*				m_gameCamera = nullptr;			//ゲームカメラ。
 	Vector3					m_position;						//座標。
@@ -171,6 +174,7 @@ private:
 	int						m_hp = 0;						//HP。
 	float					m_walkSpeed = 0.0f;				//移動速度。
 	float					m_gravityAccel = 0.0f;			//重力加速。
+	float					m_damageTimer = 0.0f;			//ダメージタイマー。
 	float					m_deadTimer = 0.0f;				//死亡時間。
 
 

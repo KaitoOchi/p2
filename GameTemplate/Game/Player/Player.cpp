@@ -3,28 +3,28 @@
 #include "PortalGun.h"
 #include "PortalFrame.h"
 #include "GameCamera.h"
+#include "Game.h"
 
 namespace
 {
 	const int		MAX_HP = 100;									//最大HP。
 	const float		CHARACON_RADIUS = 10.0f;						//キャラコンの半径。
 	const float		CHARACON_HEIGHT = 60.0f;						//キャラコンの高さ。
-	const float		WALK_SPEED = 100.0f;							//移動速度。
-	const float		DASH_SPEED = 300.0f;							//ダッシュ速度。
+	const float		WALK_SPEED = 120.0f;							//移動速度。
 	const float		CROUCH_SPEED = 40.0f;							//しゃがみ速度。
-	const float		JUMP_POWER = 125.0f;							//ジャンプ量。
+	const float		JUMP_POWER = 140.0f;							//ジャンプ量。
 	const float		GRAVITY = 10.0f;								//重力。
-	const float		GRAVITY_ACCEL = 0.5f;							//重力加速。
+	const float		GRAVITY_ACCEL = 0.75f;							//重力加速。
 	const float		INTERPOLATE_TIME = 0.2f;						//線形補間。
 	const float		KNOCKBACK_POWER = 300.0f;						//ダメージを受けたときのノックバックパワー。
 	const float		ADDMOVESPEED_MIN = 0.1f;						//追加の移動速度を終了する値。
 	const float		ADDMOVESPEED_DIV = 5.0f;						//追加の移動速度を除算する値。
-	const float		DEAD_TIMER = 2.0f;								//死亡時間。
+	const float		DAMAGE_TIME = 0.3f;								//ダメージを受ける時間。
+	const float		DEAD_TIME = 2.0f;								//死亡時間。
 }
 
 Player::Player()
 {
-	m_hp = MAX_HP;
 }
 
 Player::~Player()
@@ -35,13 +35,14 @@ Player::~Player()
 
 bool Player::Start()
 {
+	//ゲームクラスの検索。
+	m_game = FindGO<Game>("game");
+
 	//アニメーションクリップ。
 	m_animationClips[enState_Idle].Load("Assets/animData/UnityChan/idle.tka");
 	m_animationClips[enState_Idle].SetLoopFlag(true);
 	m_animationClips[enState_Walk].Load("Assets/animData/UnityChan/walk.tka");
 	m_animationClips[enState_Walk].SetLoopFlag(true);
-	m_animationClips[enState_Run].Load("Assets/animData/UnityChan/run.tka");
-	m_animationClips[enState_Run].SetLoopFlag(true);
 	m_animationClips[enState_Jump].Load("Assets/animData/UnityChan/jump.tka");
 	m_animationClips[enState_Jump].SetLoopFlag(false);
 
@@ -57,6 +58,11 @@ bool Player::Start()
 	);
 	m_modelRender.Update();
 
+	//ダメージ画像の設定。
+	m_damageSpriteRender.Init("Assets/sprite/UI/damage.DDS", 1600.0f, 900.0f);
+	m_damageSpriteRender.SetMulColor(Vector4(1.0f, 1.0f, 1.0f, m_damageTimer));
+	m_damageSpriteRender.Update();
+
 	//キャラクターコントローラーの設定。
 	m_characterController.Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
 
@@ -68,6 +74,9 @@ bool Player::Start()
 	//文字の設定。
 	a.SetPosition(Vector3(400.0f, 0.0f, 0.0f));
 	a.SetShadowParam(true, 0.5f, Vector4::Black);
+
+	//リセット処理。
+	Reset();
 
 	return true;
 }
@@ -100,14 +109,18 @@ void Player::Update()
 		m_playerState
 	);
 	a.SetText(text);
-
-	if (g_pad[0]->IsTrigger(enButtonB))
-	{
-		ReceiveDamage(10, g_camera3D->GetForward());
-	}
 	/////////////
+
+	if (m_damageTimer > 0.0f) {
+		m_damageTimer -= g_gameTime->GetFrameDeltaTime();
+		m_damageSpriteRender.SetMulColor(Vector4(1.0f, 1.0f, 1.0f, m_damageTimer));
+		m_damageSpriteRender.Update();
+	}
 }
 
+/// <summary>
+/// 入力処理。
+/// </summary>
 void Player::Input()
 {
 	//移動速度を初期化。
@@ -125,7 +138,10 @@ void Player::Input()
 
 	Rotation();
 
-	if (m_addMoveSpeed.x < ADDMOVESPEED_MIN && m_addMoveSpeed.y < ADDMOVESPEED_MIN && m_addMoveSpeed.z < ADDMOVESPEED_MIN) {
+	if (m_addMoveSpeed.x < ADDMOVESPEED_MIN &&
+		m_addMoveSpeed.y < ADDMOVESPEED_MIN &&
+		m_addMoveSpeed.z < ADDMOVESPEED_MIN
+	){
 		//追加の移動速度を初期化。
 		m_addMoveSpeed = Vector3::Zero;
 	}
@@ -135,6 +151,9 @@ void Player::Input()
 	}
 }
 
+/// <summary>
+/// XZ方向の移動処理。
+/// </summary>
 void Player::MoveXZ()
 {
 	//左スティックの入力を取得。
@@ -143,7 +162,9 @@ void Player::MoveXZ()
 	input.z = g_pad[0]->GetLStickYF();
 
 	//入力がないなら、処理しない。
-	if (fabsf(input.x) < 0.01f && fabsf(input.z) < 0.01f) {
+	if (fabsf(input.x) < 0.01f &&
+		fabsf(input.z) < 0.01f
+	) {
 		return;
 	}
 
@@ -168,12 +189,8 @@ void Player::MoveXZ()
 	if (m_playerState != enState_Jump &&
 		m_playerState != enState_Crouch_Jump) {
 
-		//ダッシュをする。
-		if (m_playerState == enState_Run) {
-			m_walkSpeed = DASH_SPEED;
-		}
 		//しゃがみ歩き。
-		else if (m_playerState == enState_Crouch_Walk) {
+		if (m_playerState == enState_Crouch_Walk) {
 			m_walkSpeed = CROUCH_SPEED;
 		}
 		else {
@@ -185,6 +202,9 @@ void Player::MoveXZ()
 	m_moveSpeed *= m_walkSpeed;
 }
 
+/// <summary>
+/// Y方向の移動処理。
+/// </summary>
 void Player::MoveY()
 {
 	//ジャンプ中なら。
@@ -202,6 +222,9 @@ void Player::MoveY()
 	}
 }
 
+/// <summary>
+/// 回転処理。
+/// </summary>
 void Player::Rotation()
 {
 	//カメラの前方向に回転する。
@@ -209,16 +232,23 @@ void Player::Rotation()
 	m_modelRender.SetRotation(m_rotation);
 }
 
-void Player::SetWarp(const Vector3& pos, const Quaternion& rot)
+/// <summary>
+/// ワープ処理。
+/// </summary>
+/// <param name="pos">座標</param>
+/// <param name="angle">回転量</param>
+void Player::SetWarp(const Vector3& pos, const float angle)
 {
+	//座標を設定。
 	m_position = pos;
-	//m_rotation.Add(rot);
-
 	m_characterController.SetPosition(m_position);
-
-	m_gameCamera->SetWarp(rot);
+	//カメラもワープさせる。
+	m_gameCamera->SetWarp(angle);
 }
 
+/// <summary>
+/// アニメーション処理。
+/// </summary>
 void Player::PlayAnimation()
 {
 	//アニメーションを再生。
@@ -232,10 +262,6 @@ void Player::PlayAnimation()
 		m_modelRender.PlayAnimation(enState_Walk, INTERPOLATE_TIME);
 		break;
 
-	case enState_Run:
-		m_modelRender.PlayAnimation(enState_Run, INTERPOLATE_TIME);
-		break;
-
 	case enState_Crouch_Idle:
 
 		break;
@@ -246,6 +272,9 @@ void Player::PlayAnimation()
 	}
 }
 
+/// <summary>
+/// ステート処理。
+/// </summary>
 void Player::State()
 {
 	switch (m_playerState)
@@ -256,10 +285,6 @@ void Player::State()
 
 	case enState_Walk:
 		ProcessWalkStateTransition();
-		break;
-
-	case enState_Run:
-		ProcessRunStateTransition();
 		break;
 
 	case enState_Crouch_Idle:
@@ -277,9 +302,15 @@ void Player::State()
 	case enState_Jump:
 		ProcessJumpStateTransition();
 		break;
+
+	case enState_Dead:
+		ProcessDeadStateTransition();
 	}
 }
 
+/// <summary>
+/// 通常の遷移処理。
+/// </summary>
 void Player::ProcessCommonStateTransition()
 {
 	//カメラの座標を設定。
@@ -316,12 +347,6 @@ void Player::ProcessCommonStateTransition()
 		return;
 	}
 
-	//ダッシュボタンが押されたら。
-	if (g_pad[0]->IsPress(enButtonX)) {
-		m_playerState = enState_Run;
-		return;
-	}
-
 	//移動速度があるなら。
 	if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
 		m_playerState = enState_Walk;
@@ -331,31 +356,41 @@ void Player::ProcessCommonStateTransition()
 	m_playerState = enState_Idle;
 }
 
+/// <summary>
+/// 待機状態の遷移処理。
+/// </summary>
 void Player::ProcessIdleStateTransition()
 {
 	ProcessCommonStateTransition();
 }
 
+/// <summary>
+/// 歩き状態の遷移処理。
+/// </summary>
 void Player::ProcessWalkStateTransition()
 {
 	ProcessCommonStateTransition();
 }
 
-void Player::ProcessRunStateTransition()
-{
-	ProcessCommonStateTransition();
-}
-
+/// <summary>
+/// しゃがみ待機状態の遷移処理。
+/// </summary>
 void Player::ProcessCrouchIdleStateTransition()
 {
 	ProcessCommonStateTransition();
 }
 
+/// <summary>
+/// しゃがみ歩き状態の遷移処理。
+/// </summary>
 void Player::ProcessCrouchWalkStateTransition()
 {
 	ProcessCommonStateTransition();
 }
 
+/// <summary>
+/// しゃがみジャンプ状態の遷移処理。
+/// </summary>
 void Player::ProcessCrouchJumpStateTransition()
 {
 	//地面についたら。
@@ -368,6 +403,9 @@ void Player::ProcessCrouchJumpStateTransition()
 	}
 }
 
+/// <summary>
+/// ジャンプ状態の遷移処理。
+/// </summary>
 void Player::ProcessJumpStateTransition()
 {
 	//地面についたら。
@@ -380,18 +418,33 @@ void Player::ProcessJumpStateTransition()
 	}
 }
 
+/// <summary>
+/// 死亡状態の遷移処理。
+/// </summary>
 void Player::ProcessDeadStateTransition()
 {
 	m_deadTimer += g_gameTime->GetFrameDeltaTime();
 
 	//死亡時間が経過したら。
-	if (m_deadTimer > DEAD_TIMER) {
+	if (m_deadTimer > DEAD_TIME) {
+		Reset();
 		return;
 	}
 }
 
+/// <summary>
+/// ダメージを受ける処理。
+/// </summary>
+/// <param name="damage">与えるダメージ量</param>
+/// <param name="dir">のけぞる方向</param>
 void Player::ReceiveDamage(const int damage, const Vector3& dir)
 {
+	if (m_damageTimer > 0.0f || 
+		m_playerState == enState_Dead
+	) {
+		return;
+	}
+
 	//ダメージを減らす。
 	m_hp -= damage;
 
@@ -399,7 +452,10 @@ void Player::ReceiveDamage(const int damage, const Vector3& dir)
 	if (m_hp < 0) {
 		//死亡状態にする。
 		m_playerState = enState_Dead;
+		m_gameCamera->Dead();
 	}
+
+	m_damageTimer = DAMAGE_TIME;
 
 	//後ろにのけぞる。
 	Vector3 knockback = dir * KNOCKBACK_POWER;
@@ -407,8 +463,34 @@ void Player::ReceiveDamage(const int damage, const Vector3& dir)
 	m_addMoveSpeed += knockback;
 }
 
+/// <summary>
+/// リセット処理。
+/// </summary>
+void Player::Reset()
+{
+	//値を初期化。
+	m_hp = MAX_HP;
+	m_walkSpeed = 0.0f;
+	m_gravityAccel = 0.0f;
+	m_damageTimer = 0.0f;
+	m_deadTimer = 0.0f;
+	m_playerState = enState_Idle;
+	m_addMoveSpeed = Vector3::Zero;
+
+	//ゲームにリセット状態を通知。
+	m_game->NotifyReset();
+
+	//カメラをリセット。
+	m_gameCamera->Reset();
+
+	//座標を初期化。
+	m_position = m_game->GetRespawnPoint();
+	m_characterController.SetPosition(m_position);
+}
+
 void Player::Render(RenderContext& rc)
 {
 	m_modelRender.Draw(rc);
+	m_damageSpriteRender.Draw(rc);
 	a.Draw(rc);
 }

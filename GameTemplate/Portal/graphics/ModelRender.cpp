@@ -20,7 +20,8 @@ namespace nsPortalEngine {
 		const EnModelUpAxis enModelUpAxis,
 		const bool isShadowCaster,
 		const bool isShadowReceiver,
-		const ModelInitMode enModelInitMode)
+		const ModelInitMode enModelInitMode
+	)
 	{
 
 		InitSkeleton(filePath);
@@ -34,12 +35,11 @@ namespace nsPortalEngine {
 
 	void ModelRender::InitModelInitData(ModelInitData& modelInitData)
 	{
-		//スケルトンを設定。
-		SetModelHasSkeleton(modelInitData);
-
 		InitZPrepassModel(modelInitData.m_tkmFilePath, modelInitData.m_modelUpAxis);
 
 		m_gBufferModel.Init(modelInitData);
+
+		UpdateWorldMatrix();
 	}
 
 	void ModelRender::InitSkeleton(const char* filePath)
@@ -125,6 +125,7 @@ namespace nsPortalEngine {
 			break;
 		}
 
+		//ポータル用のモデルを初期化。
 		for (int i = 0; i < PORTAL_NUM; i++) {
 			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
 			m_portalModel[i].Init(modelInitData);

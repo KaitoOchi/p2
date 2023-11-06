@@ -50,7 +50,7 @@ bool Game::Start()
 	portalFrame[1]->SetPortalType(PortalFrame::enPortalType_Red);
 
 	//ステージを生成。
-	NewGO<Stage>(0, "stage");
+	m_stage = NewGO<Stage>(0, "stage");
 
 	//ポイントライトを設定。
 	m_pointLight.SetPointLight(
@@ -78,6 +78,16 @@ bool Game::Start()
 void Game::Update()
 {
 
+}
+
+void Game::NotifyReset()
+{
+
+}
+
+const Vector3& Game::GetRespawnPoint() const
+{
+	return m_stage->GetRespawnPoint();
 }
 
 void Game::Render(RenderContext& rc)
