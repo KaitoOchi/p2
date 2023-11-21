@@ -14,6 +14,24 @@ public:
 
 public:
 	/// <summary>
+	/// 座標を設定。
+	/// </summary>
+	/// <param name="pos"></param>
+	void SetPosition(const Vector3& pos)
+	{
+		m_position = pos;
+	}
+
+	/// <summary>
+	/// 回転率を取得。
+	/// </summary>
+	/// <returns></returns>
+	const Vector3& GetRotRadian() const
+	{
+		return m_rotSpeed;
+	}
+
+	/// <summary>
 	/// しゃがみ状態かどうかを設定。
 	/// </summary>
 	/// <param name="isCrouch"></param>
@@ -61,7 +79,6 @@ private:
 	void Rotation();
 
 private:
-	Player*		m_player = nullptr;		//プレイヤー。
 	Vector3		m_position;				//座標。
 	Vector3		m_targetPos;			//注視点。
 	Vector3		m_rotSpeed;				//回転量。

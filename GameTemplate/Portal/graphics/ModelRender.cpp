@@ -39,6 +39,12 @@ namespace nsPortalEngine {
 
 		m_gBufferModel.Init(modelInitData);
 
+		//ポータル用のモデルを初期化。
+		for (int i = 0; i < PORTAL_NUM; i++) {
+			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
+			m_portalModel[i].Init(modelInitData);
+		}
+
 		UpdateWorldMatrix();
 	}
 
@@ -73,7 +79,7 @@ namespace nsPortalEngine {
 		modelInitData.m_modelUpAxis = enModelUpAxis;
 		modelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetLightCB();
 		modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
-		modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
+		modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
 
 		//スケルトンを設定。
 		SetModelHasSkeleton(modelInitData);

@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace nsK2EngineLow {	
+namespace nsK2EngineLow {
 	/// <summary>
 	/// 仮想ボタン定義
 	/// </summary>
@@ -32,7 +32,7 @@ namespace nsK2EngineLow {
 	class GamePad : public Noncopyable {
 	public:
 		static const int CONNECT_PAD_MAX = 4;		//接続可能なパッドの最大数。
-		
+
 		/// <summary>
 		/// パッドステータス
 		/// </summary>
@@ -41,13 +41,13 @@ namespace nsK2EngineLow {
 			XINPUT_STATE state;
 			bool bConnected;
 		};
-		
+
 
 		/// <summary>
 		/// コンストラクタ
 		/// </summary>
 		GamePad();
-	
+
 		/// <summary>
 		/// デストラクタ
 		/// </summary>
@@ -71,7 +71,7 @@ namespace nsK2EngineLow {
 		/// </summary>
 		/// <param name="xInputState">キー入力</param>
 		void Update(const XINPUT_STATE& xInputState);
-		
+
 		/// <summary>
 		/// ボタンのトリガー判定
 		/// </summary>
@@ -81,7 +81,7 @@ namespace nsK2EngineLow {
 		{
 			return m_trigger[button] != 0;
 		}
-		
+
 		/// <summary>
 		/// ボタンが押されているか判定
 		/// </summary>
@@ -90,6 +90,16 @@ namespace nsK2EngineLow {
 		bool IsPress(EnButton button) const
 		{
 			return m_press[button] != 0;
+		}
+
+		/// <summary>
+		/// ボタンを離しているか判定
+		/// </summary>
+		/// <param name="button"></param>
+		/// <returns></returns>
+		bool GetKeyUp(EnButton button) const
+		{
+			return m_keyUp[button] != 0;
 		}
 
 		/// <summary>
@@ -123,7 +133,7 @@ namespace nsK2EngineLow {
 		{
 			return m_lStickX;
 		}
-		
+
 		/// <summary>
 		/// 左スティックのY軸の入力量を取得。
 		/// </summary>
@@ -132,7 +142,7 @@ namespace nsK2EngineLow {
 		{
 			return m_lStickY;
 		}
-		
+
 
 		/// <summary>
 		/// 右スティックのX軸の入力量を取得。
@@ -142,7 +152,7 @@ namespace nsK2EngineLow {
 		{
 			return m_rStickX;
 		}
-		
+
 		/// <summary>
 		/// 右スティックのY軸の入力量を取得
 		/// </summary>
@@ -151,8 +161,8 @@ namespace nsK2EngineLow {
 		{
 			return m_rStickY;
 		}
-		
-		
+
+
 		/// <summary>
 		/// フレームの開始時に呼び出す必要がある関数
 		/// </summary>
@@ -186,6 +196,8 @@ namespace nsK2EngineLow {
 		int m_padNo = 0;			// パッド番号。
 		int m_trigger[enButtonNum];	// トリガー入力のフラグ。
 		int m_press[enButtonNum];	// press入力のフラグ。
+		int m_keyUp[enButtonNum];	// keyUp入力のフラグ。
+		int m_oldKeyUp[enButtonNum];// 1フレーム前のキー入力
 		float m_lStickX = 0.0f;		// 左スティックのX軸の入力量。
 		float m_lStickY = 0.0f;		// 左スティックのY軸の入力量。
 		float m_rStickX = 0.0f;		// 右スティックのX軸の入力量。

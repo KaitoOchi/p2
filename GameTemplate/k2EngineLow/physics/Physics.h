@@ -132,6 +132,14 @@ namespace nsK2EngineLow {
 		/// <param name="hitPos">交点の格納先</param>
 		/// <returns>trueが返ってきたら衝突している。</returns>
 		bool RayTest(const Vector3& rayStart, const Vector3& rayEnd, RayHitObject& hit) const;
+		/// <summary>
+		/// レイキャストを実施。
+		/// </summary>
+		/// <param name="rayStart"></param>
+		/// <param name="rayEnd"></param>
+		/// <param name="collision"></param>
+		/// <param name="hit"></param>
+		const bool RayCastHit(const Vector3& rayStart, const Vector3& rayEnd, btCollisionObject* collision, RayHitObject& hit);
 		/*!
 		* @brief	コリジョンオブジェクトをワールドに登録。
 		*@param[in]	colliObj	コリジョンオブジェクト。

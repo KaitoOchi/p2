@@ -228,7 +228,8 @@ namespace nsPortalEngine {
 		{
 			enGBufferAlbedoDepth,           // rgbにアルベド、aに深度値。
 			enGBufferNormal,                // rgbに法線、aにカメラ空間の法線。
-			enGBufferMetaricShadowSmooth,   // rにメタリック、gに影パラメータ、bにライティングパラメータ、aにスムース。
+			enGBufferMetaricShadowSmooth,   // rにメタリック、aにスムース。
+			enGBufferShadowLightParam,		// rにシャドウ、gにライトパラメータ。
 			enGBufferNum,                   // G-Bufferの数。
 		};
 

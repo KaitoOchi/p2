@@ -189,6 +189,9 @@ float4 PSMainCore(PSInput psIn)
     //GBufferの内容を使ってライティング。
     //アルベドカラー。
     float4 albedoColor = g_albedoTexture.Sample(g_sampler, psIn.uv);
+
+    clip(albedoColor.a - 0.000001f);
+
     //法線。
     float4 normal = g_normalTexture.Sample(g_sampler, psIn.uv);
     //カメラ空間の法線。
@@ -197,15 +200,23 @@ float4 PSMainCore(PSInput psIn)
     float4 metallicShadowSmooth = g_metallicShadowSmoothTexture.Sample(g_sampler, psIn.uv);
     //メタリック。
     float metallic = metallicShadowSmooth.r;
-    //影生成用のパラメータ。
-    float shadowParam = metallicShadowSmooth.g;
-    //ライティングパラメータ。
-    float lightingParam = metallicShadowSmooth.b;
     //スムース。
     float smooth = metallicShadowSmooth.a;
+    //各種パラメータ。
+    float4 textureParam = g_param.Sample(g_sampler, psIn.uv);
+    //影生成用のパラメータ。
+    float shadowParam = textureParam.r;
+    //ライティングパラメータ。
+    float lightingParam = textureParam.g;
+    //マスクパラメータ。
+    int maskParam = ceil(textureParam.b * 10);
 
     //ライティングなし。
     if(lightingParam <= 0.0f) {
+        for(int i = 0; i < maskParam; i++)
+        {
+            albedoColor = g_portalRenderTexture[i].Sample(g_sampler, psIn.uv);
+        }
         return albedoColor;
     }
 

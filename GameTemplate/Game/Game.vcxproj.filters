@@ -19,6 +19,9 @@
     <Filter Include="Stage">
       <UniqueIdentifier>{d7beb786-b7e5-4260-97db-f42c4fbcfc22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\Gimmick">
+      <UniqueIdentifier>{13c24939-dd11-4ecb-9e6f-814c69895a5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -59,6 +62,24 @@
     <ClCompile Include="Stage\Stage.cpp">
       <Filter>Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Object\JumpBoard.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\EnergyBallGenerator.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\EnergyBall.cpp">
+      <Filter>Object\Gimmick</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\EnergyBallReceiver.cpp">
+      <Filter>Object\Gimmick</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Gimmick.cpp">
+      <Filter>Object\Gimmick</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Door.cpp">
+      <Filter>Object\Gimmick</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -97,6 +118,24 @@
     </ClInclude>
     <ClInclude Include="Stage\Stage.h">
       <Filter>Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\JumpBoard.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\EnergyBallGenerator.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\EnergyBall.h">
+      <Filter>Object\Gimmick</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\EnergyBallReceiver.h">
+      <Filter>Object\Gimmick</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Gimmick.h">
+      <Filter>Object\Gimmick</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Door.h">
+      <Filter>Object\Gimmick</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

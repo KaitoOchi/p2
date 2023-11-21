@@ -14,6 +14,7 @@ namespace nsK2EngineLow {
 		enum EffectType
 		{
 			enEffect_Turret_Shot,
+			enEffect_EnergyBall,
 		};
 
 	public:

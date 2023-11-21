@@ -1,5 +1,7 @@
 #pragma once
 class Player;
+class GameCamera;
+class PortalCamera;
 
 /// <summary>
 /// ポータルフレーム。
@@ -112,7 +114,9 @@ private:
 	PhysicsStaticObject m_physicsStaticObject;				//ポータルの物理静的オブジェクト。
 	CollisionObject*	m_collisionObject = nullptr;		//コリジョン。
 	Player*				m_player = nullptr;					//プレイヤー。
+	GameCamera*			m_gameCamera = nullptr;				//ゲームカメラ。
 	PortalFrame*		m_anotherPortalFrame = nullptr;		//別のポータル。
+	PortalCamera*		m_portalCamera = nullptr;			//ポータルカメラ。
 	Vector3				m_position;							//座標。
 	Vector3				m_normal;							//法線。
 	Quaternion			m_rotation;							//回転。

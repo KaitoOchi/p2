@@ -64,7 +64,8 @@ bool Player::Start()
 	m_damageSpriteRender.Update();
 
 	//キャラクターコントローラーの設定。
-	m_characterController.Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
+	m_characterController = new CharacterController;
+	m_characterController->Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
 
 	//ポータルガンの設定。
 	m_portalGun = NewGO<PortalGun>(3, "portalGun");
@@ -95,21 +96,9 @@ void Player::Update()
 
 	State();
 
-	////////////// todo debug
-	Vector3 vec = g_camera3D->GetForward();
-	wchar_t text[256];
-	swprintf_s(text, 256,
-		L"PlayerX:%.2f \nPlayerY:%.2f \nPlayerZ:%.2f \nForwardX:%.2f \nForwardY:%.2f \nForwardZ:%.2f \nAnim:%d",
-		m_position.x,
-		m_position.y,
-		m_position.z,
-		vec.x,
-		vec.y,
-		vec.z,
-		m_playerState
-	);
-	a.SetText(text);
-	/////////////
+#ifdef _DEBUG
+	Debug();
+#endif
 
 	if (m_damageTimer > 0.0f) {
 		m_damageTimer -= g_gameTime->GetFrameDeltaTime();
@@ -133,10 +122,12 @@ void Player::Input()
 	//追加の移動速度を加算。
 	m_moveSpeed += m_addMoveSpeed;
 	//キャラコンの実行。
-	m_position = m_characterController.Execute(m_moveSpeed, 1.0f / 60.0f);
+	m_position = m_characterController->Execute(m_moveSpeed, 1.0f / 60.0f);
 	m_modelRender.SetPosition(m_position);
 
 	Rotation();
+
+	Crouch();
 
 	if (m_addMoveSpeed.x < ADDMOVESPEED_MIN &&
 		m_addMoveSpeed.y < ADDMOVESPEED_MIN &&
@@ -149,6 +140,8 @@ void Player::Input()
 		//追加の移動速度を減算。
 		m_addMoveSpeed -= m_addMoveSpeed / ADDMOVESPEED_DIV;
 	}
+
+	m_gameCamera->SetPosition(m_position);
 }
 
 /// <summary>
@@ -187,10 +180,10 @@ void Player::MoveXZ()
 
 	//ジャンプ中でないなら、
 	if (m_playerState != enState_Jump &&
-		m_playerState != enState_Crouch_Jump) {
-
+		m_playerState != enState_JumpEnd
+	) {
 		//しゃがみ歩き。
-		if (m_playerState == enState_Crouch_Walk) {
+		if (m_isCrouch) {
 			m_walkSpeed = CROUCH_SPEED;
 		}
 		else {
@@ -208,14 +201,20 @@ void Player::MoveXZ()
 void Player::MoveY()
 {
 	//ジャンプ中なら。
-	if (m_playerState == enState_Jump ||
-		m_playerState == enState_Crouch_Jump) {
+	if (m_playerState == enState_Jump) {
 		//移動速度を加算。
 		m_moveSpeed.y += JUMP_POWER;
 	}
 
+	//天井にぶつかったなら。
+	if (m_characterController->IsOnSeiling()) {
+		//ジャンプをやめる。
+		m_moveSpeed.y = 0.0f;
+		m_playerState = enState_JumpEnd;
+	}
+
 	//地面にいないなら。
-	if (!m_characterController.IsOnGround()) {
+	if (!m_characterController->IsOnGround()) {
 		//重力を発生。
 		m_moveSpeed.y -= GRAVITY * m_gravityAccel;
 		m_gravityAccel += GRAVITY_ACCEL;
@@ -232,18 +231,37 @@ void Player::Rotation()
 	m_modelRender.SetRotation(m_rotation);
 }
 
-/// <summary>
-/// ワープ処理。
-/// </summary>
-/// <param name="pos">座標</param>
-/// <param name="angle">回転量</param>
-void Player::SetWarp(const Vector3& pos, const float angle)
+void Player::Crouch()
 {
-	//座標を設定。
-	m_position = pos;
-	m_characterController.SetPosition(m_position);
-	//カメラもワープさせる。
-	m_gameCamera->SetWarp(angle);
+	if (m_isCrouch) {
+		//しゃがみボタンが離されたら。
+		if (!g_pad[0]->IsPress(enButtonY)) {
+			//しゃがみ状態から立ち上がれるなら。
+			if (m_characterController->IsCanStandUp()) {
+				//キャラコンの高さを上げる。
+				delete m_characterController;
+				m_characterController = new CharacterController;
+				m_characterController->Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
+
+				//カメラの座標を設定。
+				m_gameCamera->SetCrouchState(false);
+				m_isCrouch = false;
+			}
+		}
+	}
+	else {
+		//しゃがみボタンが押されたら。
+		if (g_pad[0]->IsTrigger(enButtonY)) {
+			//キャラコンの高さを下げる。
+			delete m_characterController;
+			m_characterController = new CharacterController;
+			m_characterController->Init(CHARACON_RADIUS, CHARACON_HEIGHT / 2.0f, m_position);
+
+			//カメラの座標を設定。
+			m_gameCamera->SetCrouchState(true);
+			m_isCrouch = true;
+		}
+	}
 }
 
 /// <summary>
@@ -260,10 +278,6 @@ void Player::PlayAnimation()
 
 	case enState_Walk:
 		m_modelRender.PlayAnimation(enState_Walk, INTERPOLATE_TIME);
-		break;
-
-	case enState_Crouch_Idle:
-
 		break;
 
 	case enState_Jump:
@@ -287,24 +301,17 @@ void Player::State()
 		ProcessWalkStateTransition();
 		break;
 
-	case enState_Crouch_Idle:
-		ProcessCrouchIdleStateTransition();
-		break;
-
-	case enState_Crouch_Walk:
-		ProcessCrouchWalkStateTransition();
-		break;
-
-	case enState_Crouch_Jump:
-		ProcessCrouchJumpStateTransition();
-		break;
-
 	case enState_Jump:
 		ProcessJumpStateTransition();
 		break;
 
+	case enState_JumpEnd:
+		ProcessJumpEndStateTransition();
+		break;
+
 	case enState_Dead:
 		ProcessDeadStateTransition();
+		break;
 	}
 }
 
@@ -313,42 +320,13 @@ void Player::State()
 /// </summary>
 void Player::ProcessCommonStateTransition()
 {
-	//カメラの座標を設定。
-	if (m_playerState == enState_Crouch_Idle ||
-		m_playerState == enState_Crouch_Walk) {
-		m_gameCamera->SetCrouchState(true);
-	}
-	else {
-		m_gameCamera->SetCrouchState(false);
-	}
-
-	//しゃがみボタンが押されたら。
-	if (g_pad[0]->IsPress(enButtonY)) {
-
-		//ジャンプボタンが押されたら。
-		if (g_pad[0]->IsTrigger(enButtonA)) {
-			m_playerState = enState_Crouch_Jump;
-			return;
-		}
-
-		//移動速度があるなら。
-		if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
-			m_playerState = enState_Crouch_Walk;
-			return;
-		}
-
-		m_playerState = enState_Crouch_Idle;
-		return;
-	}
-
 	//ジャンプボタンが押されたら。
 	if (g_pad[0]->IsTrigger(enButtonA)) {
 		m_playerState = enState_Jump;
 		return;
 	}
-
 	//移動速度があるなら。
-	if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
+	else if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
 		m_playerState = enState_Walk;
 		return;
 	}
@@ -373,47 +351,32 @@ void Player::ProcessWalkStateTransition()
 }
 
 /// <summary>
-/// しゃがみ待機状態の遷移処理。
+/// ジャンプ状態の遷移処理。
 /// </summary>
-void Player::ProcessCrouchIdleStateTransition()
+void Player::ProcessJumpStateTransition()
 {
-	ProcessCommonStateTransition();
-}
+	//落下が始まったら。
+	if (m_moveSpeed.y < 0.0f) {
+		m_playerState = enState_JumpEnd;
+	}
 
-/// <summary>
-/// しゃがみ歩き状態の遷移処理。
-/// </summary>
-void Player::ProcessCrouchWalkStateTransition()
-{
-	ProcessCommonStateTransition();
-}
-
-/// <summary>
-/// しゃがみジャンプ状態の遷移処理。
-/// </summary>
-void Player::ProcessCrouchJumpStateTransition()
-{
 	//地面についたら。
-	if (m_characterController.IsOnGround()) {
-
+	if (m_characterController->IsOnGround()) {
 		//重力加速度を初期化。
 		m_gravityAccel = 0.0f;
-
 		ProcessCommonStateTransition();
 	}
 }
 
 /// <summary>
-/// ジャンプ状態の遷移処理。
+/// ジャンプ終了状態の遷移処理。
 /// </summary>
-void Player::ProcessJumpStateTransition()
+void Player::ProcessJumpEndStateTransition()
 {
 	//地面についたら。
-	if (m_characterController.IsOnGround()) {
-
+	if (m_characterController->IsOnGround()) {
 		//重力加速度を初期化。
 		m_gravityAccel = 0.0f;
-
 		ProcessCommonStateTransition();
 	}
 }
@@ -430,6 +393,20 @@ void Player::ProcessDeadStateTransition()
 		Reset();
 		return;
 	}
+}
+
+/// <summary>
+/// ワープ処理。
+/// </summary>
+/// <param name="pos">座標</param>
+/// <param name="angle">回転量</param>
+void Player::SetWarp(const Vector3& pos, const float angle)
+{
+	//座標を設定。
+	m_position = pos;
+	m_characterController->SetPosition(m_position);
+	//カメラもワープさせる。
+	m_gameCamera->SetWarp(angle);
 }
 
 /// <summary>
@@ -469,6 +446,7 @@ void Player::ReceiveDamage(const int damage, const Vector3& dir)
 void Player::Reset()
 {
 	//値を初期化。
+	m_isCrouch = false;
 	m_hp = MAX_HP;
 	m_walkSpeed = 0.0f;
 	m_gravityAccel = 0.0f;
@@ -485,7 +463,32 @@ void Player::Reset()
 
 	//座標を初期化。
 	m_position = m_game->GetRespawnPoint();
-	m_characterController.SetPosition(m_position);
+	m_characterController->SetPosition(m_position);
+}
+
+/// <summary>
+/// デバッグ処理。
+/// </summary>
+void Player::Debug()
+{
+	////////////// todo debug
+	Vector3 vec = g_camera3D->GetForward();
+	wchar_t text[256];
+	swprintf_s(text, 256,
+		L"PlayerX:%.2f \nPlayerY:%.2f \nPlayerZ:%.2f \nForwardX:%.2f \nForwardY:%.2f \nForwardZ:%.2f \nAnim:%d \nGround:%d \nSeiling:%d \nCrouch:%d",
+		m_position.x,
+		m_position.y,
+		m_position.z,
+		vec.x,
+		vec.y,
+		vec.z,
+		m_playerState,
+		m_characterController->IsOnGround(),
+		m_characterController->IsOnSeiling(),
+		m_isCrouch
+	);
+	a.SetText(text);
+	/////////////
 }
 
 void Player::Render(RenderContext& rc)

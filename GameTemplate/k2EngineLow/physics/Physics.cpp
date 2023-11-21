@@ -79,13 +79,37 @@ namespace nsK2EngineLow {
 		cb.rayEnd = rayEnd;
 		m_dynamicWorld->rayTest(start, end, cb);
 		if (cb.isHit) {
-			hit.collision =cb.hitCollision;
+			hit.collision = cb.hitCollision;
 			hit.position = cb.hitPos;
 			hit.normal = cb.hitNormal;
 			hit.fraction = cb.hitFraction;
 		}
 		return cb.isHit;
 	}
+
+	const bool PhysicsWorld::RayCastHit(const Vector3& rayStart, const Vector3& rayEnd, btCollisionObject* collision, RayHitObject& hit)
+	{
+		btVector3 start, end;
+		start.setValue(rayStart.x, rayStart.y, rayStart.z);
+		end.setValue(rayEnd.x, rayEnd.y, rayEnd.z);
+
+		btTransform startTrans, endTrans;
+		startTrans.setOrigin(start);
+		endTrans.setOrigin(end);
+
+		MyRayResultCallback cb;
+		cb.rayStart = rayStart;
+		cb.rayEnd = rayEnd;
+		m_dynamicWorld->rayTestSingle(startTrans, endTrans, collision, collision->getCollisionShape(), startTrans, cb);
+		if (cb.isHit) {
+			hit.collision = cb.hitCollision;
+			hit.position = cb.hitPos;
+			hit.normal = cb.hitNormal;
+		}
+
+		return cb.isHit;
+	}
+
 	PhysicsWorld::PhysicsWorld()
 	{
 		K2_ASSERT(

@@ -1,8 +1,12 @@
 ////////////////////////////////////////////////
-// ï¿½fï¿½Bï¿½tï¿½@ï¿½[ï¿½hï¿½ï¿½ï¿½Cï¿½eï¿½Bï¿½ï¿½ï¿½Oï¿½Ìƒï¿½ï¿½Wï¿½Xï¿½^ï¿½B
+// ƒfƒBƒtƒ@[ƒhƒ‰ƒCƒeƒBƒ“ƒO—pƒŒƒWƒXƒ^B
 ////////////////////////////////////////////////
-Texture2D<float4> g_albedoTexture                   : register(t0);     //ï¿½Aï¿½ï¿½ï¿½xï¿½hï¿½B
-Texture2D<float4> g_normalTexture                   : register(t1);     //ï¿½@ï¿½ï¿½ï¿½B
-Texture2D<float4> g_metallicShadowSmoothTexture     : register(t2);     //rï¿½Éƒï¿½ï¿½^ï¿½ï¿½ï¿½bï¿½Nï¿½Agï¿½ÉƒVï¿½ï¿½ï¿½hï¿½Eï¿½Aaï¿½ÉƒXï¿½ï¿½ï¿½[ï¿½Xï¿½B
-Texture2D<float4> g_shadowMap                       : register(t3);    //ï¿½Vï¿½ï¿½ï¿½hï¿½Eï¿½}ï¿½bï¿½vï¿½B
-sampler           g_sampler                         : register(s0);		//ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Xï¿½eï¿½[ï¿½gï¿½B
+static const int PORTAL_NUM = 2;
+
+Texture2D<float4> g_albedoTexture                   : register(t0);     //ƒAƒ‹ƒxƒhB
+Texture2D<float4> g_normalTexture                   : register(t1);     //–@üB
+Texture2D<float4> g_metallicShadowSmoothTexture     : register(t2);     //ƒƒ^ƒŠƒbƒNƒXƒ€[ƒXB
+Texture2D<float4> g_param                           : register(t3);     //Šeíƒpƒ‰ƒ[ƒ^B
+Texture2D<float4> g_shadowMap                       : register(t4);     //ƒVƒƒƒhƒEƒ}ƒbƒvB
+Texture2D<float4> g_portalRenderTexture[PORTAL_NUM] : register(t5);     //ƒ|[ƒ^ƒ‹B
+sampler           g_sampler                         : register(s0);		//ƒTƒ“ƒvƒ‰[B

@@ -205,7 +205,7 @@ namespace nsK2EngineLow {
 			//接続されている。
 			m_state.bConnected = true;
 			UpdateCore(m_state.state);
-			
+
 		}
 		else {
 			//接続されていない場合はキーボードの入力でエミュレートする。
@@ -263,6 +263,9 @@ namespace nsK2EngineLow {
 					//優先順位１番目のキー。
 					m_trigger[vPadToKeyboard.vButton] = 1 ^ m_press[vPadToKeyboard.vButton];
 					m_press[vPadToKeyboard.vButton] = 1;
+
+					//前フレームの入力を保持
+					m_oldKeyUp[vPadToKeyboard.vButton] = 1;
 				}
 				else if (vPadToKeyboard.keyCoord2 != 0xFFFFFFFF
 					&& GetAsyncKeyState(vPadToKeyboard.keyCoord2)) {
@@ -273,6 +276,16 @@ namespace nsK2EngineLow {
 				else {
 					m_trigger[vPadToKeyboard.vButton] = 0;
 					m_press[vPadToKeyboard.vButton] = 0;
+
+					//前フレームに入力されていたら
+					if (m_oldKeyUp[vPadToKeyboard.vButton] == 1) {
+
+						m_keyUp[vPadToKeyboard.vButton] = 1;
+						m_oldKeyUp[vPadToKeyboard.vButton] = 0;
+					}
+					else {
+						m_keyUp[vPadToKeyboard.vButton] = 0;
+					}
 				}
 			}
 		}

@@ -7,7 +7,7 @@ namespace nsPortalEngine {
 	{
 		const Vector3	SHADOW_CAMERA_POS = Vector3(200.0f, 3000.0f, 200.0f);		//シャドウカメラの位置。
 		const int		SHADOW_TEXTURE_SIZE = 4096.0f;								//シャドウテクスチャのサイズ。
-		const float		RENDER_TARGET_CLEAR_COLOR[4] = { 0.5f, 0.5f, 0.5f, 1.0f };	//クリアカラー。
+		const float		RENDER_TARGET_CLEAR_COLOR[4] = { 0.5f, 0.5f, 0.5f, 0.0f };	//クリアカラー。
 		const float		SHADOW_BLUR_POWER = 5.0f;									//シャドウブラーの強さ。
 	}
 
@@ -38,6 +38,7 @@ namespace nsPortalEngine {
 		//ポストエフェクトの初期化。
 		m_postEffect.Init(m_mainRenderTarget, m_zprepassRenderTarget);
 		m_postEffect.SetBloomThreshold(3.0f);
+		m_postEffect.Disable(PostEffect::enPostEffect_DoF);
 	}
 
 	void RenderingEngine::InitDeferredLightingSprite()
@@ -51,6 +52,8 @@ namespace nsPortalEngine {
 			spriteInitData.m_textures[i] = &m_gBuffer[0][i].GetRenderTargetTexture();
 		}
 		spriteInitData.m_textures[enGBufferNum] = &m_shadowBlur.GetBokeTexture();
+		spriteInitData.m_textures[enGBufferNum + 1] = &m_portalRenderTarget[0].GetRenderTargetTexture();
+		spriteInitData.m_textures[enGBufferNum + 2] = &m_portalRenderTarget[1].GetRenderTargetTexture();
 
 		spriteInitData.m_fxFilePath = "Assets/shader/DeferredLighting.fx";
 		spriteInitData.m_expandConstantBuffer = &m_lightCB;
@@ -105,8 +108,18 @@ namespace nsPortalEngine {
 			);
 
 
-			//メタリック、シャドウ、スムース出力用レンダーターゲットの作成。
+			//メタリックスムース出力用レンダーターゲットの作成。
 			m_gBuffer[i][enGBufferMetaricShadowSmooth].Create(
+				frameBufferW,
+				frameBufferH,
+				1,
+				1,
+				DXGI_FORMAT_R8G8B8A8_UNORM,
+				DXGI_FORMAT_UNKNOWN
+			);
+
+			//パラメータ出力用レンダーターゲットの作成。
+			m_gBuffer[i][enGBufferShadowLightParam].Create(
 				frameBufferW,
 				frameBufferH,
 				1,
@@ -300,7 +313,7 @@ namespace nsPortalEngine {
 		rc.SetRenderTargetAndViewport(m_zprepassRenderTarget);
 		// レンダリングターゲットをクリア。
 		rc.ClearRenderTargetView(m_zprepassRenderTarget);
-
+		
 		for (auto& renderObj : m_renderObjects) {
 			renderObj->OnRenderToZPrepass(rc);
 		}
@@ -337,7 +350,8 @@ namespace nsPortalEngine {
 			RenderTarget* rts[enGBufferNum] = {
 				&m_gBuffer[i][enGBufferAlbedoDepth],
 				&m_gBuffer[i][enGBufferNormal],
-				&m_gBuffer[i][enGBufferMetaricShadowSmooth]
+				&m_gBuffer[i][enGBufferMetaricShadowSmooth],
+				&m_gBuffer[i][enGBufferShadowLightParam]
 			};
 
 			int rtsNum = static_cast<int>(enGBufferNum);

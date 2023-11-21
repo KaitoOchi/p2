@@ -16,10 +16,8 @@ public:
 	{
 		enState_Idle,			//待機。
 		enState_Walk,			//歩き。
-		enState_Crouch_Idle,	//しゃがみ待機。
-		enState_Crouch_Walk,	//しゃがみ歩き。
-		enState_Crouch_Jump,	//しゃがみジャンプ。
 		enState_Jump,			//ジャンプ。
+		enState_JumpEnd,		//ジャンプ終了。
 		enState_Dead,			//死亡。
 		enState_Num,			//数。
 	};
@@ -66,7 +64,7 @@ public:
 	/// <param name="flag"></param>
 	void SetIsPortal(const bool flag)
 	{
-		m_characterController.SetIsPortal(flag);
+		m_characterController->SetIsPortal(flag);
 	}
 
 	/// <summary>
@@ -81,7 +79,7 @@ public:
 	/// <summary>
 	/// キャラコンを取得。
 	/// </summary>
-	const CharacterController& GetCharacterController() const
+	const CharacterController* GetCharacterController() const
 	{
 		return m_characterController;
 	}
@@ -92,7 +90,7 @@ public:
 	/// <returns></returns>
 	btCollisionObject* GetCollision()
 	{
-		return m_characterController.GetRigidBody()->GetBody();
+		return m_characterController->GetRigidBody()->GetBody();
 	}
 
 	/// <summary>
@@ -118,6 +116,10 @@ private:
 	/// </summary>
 	void Rotation();
 	/// <summary>
+	/// しゃがみ処理。
+	/// </summary>
+	void Crouch();
+	/// <summary>
 	/// アニメーション処理。
 	/// </summary>
 	void PlayAnimation();
@@ -138,30 +140,26 @@ private:
 	/// </summary>
 	void ProcessWalkStateTransition();
 	/// <summary>
-	/// しゃがみ待機状態の遷移処理。
-	/// </summary>
-	void ProcessCrouchIdleStateTransition();
-	/// <summary>
-	/// しゃがみ歩き状態の遷移処理。
-	/// </summary>
-	void ProcessCrouchWalkStateTransition();
-	/// <summary>
-	/// しゃがみジャンプ状態の遷移処理。
-	/// </summary>
-	void ProcessCrouchJumpStateTransition();
-	/// <summary>
 	/// ジャンプ状態の遷移処理。
 	/// </summary>
 	void ProcessJumpStateTransition();
 	/// <summary>
+	/// ジャンプ終了状態の遷移処理。
+	/// </summary>
+	void ProcessJumpEndStateTransition();
+	/// <summary>
 	/// 死亡状態の遷移処理。
 	/// </summary>
 	void ProcessDeadStateTransition();
+	/// <summary>
+	/// デバッグ処理。
+	/// </summary>
+	void Debug();
 
 private:
 	ModelRender				m_modelRender;					//モデルレンダー。
 	SpriteRender			m_damageSpriteRender;			//ダメージを受けたときのスプライト。
-	CharacterController		m_characterController;			//キャラクターコントローラー。
+	CharacterController* m_characterController = nullptr;			//キャラクターコントローラー。
 	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
 	Game*					m_game = nullptr;				//ゲームクラス。
 	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
@@ -171,6 +169,7 @@ private:
 	Vector3					m_addMoveSpeed;					//追加する移動速度。
 	Quaternion				m_rotation;						//回転。
 	PlayerState				m_playerState = enState_Idle;	//プレイヤーステート。
+	bool					m_isCrouch = false;				//しゃがみ状態かどうか。
 	int						m_hp = 0;						//HP。
 	float					m_walkSpeed = 0.0f;				//移動速度。
 	float					m_gravityAccel = 0.0f;			//重力加速。

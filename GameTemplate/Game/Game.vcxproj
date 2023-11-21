@@ -228,6 +228,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object\Door.cpp" />
+    <ClCompile Include="Object\EnergyBall.cpp" />
+    <ClCompile Include="Object\EnergyBallGenerator.cpp" />
+    <ClCompile Include="Object\EnergyBallReceiver.cpp" />
+    <ClCompile Include="Object\Gimmick.cpp" />
+    <ClCompile Include="Object\JumpBoard.cpp" />
     <ClCompile Include="Object\Turret.cpp" />
     <ClCompile Include="Player\GameCamera.cpp" />
     <ClCompile Include="Player\Player.cpp" />
@@ -247,6 +253,12 @@
     <ClCompile Include="system\system.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Object\Door.h" />
+    <ClInclude Include="Object\EnergyBall.h" />
+    <ClInclude Include="Object\EnergyBallGenerator.h" />
+    <ClInclude Include="Object\EnergyBallReceiver.h" />
+    <ClInclude Include="Object\Gimmick.h" />
+    <ClInclude Include="Object\JumpBoard.h" />
     <ClInclude Include="Object\Turret.h" />
     <ClInclude Include="Player\GameCamera.h" />
     <ClInclude Include="Player\Player.h" />

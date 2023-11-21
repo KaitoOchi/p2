@@ -64,6 +64,57 @@ namespace nsK2EngineLow {
 				return 0.0f;
 			}
 		};
+		//衝突したときに呼ばれる関数オブジェクト(天井用)
+		struct SweepResultSeiling : public btCollisionWorld::ConvexResultCallback
+		{
+			bool isHit = false;									//衝突フラグ。
+			bool isPortal = false;								//ポータルに入っているかどうか。
+			Vector3 hitPos = Vector3(0.0f, -FLT_MAX, 0.0f);		//衝突点。
+			Vector3 startPos;									//レイの始点。
+			Vector3 hitNormal;									//衝突点の法線。
+			btCollisionObject* me = nullptr;					//自分自身。自分自身との衝突を除外するためのメンバ。
+			float dist = FLT_MAX;								//衝突点までの距離。一番近い衝突点を求めるため。FLT_MAXは単精度の浮動小数点が取りうる最大の値。
+
+			//衝突したときに呼ばれるコールバック関数。
+			virtual	btScalar	addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
+			{
+				//ポータルに入ってるかつ、ポータル以外に衝突したら。
+				if (isPortal && convexResult.m_hitCollisionObject->getUserIndex() != enCollisionAttr_PortalFrame) {
+					return 0.0f;
+				}
+
+				if (convexResult.m_hitCollisionObject == me
+					|| convexResult.m_hitCollisionObject->getUserIndex() == enCollisionAttr_Character
+					|| convexResult.m_hitCollisionObject->getInternalType() == btCollisionObject::CO_GHOST_OBJECT
+					) {
+					//自分に衝突した。or キャラクタ属性のコリジョンと衝突した。
+					return 0.0f;
+				}
+				//衝突点の法線を引っ張ってくる。
+				Vector3 hitNormalTmp = *(Vector3*)&convexResult.m_hitNormalLocal;
+				//上方向と法線のなす角度を求める。
+				float angle = -hitNormalTmp.y;
+				angle = fabsf(acosf(angle));
+				if (angle < Math::PI * 0.3f		//地面の傾斜が54度より小さいので天井とみなす。
+					|| convexResult.m_hitCollisionObject->getUserIndex() == enCollisionAttr_Ground //もしくはコリジョン属性が地面と指定されている。
+					) {
+					//衝突している。
+					isHit = true;
+					Vector3 hitPosTmp = *(Vector3*)&convexResult.m_hitPointLocal;
+					//衝突点の距離を求める。。
+					Vector3 vDist;
+					vDist.Subtract(hitPosTmp, startPos);
+					float distTmp = vDist.Length();
+					if (dist > distTmp) {
+						//この衝突点の方が近いので、最近傍の衝突点を更新する。
+						hitPos = hitPosTmp;
+						hitNormal = *(Vector3*)&convexResult.m_hitNormalLocal;
+						dist = distTmp;
+					}
+				}
+				return 0.0f;
+			}
+		};
 		//衝突したときに呼ばれる関数オブジェクト(壁用)
 		struct SweepResultWall : public btCollisionWorld::ConvexResultCallback
 		{
@@ -143,17 +194,21 @@ namespace nsK2EngineLow {
 	}
 	const Vector3& CharacterController::Execute(Vector3& moveSpeed, float deltaTime)
 	{
-		if (moveSpeed.y > 0.0f) {
+		if (fabsf(moveSpeed.y) > 0.01f) {
 			//吹っ飛び中にする。
 			m_isJump = true;
 			m_isOnGround = false;
 		}
-		//次の移動先となる座標を計算する。
-		Vector3 nextPosition = m_position;
+
 		//速度からこのフレームでの移動量を求める。オイラー積分。
 		Vector3 addPos = moveSpeed;
 		addPos.Scale(deltaTime);
+
+		//次の移動先となる座標を計算する。
+		Vector3 nextPosition = m_position;
 		nextPosition.Add(addPos);
+
+		//移動方向を求める。
 		Vector3 originalXZDir = addPos;
 		originalXZDir.y = 0.0f;
 		originalXZDir.Normalize();
@@ -237,21 +292,84 @@ namespace nsK2EngineLow {
 				}
 			}
 		}
+
 		//XZの移動は確定。
 		m_position.x = nextPosition.x;
 		m_position.z = nextPosition.z;
-		//下方向を調べる。
-		{
-			Vector3 addPos;
-			addPos.Subtract(nextPosition, m_position);
 
-			m_position = nextPosition;	//移動の仮確定。
+		//上方向を調べる。
+		{
 			//レイを作成する。
 			btTransform start, end;
 			start.setIdentity();
 			end.setIdentity();
+
 			//始点はカプセルコライダーの中心。
-			start.setOrigin(btVector3(m_position.x, m_position.y + m_height * 0.5f + m_radius, m_position.z));
+			start.setOrigin(btVector3(nextPosition.x, nextPosition.y + m_height * 0.5f + m_radius, nextPosition.z));
+			//終点はジャンプ中なら1m上を見る。
+			Vector3 endPos;
+			Vector3CopyFrom(endPos, start.getOrigin());
+
+			if (m_isOnGround == false) {
+				if (addPos.y > 0.0f) {
+					//ジャンプ中とかで上昇中。
+					endPos.y += addPos.y;
+				}
+				else {
+					//落下中でもXZに移動した結果めり込んでいる可能性があるので上を調べる。
+					endPos.y -= addPos.y * 0.01f;
+				}
+			}
+			end.setOrigin(btVector3(endPos.x, endPos.y, endPos.z));
+
+			SweepResultSeiling callback;
+			callback.me = m_rigidBody.GetBody();
+			callback.isPortal = m_isPortal;
+			Vector3CopyFrom(callback.startPos, start.getOrigin());
+
+			//衝突検出。
+			if (fabsf(endPos.y - callback.startPos.y) > FLT_EPSILON) {
+				PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collider.GetBody(), start, end, callback);
+				if (callback.isHit) {
+					//当たった。
+					moveSpeed.y = 0.0f;
+					m_isOnSeiling = true;
+
+					Vector3 vT0, vT1;
+					//XZ平面上での移動後の座標をvT0に、交点の座標をvT1に設定する。
+					vT0.Set(0.0f, start.getOrigin().getY(), 0.0f);
+					vT1.Set(0.0f, callback.hitPos.y, 0.0f);
+					//めり込みが発生している移動ベクトルを求める。
+					Vector3 vMerikomi;
+					vMerikomi.Subtract(vT0, vT1);
+					//Y軸での衝突した壁の法線を求める。。
+					Vector3 hitNormalY = callback.hitNormal;
+					hitNormalY.x = 0.0f;
+					hitNormalY.z = 0.0f;
+					//めり込みベクトルを壁の法線に射影する。
+					float fT0 = hitNormalY.Dot(vMerikomi);
+					//押し戻し返すベクトルを求める。
+					//押し返すベクトルは壁の法線に射影されためり込みベクトル+半径。
+					Vector3 vOffset;
+					vOffset = hitNormalY;
+					vOffset.Scale(-fT0 + m_height * 0.6f);
+					nextPosition.Subtract(vOffset);
+				}
+				else {
+					//天井にぶつかっていない。
+					m_isOnSeiling = false;
+				}
+			}
+		}
+		//下方向を調べる。
+		{
+			//レイを作成する。
+			btTransform start, end;
+			start.setIdentity();
+			end.setIdentity();
+
+			//始点はカプセルコライダーの中心。
+			start.setOrigin(btVector3(nextPosition.x, nextPosition.y + m_height * 0.5f + m_radius, nextPosition.z));
 			//終点は地面上にいない場合は1m下を見る。
 			//地面上にいなくてジャンプで上昇中の場合は上昇量の0.01倍下を見る。
 			//地面上にいなくて降下中の場合はそのまま落下先を調べる。
@@ -274,6 +392,7 @@ namespace nsK2EngineLow {
 				endPos.y -= 100.0f;
 			}
 			end.setOrigin(btVector3(endPos.x, endPos.y, endPos.z));
+
 			SweepResultGround callback;
 			callback.me = m_rigidBody.GetBody();
 			callback.isPortal = m_isPortal;
@@ -287,6 +406,7 @@ namespace nsK2EngineLow {
 					moveSpeed.y = 0.0f;
 					m_isJump = false;
 					m_isOnGround = true;
+					m_isOnSeiling = false;
 					nextPosition.y = callback.hitPos.y;
 				}
 				else {
@@ -308,6 +428,41 @@ namespace nsK2EngineLow {
 		//@todo 未対応。 trans.setRotation(btQuaternion(rotation.x, rotation.y, rotation.z));
 		return m_position;
 	}
+
+	/// <summary>
+	/// しゃがみ状態から立ち上がれるかどうか。
+	/// </summary>
+	/// <returns></returns>
+	const bool CharacterController::IsCanStandUp()
+	{
+		//レイを作成する。
+		btTransform start, end;
+		start.setIdentity();
+		end.setIdentity();
+
+		//始点はしゃがんだ状態のカプセルコライダーの中心。
+		start.setOrigin(btVector3(m_position.x, m_position.y + m_height * 0.5f + m_radius, m_position.z));
+		//終点は立った状態のカプセルコライダーの中心。
+		end.setOrigin(btVector3(m_position.x, m_position.y + m_height * 2.0f + m_radius, m_position.z));
+		Vector3 endPos;
+		Vector3CopyFrom(endPos, end.getOrigin());
+
+		SweepResultSeiling callback;
+		callback.me = m_rigidBody.GetBody();
+		callback.isPortal = m_isPortal;
+		Vector3CopyFrom(callback.startPos, start.getOrigin());
+
+		//衝突検出。
+		if (fabsf(endPos.y - callback.startPos.y) > FLT_EPSILON) {
+			PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collider.GetBody(), start, end, callback);
+			//衝突したなら。
+			if (callback.isHit) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/*!
 	* @brief	死亡したことを通知。
 	*/

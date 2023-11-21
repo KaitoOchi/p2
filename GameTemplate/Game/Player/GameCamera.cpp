@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GameCamera.h"
-#include "Player.h"
 
 namespace
 {
@@ -10,7 +9,7 @@ namespace
 	const float ROT_SPEED = 0.03f;				//回転速度。
 	const float CAMERA_HEIGHT = 75.0f;			//カメラの高さ。
 	const float CAMERA_HEIGHT_CROUCH = 20.0f;	//しゃがみ状態の高さ。
-	const float ANGLE_Y = 1.2f;					//カメラの上下回転の上限値
+	const float ANGLE_Y = 1.56f;					//カメラの上下回転の上限値
 	const float CROUCH_SPEED = 5.0f;			//しゃがみ速度。
 	const float CROUCH_TIMER_START = 0.0f;		//しゃがみ開始の時間。
 	const float CROUCH_TIMER_END = 1.0f;		//しゃがみ終了の時間。
@@ -30,9 +29,6 @@ GameCamera::~GameCamera()
 
 bool GameCamera::Start()
 {
-	//プレイヤーオブジェクトを検索。
-	m_player = FindGO<Player>("player");
-
 	//近平面と遠平面を設定。
 	g_camera3D->SetNear(CAMERA_NEAR);
 	g_camera3D->SetFar(CAMERA_FAR);
@@ -58,9 +54,6 @@ void GameCamera::Update()
 /// </summary>
 void GameCamera::Move()
 {
-	//プレイヤーの座標を取得。
-	m_position = m_player->GetPosition();
-
 	//しゃがみの座標を設定。
 	if (m_crouchTimer >= CROUCH_TIMER_START && m_crouchTimer <= CROUCH_TIMER_END) {
 		//しゃがみの始点を設定。
@@ -144,6 +137,7 @@ void GameCamera::SetWarp(const float angle)
 {
 	//ポータルの角度に応じて回転を変更。
 	m_rotSpeed.x += Math::DegToRad(WARP_ANGLE_ADD - angle);
+	//m_rotSpeed.y += Math::DegToRad(-90.0f - angle);
 
 	Rotation();
 }

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "PortalFrame.h"
 #include "Player.h"
+#include "GameCamera.h"
+#include "PortalCamera.h"
 
 namespace
 {
@@ -25,6 +27,8 @@ bool PortalFrame::Start()
 {
 	//プレイヤーオブジェクトを検索。
 	m_player = FindGO<Player>("player");
+	m_gameCamera = FindGO<GameCamera>("gameCamera");
+	m_portalCamera = FindGO<PortalCamera>("portalCamera");
 
 	//当たり判定を初期化。
 	m_collisionObject = NewGO<CollisionObject>(0, "collision");
@@ -36,12 +40,18 @@ bool PortalFrame::Start()
 	ModelInitData modelInitData;
 	modelInitData.m_tkmFilePath = "Assets/modelData/portal/portalFrame.tkm";
 	modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
-	modelInitData.m_psEntryPointFunc = "PSMainPortalFrame";
+
+	if (m_portalType == enPortalType_Blue) {
+		modelInitData.m_psEntryPointFunc = "PSBluePortal";
+	}
+	else if (m_portalType == enPortalType_Red) {
+		modelInitData.m_psEntryPointFunc = "PSRedPortal";
+	}
+
 	modelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetLightCB();
 	modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
-	//テクスチャをポータル用レンダーターゲットに設定する。
-	modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetPortalRenderTarget(static_cast<int>(m_portalType)).GetRenderTargetTexture();
-	modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
+	modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
+
 	m_portalFrameModelRender.InitModelInitData(modelInitData);
 	m_portalFrameModelRender.SetPosition(m_position);
 	m_portalFrameModelRender.Update();
@@ -82,7 +92,7 @@ void PortalFrame::Collision()
 	}
 
 	//プレイヤーと接触しているなら。
-	if (m_collisionObject->IsHit(const_cast<CharacterController&>(m_player->GetCharacterController()))) {
+	if (m_collisionObject->IsHit(const_cast<CharacterController&>(*m_player->GetCharacterController()))) {
 		if (!m_isCollisionHit) {
 			//キャラクターコントローラーをポータルに入った状態にする。
 			m_player->SetIsPortal(true);
@@ -109,6 +119,14 @@ void PortalFrame::Collision()
 			compareLargePos = m_player->GetPosition().z;
 			compareSmallPos = m_position.z;
 		}
+		else if (m_normal.y >= 1.0f) {
+			compareLargePos = m_position.y;
+			compareSmallPos = m_player->GetPosition().y;
+		}
+		else if (m_normal.y <= -1.0f) {
+			compareLargePos = m_player->GetPosition().y;
+			compareSmallPos = m_position.y;
+		}
 
 		//プレイヤーの座標がポータルの座標を超えていたら。
 		if (compareLargePos > compareSmallPos) {
@@ -133,6 +151,13 @@ void PortalFrame::IsHit()
 	float angle = acosf(m_normal.Dot(m_anotherPortalFrame->GetNormal()));
 	angle = Math::RadToDeg(angle);
 
+	//外積を求め、y軸を使って±を補正する。
+	Vector3 cross = m_normal;
+	cross.Cross(m_anotherPortalFrame->GetNormal());
+	if (cross.y <= -1.0f) {
+		angle *= -1.0f;
+	}
+
 	//もう一方のポータルの座標まで移動する。
 	m_player->SetWarp(m_anotherPortalFrame->GetPosition(), angle);
 
@@ -156,8 +181,19 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 	//当たったオブジェクトの法線に合わせて回転する。
 	Quaternion portalRot;
 	portalRot.SetRotationYFromDirectionXZ(m_normal);
-	portalRot.AddRotationDegX(m_normal.y * PORTAL_ROT_X);
+	portalRot.AddRotationDegX(-m_normal.y * PORTAL_ROT_X);
 	m_rotation = portalRot;
+
+	//法線がY軸なら、カメラの回転に応じてポータルも回転させる。
+	if (m_normal.y < -0.99f) {
+		m_rotation.AddRotationZ(Math::PI / 2.0f - fabsf(m_gameCamera->GetRotRadian().x));
+	}
+	else if (m_normal.y > 0.99f) {
+		m_rotation.AddRotationZ(Math::PI / 2.0f - m_gameCamera->GetRotRadian().x);
+	}
+
+	//ポータルカメラを更新。
+	m_portalCamera->UpdateAngle();
 
 	//ポータルモデルを設定。
 	m_portalFrameModelRender.SetPosition(m_position);

@@ -22,6 +22,7 @@ struct SPSOut
     float4 albedo               : SV_TARGET0;   //アルベド。
     float4 normal               : SV_TARGET1;   //法線。
     float4 metallicShadowSmooth : SV_TARGET2;   //rにメタリック、gに影パラメータ、aにスムース。
+    float4 param                : SV_Target3;   //rにシャドウ、gにライト。
 };
 
 ////////////////////////////////////////////////
@@ -40,8 +41,8 @@ struct SPSOut
 Texture2D<float4>   g_albedo                : register(t0);     //アルベドマップ。
 Texture2D<float4>   g_normal                : register(t1);     //法線マップ。
 Texture2D<float4>   g_metallicSmooth        : register(t2);     //メタリックスムースマップ。
-Texture2D<float4>   g_portalRenderTexture   : register(t10);    //ポータルフレーム。
-Texture2D<float4>   g_depthTexture          : register(t11);    //深度値。
+Texture2D<float4>   g_param                 : register(t3);     //パラメータ。
+Texture2D<float4>   g_depthTexture          : register(t10);    //深度値。
 sampler             g_sampler               : register(s0);		//サンプラー。
 
 ///////////////////////////////////////
@@ -138,9 +139,11 @@ SPSOut PSMainCore(SPSIn psIn, SPSOut psOut, int hasShadow)
     //メタリックスムースを出力。
     psOut.metallicShadowSmooth = g_metallicSmooth.Sample(g_sampler, psIn.uv);
     //影パラメータ。
-    psOut.metallicShadowSmooth.g = min(255.0f, 255.0f * hasShadow);
+    psOut.param.r = min(255.0f, 255.0f * hasShadow);
     //ライティングパラメータ。
-    psOut.metallicShadowSmooth.b = 255.0f;
+    psOut.param.g = 255.0f;
+    //マスクパラメータ。
+    psOut.param.b = 0.0f;
 
     return psOut;
 }
@@ -202,20 +205,30 @@ SPSOut PSMainDithering( SPSIn psIn )
 /// <summary>
 /// ポータルフレーム用のエントリー関数。
 /// </summary>
-SPSOut PSMainPortalFrame(SPSIn psIn)
+SPSOut PSPortalFrameCore(SPSIn psIn, uniform float maskParam)
 {
     SPSOut psOut;
 
     //アルベドカラーをサンプリング。
 	float4 albedoColor = g_albedo.Sample(g_sampler, psIn.uv);
-
     clip(albedoColor.a - 0.001f);
 
-	psOut.albedo = g_portalRenderTexture.Sample(g_sampler, psIn.uv);
-    psOut.albedo *= Outline(psIn.posInProj, g_depthTexture, g_sampler);
+    //psOut.albedo *= Outline(psIn.posInProj, g_depthTexture, g_sampler);
 
     //ライティングパラメータ。
-    psOut.metallicShadowSmooth.b = 0.0f;
+    psOut.param.g = 0.0f;
+    //マスクパラメータ。
+    psOut.param.b = maskParam;
 
 	return psOut;
+}
+
+SPSOut PSBluePortal(SPSIn psIn)
+{
+    return PSPortalFrameCore(psIn, 0.1f);
+}
+
+SPSOut PSRedPortal(SPSIn psIn)
+{
+    return PSPortalFrameCore(psIn, 0.2f);
 }
