@@ -114,5 +114,5 @@ float4 PSMain(SPSIn psIn) : SV_Target0
 
     clip(albedoColor.a - 0.001f);
 
-    return float4( psIn.depth.x, psIn.depth.y, psIn.depth.z, 1.0f );
+    return float4( psIn.pos.z, psIn.depth.y, psIn.depth.z, 1.0f );
 }

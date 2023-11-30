@@ -1,12 +1,14 @@
 ////////////////////////////////////////////////
-// ƒfƒBƒtƒ@[ƒhƒ‰ƒCƒeƒBƒ“ƒO—pƒŒƒWƒXƒ^B
+// ï¿½fï¿½Bï¿½tï¿½@ï¿½[ï¿½hï¿½ï¿½ï¿½Cï¿½eï¿½Bï¿½ï¿½ï¿½Oï¿½pï¿½ï¿½ï¿½Wï¿½Xï¿½^ï¿½B
 ////////////////////////////////////////////////
 static const int PORTAL_NUM = 2;
 
-Texture2D<float4> g_albedoTexture                   : register(t0);     //ƒAƒ‹ƒxƒhB
-Texture2D<float4> g_normalTexture                   : register(t1);     //–@üB
-Texture2D<float4> g_metallicShadowSmoothTexture     : register(t2);     //ƒƒ^ƒŠƒbƒNƒXƒ€[ƒXB
-Texture2D<float4> g_param                           : register(t3);     //Šeíƒpƒ‰ƒ[ƒ^B
-Texture2D<float4> g_shadowMap                       : register(t4);     //ƒVƒƒƒhƒEƒ}ƒbƒvB
-Texture2D<float4> g_portalRenderTexture[PORTAL_NUM] : register(t5);     //ƒ|[ƒ^ƒ‹B
-sampler           g_sampler                         : register(s0);		//ƒTƒ“ƒvƒ‰[B
+Texture2D<float4> g_albedoTexture                   : register(t0);     //ï¿½Aï¿½ï¿½ï¿½xï¿½hï¿½B
+Texture2D<float4> g_normalTexture                   : register(t1);     //ï¿½@ï¿½ï¿½ï¿½B
+Texture2D<float4> g_metallicShadowSmoothTexture     : register(t2);     //ï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½[ï¿½Xï¿½B
+Texture2D<float4> g_param                           : register(t3);     //ï¿½eï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½B
+Texture2D<float4> g_shadowMap                       : register(t4);     //ï¿½Vï¿½ï¿½ï¿½hï¿½Eï¿½}ï¿½bï¿½vï¿½B
+Texture2D<float4> g_portalRenderTexture[PORTAL_NUM] : register(t5);     //ï¿½|ï¿½[ï¿½^ï¿½ï¿½ï¿½B
+StructuredBuffer<uint> pointLightListInTile         : register(t20);    //ï¿½^ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Cï¿½gï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½Ìƒï¿½ï¿½Xï¿½gï¿½B
+StructuredBuffer<uint> spotLightListInTile          : register(t21);    //ï¿½^ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ÌƒXï¿½|ï¿½bï¿½gï¿½ï¿½ï¿½Cï¿½gï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½Ìƒï¿½ï¿½Xï¿½gï¿½B
+sampler           g_sampler                         : register(s0);		//ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½[ï¿½B

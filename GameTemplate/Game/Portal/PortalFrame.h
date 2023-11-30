@@ -107,6 +107,13 @@ private:
 	/// 当たったときの処理。
 	/// </summary>
 	void IsHit();
+	/// <summary>
+	/// ポータルが設置できるかどうか。
+	/// </summary>
+	/// <param name="pos"></param>
+	/// <param name="normal"></param>
+	/// <returns></returns>
+	const bool IsCanPut(const Vector3& pos, const Vector3& normal);
 
 private:
 	ModelRender			m_portalFrameModelRender;			//ポータルフレームモデル。

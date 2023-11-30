@@ -137,7 +137,7 @@ void GameCamera::SetWarp(const float angle)
 {
 	//ポータルの角度に応じて回転を変更。
 	m_rotSpeed.x += Math::DegToRad(WARP_ANGLE_ADD - angle);
-	//m_rotSpeed.y += Math::DegToRad(-90.0f - angle);
+	//m_rotSpeed.y += Math::DegToRad(-angle);
 
 	Rotation();
 }

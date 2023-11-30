@@ -17,7 +17,8 @@ public:
 	void Clear() override;
 
 private:
-	Stage*				m_stage = nullptr;				//ステージ。
+	ModelRender			m_modelRender;					//モデル。
 	CollisionObject*	m_collisionObject = nullptr;	//コリジョン。
+	Stage*				m_stage = nullptr;				//ステージ。
 };
 

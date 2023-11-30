@@ -39,10 +39,31 @@ namespace nsPortalEngine {
 		m_postEffect.Init(m_mainRenderTarget, m_zprepassRenderTarget);
 		m_postEffect.SetBloomThreshold(3.0f);
 		m_postEffect.Disable(PostEffect::enPostEffect_DoF);
+
+		//ライトカリングの初期化。
+		m_lightCulling.Init(
+			m_deferredLightingSprite.GetExpandConstantBufferGPU(),
+			m_zprepassRenderTarget.GetRenderTargetTexture(),
+			m_pointLightNoListInTileUAV,
+			m_spotLightNoListInTileUAV
+		);
 	}
 
 	void RenderingEngine::InitDeferredLightingSprite()
 	{
+		//タイルごとのポイントライトの番号のリストを出力するUAVを初期化。
+		m_pointLightNoListInTileUAV.Init(
+			sizeof(int),
+			POINT_LIGHT_NUM * TILE_NUM,
+			nullptr
+		);
+		//タイルごとのスポットライトの番号のリストを出力するUAVを初期化。
+		m_spotLightNoListInTileUAV.Init(
+			sizeof(int),
+			SPOT_LIGHT_NUM * TILE_NUM,
+			nullptr
+		);
+
 		SpriteInitData spriteInitData;
 		spriteInitData.m_width = g_graphicsEngine->GetFrameBufferWidth();
 		spriteInitData.m_height = g_graphicsEngine->GetFrameBufferHeight();
@@ -59,6 +80,9 @@ namespace nsPortalEngine {
 		spriteInitData.m_expandConstantBuffer = &m_lightCB;
 		spriteInitData.m_expandConstantBufferSize = sizeof(m_lightCB);
 		spriteInitData.m_colorBufferFormat[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+		spriteInitData.m_expandShaderResoruceView[0] = &m_pointLightNoListInTileUAV;
+		spriteInitData.m_expandShaderResoruceView[1] = &m_spotLightNoListInTileUAV;
 
 		// 初期化データを使ってスプライトを作成。
 		m_deferredLightingSprite.Init(spriteInitData);
@@ -286,6 +310,8 @@ namespace nsPortalEngine {
 
 		//シャドウマップの描画。
 		DrawShadowMap(rc);
+
+		m_lightCulling.Execute(rc);
 
 		//GBufferの描画。
 		DrawGBuffer(rc);

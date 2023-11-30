@@ -89,6 +89,10 @@ namespace nsK2EngineLow {
 		{
 			return m_ghostObject;
 		}
+		btCollisionShape* GetBody()
+		{
+			return m_collider->GetBody();
+		}
 	private:
 		/// <summary>
 		/// ゴースト作成処理の共通処理。

@@ -43,6 +43,15 @@ public:
 	void Reset();
 
 	/// <summary>
+	/// 追加の移動速度を設定。
+	/// </summary>
+	/// <param name="moveSpeed"></param>
+	void SetAddMoveSpeed(const Vector3& moveSpeed)
+	{
+		m_addMoveSpeed = moveSpeed;
+	}
+
+	/// <summary>
 	/// 座標を取得。
 	/// </summary>
 	const Vector3& GetPosition() const
@@ -65,6 +74,15 @@ public:
 	void SetIsPortal(const bool flag)
 	{
 		m_characterController->SetIsPortal(flag);
+	}
+
+	/// <summary>
+	/// プレイヤーステートを設定。
+	/// </summary>
+	/// <param name="state"></param>
+	void SetPlayerState(const PlayerState& state)
+	{
+		m_playerState = state;
 	}
 
 	/// <summary>

@@ -7,6 +7,7 @@
 #include "EnergyBallGenerator.h"
 #include "EnergyBallReceiver.h"
 #include "Door.h"
+#include "JumpBoard.h"
 
 Stage::Stage()
 {
@@ -45,6 +46,12 @@ Stage::~Stage()
 		return true;
 		});
 
+	//ƒWƒƒƒ“ƒv”Â‚ğíœB
+	QueryGOs<JumpBoard>("jumpBoard", [&](JumpBoard* jumpBoard) {
+		DeleteGO(jumpBoard);
+		return true;
+		});
+
 	m_gimmickObjects.clear();
 }
 
@@ -56,6 +63,10 @@ bool Stage::Start()
 	m_physicsStaticObject.CreateFromModel(m_modelRender.GetModel(), m_modelRender.GetModel().GetWorldMatrix());
 
 	InitLevelRender();
+
+	JumpBoard* jumpBoard = NewGO<JumpBoard>(0, "jumpBoard");
+	jumpBoard->SetPosition(Vector3(0.0f, 0.0f, 100.0f));
+	jumpBoard->SetLandingPosition(Vector3(0.0f, 0.0f, 1250.0f));
 
 	return true;
 }

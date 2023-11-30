@@ -3,6 +3,7 @@
 namespace nsK2EngineLow {
 
 	class Matrix;
+	class Quaternion;
 	/// <summary>
 	/// 2次元ベクトルクラス。
 	/// </summary>
@@ -318,6 +319,7 @@ namespace nsK2EngineLow {
 			xmv = DirectX::XMVector3Normalize(xmv);
 			DirectX::XMStoreFloat3(&vec, xmv);
 		}
+
 		/// <summary>
 		/// ベクトルをスカラーで除算。
 		/// </summary>

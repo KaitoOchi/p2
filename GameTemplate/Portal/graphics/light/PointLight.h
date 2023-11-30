@@ -17,6 +17,8 @@ namespace nsPortalEngine {
 			float pad0 = 0.0f;
 			Vector3 ptColor;		//カラー。
 			float ptRange = 0.0f;	//影響範囲。
+			Vector3 posInView;		//カメラ空間での座標。
+			float pad1 = 0.0f;
 		};
 
 		PointLight() {};

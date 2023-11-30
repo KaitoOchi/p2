@@ -7,6 +7,7 @@
 
 namespace
 {
+	const Vector3	MODEL_SCALE = Vector3(1.25f, 1.25f, 1.25f);		//モデルの拡大率。
 	const int		MAX_HP = 100;									//最大HP。
 	const float		CHARACON_RADIUS = 10.0f;						//キャラコンの半径。
 	const float		CHARACON_HEIGHT = 60.0f;						//キャラコンの高さ。
@@ -17,7 +18,7 @@ namespace
 	const float		GRAVITY_ACCEL = 0.75f;							//重力加速。
 	const float		INTERPOLATE_TIME = 0.2f;						//線形補間。
 	const float		KNOCKBACK_POWER = 300.0f;						//ダメージを受けたときのノックバックパワー。
-	const float		ADDMOVESPEED_MIN = 0.1f;						//追加の移動速度を終了する値。
+	const float		ADDMOVESPEED_MIN = 1.0f;						//追加の移動速度を終了する値。
 	const float		ADDMOVESPEED_DIV = 5.0f;						//追加の移動速度を除算する値。
 	const float		DAMAGE_TIME = 0.3f;								//ダメージを受ける時間。
 	const float		DEAD_TIME = 2.0f;								//死亡時間。
@@ -39,23 +40,26 @@ bool Player::Start()
 	m_game = FindGO<Game>("game");
 
 	//アニメーションクリップ。
-	m_animationClips[enState_Idle].Load("Assets/animData/UnityChan/idle.tka");
+	m_animationClips[enState_Idle].Load("Assets/animData/player/idle.tka");
 	m_animationClips[enState_Idle].SetLoopFlag(true);
-	m_animationClips[enState_Walk].Load("Assets/animData/UnityChan/walk.tka");
+	m_animationClips[enState_Walk].Load("Assets/animData/player/walk.tka");
 	m_animationClips[enState_Walk].SetLoopFlag(true);
-	m_animationClips[enState_Jump].Load("Assets/animData/UnityChan/jump.tka");
+	m_animationClips[enState_Jump].Load("Assets/animData/player/jump_start.tka");
 	m_animationClips[enState_Jump].SetLoopFlag(false);
+	m_animationClips[enState_JumpEnd].Load("Assets/animData/player/jump_end.tka");
+	m_animationClips[enState_JumpEnd].SetLoopFlag(false);
 
 	//モデルの設定。
 	m_modelRender.Init(
-		"Assets/modelData/unityChan.tkm",
+		"Assets/modelData/player.tkm",
 		m_animationClips,
 		enState_Num,
-		enModelUpAxisY,
+		enModelUpAxisZ,
 		true,
 		true,
 		ModelRender::enModelInitMode_UnDrawMainCamera
 	);
+	m_modelRender.SetScale(MODEL_SCALE);
 	m_modelRender.Update();
 
 	//ダメージ画像の設定。
@@ -132,7 +136,7 @@ void Player::Input()
 	if (m_addMoveSpeed.x < ADDMOVESPEED_MIN &&
 		m_addMoveSpeed.y < ADDMOVESPEED_MIN &&
 		m_addMoveSpeed.z < ADDMOVESPEED_MIN
-	){
+		) {
 		//追加の移動速度を初期化。
 		m_addMoveSpeed = Vector3::Zero;
 	}
@@ -231,8 +235,18 @@ void Player::Rotation()
 	m_modelRender.SetRotation(m_rotation);
 }
 
+/// <summary>
+/// しゃがみ処理。
+/// </summary>
 void Player::Crouch()
 {
+	//ジャンプ中なら。
+	if (m_playerState == enState_Jump ||
+		m_playerState == enState_JumpEnd
+	) {
+		return;
+	}
+
 	if (m_isCrouch) {
 		//しゃがみボタンが離されたら。
 		if (!g_pad[0]->IsPress(enButtonY)) {
@@ -283,6 +297,10 @@ void Player::PlayAnimation()
 	case enState_Jump:
 		m_modelRender.PlayAnimation(enState_Jump, INTERPOLATE_TIME);
 		break;
+
+	case enState_JumpEnd:
+		m_modelRender.PlayAnimation(enState_JumpEnd, INTERPOLATE_TIME);
+		break;
 	}
 }
 
@@ -320,13 +338,21 @@ void Player::State()
 /// </summary>
 void Player::ProcessCommonStateTransition()
 {
-	//ジャンプボタンが押されたら。
-	if (g_pad[0]->IsTrigger(enButtonA)) {
-		m_playerState = enState_Jump;
+	//地面にいるなら。
+	if (m_characterController->IsOnGround()) {
+		//ジャンプボタンが押されたら。
+		if (g_pad[0]->IsTrigger(enButtonA)) {
+			m_playerState = enState_Jump;
+			return;
+		}
+	}
+	else {
+		m_playerState = enState_JumpEnd;
 		return;
 	}
+
 	//移動速度があるなら。
-	else if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
+	if (fabsf(m_moveSpeed.x) > 0.001f || fabsf(m_moveSpeed.z) > 0.001f) {
 		m_playerState = enState_Walk;
 		return;
 	}

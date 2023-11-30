@@ -163,6 +163,7 @@
     <ClInclude Include="graphics\light\PointLight.h" />
     <ClInclude Include="graphics\light\SpotLight.h" />
     <ClInclude Include="graphics\ModelRender.h" />
+    <ClInclude Include="graphics\preRender\LightCulling.h" />
     <ClInclude Include="graphics\RenderingEngine.h" />
     <ClInclude Include="graphics\SpriteRender.h" />
     <ClInclude Include="LevelRender\Level2DRender.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="graphics\light\PointLight.cpp" />
     <ClCompile Include="graphics\light\SpotLight.cpp" />
     <ClCompile Include="graphics\ModelRender.cpp" />
+    <ClCompile Include="graphics\preRender\LightCulling.cpp" />
     <ClCompile Include="graphics\RenderingEngine.cpp" />
     <ClCompile Include="graphics\SpriteRender.cpp" />
     <ClCompile Include="LevelRender\Level2DRender.cpp" />

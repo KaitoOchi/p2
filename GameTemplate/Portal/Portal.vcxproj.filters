@@ -48,6 +48,9 @@
     <ClInclude Include="PostEffect\PostEffectComponentBase.h">
       <Filter>graphics\PostEffect</Filter>
     </ClInclude>
+    <ClInclude Include="graphics\preRender\LightCulling.h">
+      <Filter>graphics\preRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PortalEngine.cpp" />
@@ -94,6 +97,9 @@
     <ClCompile Include="PostEffect\PostEffectComponentBase.cpp">
       <Filter>graphics\PostEffect</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\preRender\LightCulling.cpp">
+      <Filter>graphics\preRender</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="graphics">
@@ -110,6 +116,9 @@
     </Filter>
     <Filter Include="graphics\PostEffect">
       <UniqueIdentifier>{a80f704f-4ef5-4f98-bde8-2dcf4d5765f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\preRender">
+      <UniqueIdentifier>{5e8e0d30-d5c4-4428-9138-c4319896f2cf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -13,12 +13,16 @@ namespace nsPortalEngine {
 		/// </summary>
 		struct SpotLig
 		{
-			Vector3 spPosition;		//座標。
-			float pad0 = 0.0f;
-			Vector3 spColor;		//カラー。
-			float spRange = 0.0f;	//影響範囲。
-			Vector3 spDirection;	//方向。
-			float spAngle = 0.0f;	//射出角度。
+			Vector3 spPosition;			//座標。
+			float pad0;
+			Vector3 spColor;			//カラー。
+			float spRange = 0.0f;		//影響範囲。
+			Vector3 spDirection;		//方向。
+			float spAngle = 0.0f;		//射出角度。
+			Vector3 posInView;			//カメラ空間での座標。
+			float pad1;	
+			Vector3 directionInView;	//カメラ空間での方向。
+			float pad2;
 		};
 
 	public:

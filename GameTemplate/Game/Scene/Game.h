@@ -27,7 +27,7 @@ public:
 
 private:
 	Stage*					m_stage = nullptr;			//ステージ。
-	PointLight				m_pointLight;				//ポイントライト。
-	SpotLight				m_spotLight;				//スポットライト。
+	PointLight				m_pointLight[POINT_LIGHT_NUM];			//ポイントライト。
+	SpotLight				m_spotLight[SPOT_LIGHT_NUM];				//スポットライト。
 };
 

@@ -30,12 +30,7 @@ public:
 	void SetRotation(const Quaternion& rot)
 	{
 		m_rotation = rot;
-		m_direction = CalcQuaternionToEuler(m_rotation);
-		float tmp = m_direction.x;
-		m_direction.x = m_direction.y;
-		m_direction.y = m_direction.z;
-		m_direction.z = tmp;
-		m_direction.Normalize();
+		m_rotation.Apply(m_direction);
 	}
 
 	/// <summary>

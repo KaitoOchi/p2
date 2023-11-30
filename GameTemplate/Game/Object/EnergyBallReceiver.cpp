@@ -24,6 +24,13 @@ bool EnergyBallReceiver::Start()
 
 	m_stage = FindGO<Stage>("stage");
 
+	//モデルの設定。
+	m_modelRender.Init("Assets/modelData/object/energyBall/energyBallReceiver.tkm");
+	m_modelRender.SetPosition(m_position);
+	m_modelRender.SetRotation(m_rotation);
+	m_modelRender.Update();
+
+	//コリジョンの設定。
 	m_collisionObject = NewGO<CollisionObject>(0);
 	m_collisionObject->CreateBox(m_position, m_rotation, COLLISION_SIZE);
 	m_collisionObject->SetName("energyBallReceiver");
@@ -57,5 +64,5 @@ void EnergyBallReceiver::Clear()
 
 void EnergyBallReceiver::Render(RenderContext& rc)
 {
-
+	m_modelRender.Draw(rc);
 }

@@ -55,31 +55,98 @@ bool Game::Start()
 	//ステージを生成。
 	m_stage = NewGO<Stage>(0, "stage");
 
-	//ポイントライトを設定。
-	m_pointLight.SetPointLight(
-		0,
-		Vector3(-100.0f, 50.0f, -100.0f),
-		Vector3(0.0f, 0.0f, 1.0f),
-		200.0f
-	);
-	RenderingEngine::GetInstance()->GetLightCB().ptNum = 1;
+	int num = 0;
 
-	//スポットライトを設定。
-	m_spotLight.SetSpotLight(
-		0,
-		Vector3(-100.0f, 20.0f, 100.0f),
-		Vector3(0.0f, 2.0f, 2.0f),
-		300.0f,
-		Vector3(1.0f, -1.0f, 1.0f),
-		70.0f
-	);
-	RenderingEngine::GetInstance()->GetLightCB().spNum = 1;
+	for (auto& light : m_pointLight)
+	{
+		float x = Math::Random(-500, 500);
+		float y = Math::Random(10, 50);
+		float z = Math::Random(-500, 500);
+		float r = Math::Random(0, 1);
+		float g = Math::Random(0, 1);
+		float b = Math::Random(0, 1);
+		float range = Math::Random(50, 200);
+
+		Vector3 color = Vector3(r, g, b);
+		color.Div(2.0f);
+
+		//ポイントライトを設定。
+		light.SetPointLight(
+			num,
+			Vector3(x, y, z),
+			color,
+			range
+		);
+
+		num++;
+	}
+	RenderingEngine::GetInstance()->GetLightCB().ptNum = POINT_LIGHT_NUM;
+
+	num = 0;
+
+	for (auto& light : m_spotLight)
+	{
+		float x = Math::Random(-500, 500);
+		float y = Math::Random(5, 10);
+		float z = Math::Random(-500, 500);
+		float r = Math::Random(0, 1);
+		float g = Math::Random(0, 1);
+		float b = Math::Random(0, 1);
+		float range = Math::Random(50, 200);
+
+		float dx = Math::Random(-1, 1);
+		float dy = Math::Random(-1, 1);
+		float dz = Math::Random(-1, 1);
+		float angle = Math::Random(45, 90);
+
+		Vector3 color = Vector3(r, g, b);
+
+		//スポットライトを設定。
+		light.SetSpotLight(
+			num,
+			Vector3(x, y, z),
+			color,
+			range,
+			Vector3(dx, dy, dz),
+			angle
+		);
+
+		num++;
+	}
+	RenderingEngine::GetInstance()->GetLightCB().ptNum = SPOT_LIGHT_NUM;
 
 	return true;
 }
 
 void Game::Update()
 {
+	// ライトを回す
+	Quaternion qRot;
+	qRot.SetRotationDegY(1.0f);
+
+	int num = 0;
+
+	for (auto& light : m_pointLight)
+	{
+		Vector3 pos = light.GetPosition();
+		qRot.Apply(pos);
+		light.SetPosition(pos);
+		light.Update(num);
+
+		num++;
+	}
+
+	num = 0;
+
+	for (auto& light : m_spotLight)
+	{
+		Vector3 pos = light.GetPosition();
+		qRot.Apply(pos);
+		light.SetPosition(pos);
+		light.Update(num);
+
+		num++;
+	}
 
 }
 

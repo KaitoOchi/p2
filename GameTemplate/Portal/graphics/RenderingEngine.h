@@ -4,14 +4,18 @@
 #include "graphics/light/PointLight.h"
 #include "graphics/light/SpotLight.h"
 #include "PostEffect/PostEffect.h"
+#include "preRender/lightCulling.h"
 #include "../Game/Portal/PortalCamera.h"
 
 namespace nsPortalEngine {
 
 	namespace
 	{
-		const int POINT_LIGHT_NUM = 4;		//ポイントライトの数。
-		const int SPOT_LIGHT_NUM = 4;		//スポットライトの数。
+		const int POINT_LIGHT_NUM = 256;		//ポイントライトの数。
+		const int SPOT_LIGHT_NUM = 256;		//スポットライトの数。
+		const int TILE_WIDTH = 16;			//タイルの幅。
+		const int TILE_HEIGHT = 16;			//タイルの高さ。
+		const int TILE_NUM = (FRAME_BUFFER_W / TILE_WIDTH) * (FRAME_BUFFER_H / TILE_HEIGHT);		//タイルの数。
 	}
 
 	/// <summary>
@@ -249,7 +253,10 @@ namespace nsPortalEngine {
 		GaussianBlur			m_shadowBlur;								//シャドウ用ガウシアンブラー。
 		Camera					m_lightCamera;								//ライトカメラ。
 		PostEffect				m_postEffect;								//ポストエフェクト。
+		LightCulling			m_lightCulling;								//ライトカリング。
 		LightCB					m_lightCB;									//ライト用構造体。
+		RWStructuredBuffer		m_pointLightNoListInTileUAV;				//ポイントライト用UAV。
+		RWStructuredBuffer		m_spotLightNoListInTileUAV;				//スポットライト用UAV。
 		PortalCamera*			m_portalCamera = nullptr;					//ポータル用カメラ。
 	};
 }

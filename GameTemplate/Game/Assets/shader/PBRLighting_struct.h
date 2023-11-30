@@ -2,6 +2,16 @@
 // ライト用定数バッファの構造体。
 ////////////////////////////////////////////////
 
+static const int MAX_POINT_LIGHT = 256;
+static const int MAX_SPOT_LIGHT = 256;
+
+//一度に実行されるスレッド数。
+#define TILE_WIDTH 16
+#define TILE_HEIGHT 16
+
+//タイルの総数。
+#define TILE_SIZE (TILE_WIDTH * TILE_HEIGHT)
+
 /// <summary>
 /// ディレクションライト用の構造体。
 /// </summary>
@@ -20,6 +30,7 @@
 	float3 ptPosition;		//ライトの位置。
 	float3 ptColor;			//ライトのカラー。
 	float ptRange;			//ライトの影響範囲。
+	float3 posInView;		//カメラ空間での座標。
  };
 
 /// <summary>
@@ -32,6 +43,8 @@
 	float spRange;			//ライトの影響範囲。
 	float3 spDirection;		//ライトの方向。
 	float spAngle;			//ライトの射出角度。
+	float3 posInView;		//カメラ空間での座標。
+	float3 directionInView;	//カメラ空間での方向。
  };
 
 /// <summary>
@@ -46,12 +59,12 @@ struct ShadowCB
 //ライト用の定数バッファ。
 cbuffer LightCB : register(b1) {
 
-	DirectionLig dirLig;		//ディレクションライト用の構造体。
-	float3 eyePos;				//視点の位置。
-	PointLig ptLig[4];			//ポイントライト用の構造体。
-	SpotLig spLig[4];			//スポットライト用の構造体。
-	ShadowCB shadow;			//シャドウ用の構造体。
-    float4x4 mViewProjInv;      //ビュープロジェクション行列の逆行列。
-	int ptNum;					//ポイントライトの数。
-	int spNum;					//スポットライトの数。
+	DirectionLig dirLig;				//ディレクションライト用の構造体。
+	float3 eyePos;						//視点の位置。
+	PointLig ptLig[MAX_POINT_LIGHT];	//ポイントライト用の構造体。
+	SpotLig spLig[MAX_SPOT_LIGHT];		//スポットライト用の構造体。
+	ShadowCB shadow;					//シャドウ用の構造体。
+    float4x4 mViewProjInv;      		//ビュープロジェクション行列の逆行列。
+	int ptNum;							//ポイントライトの数。
+	int spNum;							//スポットライトの数。
 }

@@ -63,6 +63,7 @@ cbuffer cb : register(b0)
 /// <summary>
 /// ポイントライトを計算。
 /// </summary>
+/// <param name="pos">座標</param>
 /// <param name="worldPos">ワールド座標</param>
 /// <param name="toEye">視点の位置</param>
 /// <param name="normal">法線</param>
@@ -70,6 +71,7 @@ cbuffer cb : register(b0)
 /// <param name="metallic">金属度</param>
 /// <param name="smooth">スムース</param>
 float3 CalcPointLight(
+    float3 pos,
     float3 worldPos,
     float3 toEye,
     float3 normal,
@@ -78,18 +80,36 @@ float3 CalcPointLight(
     float smooth
 )
 {
-	float3 finalPtLig = 0.0f;
+    float3 finalPtLig = 0.0f;
 
-	for(int i = 0; i < ptNum; i++) {
-		//サーフェイスに入射するポイントライトの正規化ベクトルを計算する。
-		float3 ligDir = normalize(worldPos - ptLig[i].ptPosition);
+    //このピクセルが含まれているタイルの番号を計算する。
+    uint numCellX = (screenParam.z + TILE_WIDTH - 1) / TILE_WIDTH;
+    uint tileIndex = floor(pos.x / TILE_WIDTH) + floor(pos.y / TILE_HEIGHT) * numCellX;
+
+    //含まれるタイルの影響の開始位置と終了位置を計算する。
+    uint lightStart = tileIndex * ptNum;
+    uint lightEnd = lightStart + ptNum;
+
+    for(
+        uint lightListIndex = lightStart;
+        lightListIndex < lightEnd;
+        lightListIndex++
+    ) {
+        uint ligNo = pointLightListInTile[lightListIndex];
+
+        if(ligNo == 0xffffffff) {
+            break;
+        }
+
+        //サーフェイスに入射するポイントライトの正規化ベクトルを計算する。
+		float3 ligDir = normalize(worldPos - ptLig[ligNo].ptPosition);
 
         //ライトを計算。
         float3 lig = CalcDirectionLight(
             toEye,
             normal,
             ligDir,
-            ptLig[i].ptColor,
+            ptLig[ligNo].ptColor,
             specColor,
             metallic,
             smooth
@@ -97,16 +117,16 @@ float3 CalcPointLight(
 
 		//距離による影響率を計算する。
 		//ポイントライトとの距離を計算する。
-		float distance = length(worldPos - ptLig[i].ptPosition);
+		float distance = length(worldPos - ptLig[ligNo].ptPosition);
 		//影響率は距離に比例して小さくなっていく。
-		float affect = 1.0f - min(1.0f, distance / ptLig[i].ptRange);
+		float affect = 1.0f - min(1.0f, distance / ptLig[ligNo].ptRange);
 		//影響を指数関数的にする。
 		affect = pow(affect, 2.0f);
 		//減衰率を乗算して影響を弱める。
         lig *= affect;
 
         finalPtLig += lig;
-	}
+    }
 
 	return finalPtLig;
 }
@@ -114,6 +134,7 @@ float3 CalcPointLight(
 /// <summary>
 /// スポットライトを計算。
 /// </summary>
+/// <param name="pos">座標</param>
 /// <param name="worldPos">ワールド座標</param>
 /// <param name="toEye">視点の位置</param>
 /// <param name="normal">法線</param>
@@ -121,6 +142,7 @@ float3 CalcPointLight(
 /// <param name="metallic">金属度</param>
 /// <param name="smooth">スムース</param>
 float3 CalcSpotLight(
+    float3 pos,
     float3 worldPos,
     float3 toEye,
     float3 normal,
@@ -131,16 +153,34 @@ float3 CalcSpotLight(
 {
 	float3 finalSpLig = 0.0f;
 
-	for(int i = 0; i < spNum; i++) {
-		//サーフェイスに入射するスポットライトの正規化ベクトルを計算する。
-		float3 ligDir = normalize(worldPos - spLig[i].spPosition);
+    //このピクセルが含まれているタイルの番号を計算する。
+    uint numCellX = (screenParam.z + TILE_WIDTH - 1) / TILE_WIDTH;
+    uint tileIndex = floor(pos.x / TILE_WIDTH) + floor(pos.y / TILE_HEIGHT) * numCellX;
+
+    //含まれるタイルの影響の開始位置と終了位置を計算する。
+    uint lightStart = tileIndex * spNum;
+    uint lightEnd = lightStart + spNum;
+
+    for(
+        uint lightListIndex = lightStart;
+        lightListIndex < lightEnd;
+        lightListIndex++
+    ) {
+        uint ligNo = spotLightListInTile[lightListIndex];
+
+        if(ligNo == 0xffffffff) {
+            break;
+        }
+        
+        //サーフェイスに入射するスポットライトの正規化ベクトルを計算する。
+		float3 ligDir = normalize(worldPos - spLig[ligNo].spPosition);
 
         //ライトを計算。
         float3 lig = CalcDirectionLight(
             toEye,
             normal,
             ligDir,
-            spLig[i].spColor,
+            spLig[ligNo].spColor,
             specColor,
             metallic,
             smooth
@@ -148,27 +188,26 @@ float3 CalcSpotLight(
 
 		//距離による影響率を計算する。
 		//スポットライトとの距離を計算する。
-		float distance = length(worldPos - spLig[i].spPosition);
+		float distance = length(worldPos - spLig[ligNo].spPosition);
 		//影響率は距離に比例して小さくなっていく。
-		float affect = 1.0f - min(1.0f, distance / spLig[i].spRange);
+		float affect = 1.0f - min(1.0f, distance / spLig[ligNo].spRange);
 		//影響の仕方を指数関数的にする。
 		affect = pow(affect, 2.0f);
 		//影響率を乗算して反射光を弱める。
 		lig *= affect;
 
 		//入射光と射出方向の角度を求める。
-		float angle = dot(ligDir, spLig[i].spDirection);
+		float angle = dot(ligDir, spLig[ligNo].spDirection);
 		angle = abs(acos(angle));
 		//角度による影響率を求める。
-		affect = max(0.0f, 1.0f - 1.0f / spLig[i].spAngle * angle);
+		affect = max(0.0f, 1.0f - 1.0f / spLig[ligNo].spAngle * angle);
 		//影響の仕方を指数関数的にする。
 		affect = pow(affect, 2.0f);
 		//影響率を乗算して反射光を弱める。
 		lig *= affect;
 
 		finalSpLig += lig;
-	}
-
+    }
 	return finalSpLig;
 }
 
@@ -244,6 +283,7 @@ float4 PSMainCore(PSInput psIn)
 
     //ポイントライトを計算。
     lig += CalcPointLight(
+        psIn.pos.xyz,
         worldPos,
         toEye,
         normal.xyz,
@@ -254,6 +294,7 @@ float4 PSMainCore(PSInput psIn)
 
     //スポットライトを計算。
     lig += CalcSpotLight(
+        psIn.pos.xyz,
         worldPos,
         toEye,
         normal.xyz,
