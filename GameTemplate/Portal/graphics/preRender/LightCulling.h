@@ -25,6 +25,11 @@ namespace nsPortalEngine {
 			RWStructuredBuffer& spotLightNoListInTileUAV
 		);
 
+		void SetCamera(Camera& camera)
+		{
+			m_camera = &camera;
+		}
+
 		/// <summary>
 		/// 実行処理。
 		/// </summary>
@@ -51,6 +56,7 @@ namespace nsPortalEngine {
 		RWStructuredBuffer* m_pointLightNoListInTileUAV = nullptr;		//ポイントライト用UAV。
 		RWStructuredBuffer* m_spotLightNoListInTileUAV = nullptr;		//スポットライト用UAV。
 		ConstantBuffer		m_cameraDataCB;								//ライトカリング用定数バッファ。
+		Camera*				m_camera = nullptr;							//カメラデータ。
 	};
 
 }

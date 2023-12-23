@@ -4,6 +4,7 @@
 #include "PortalFrame.h"
 #include "GameCamera.h"
 #include "Game.h"
+#include "Fade.h"
 
 namespace
 {
@@ -11,7 +12,7 @@ namespace
 	const int		MAX_HP = 100;									//最大HP。
 	const float		CHARACON_RADIUS = 10.0f;						//キャラコンの半径。
 	const float		CHARACON_HEIGHT = 60.0f;						//キャラコンの高さ。
-	const float		WALK_SPEED = 120.0f;							//移動速度。
+	const float		WALK_SPEED = 180.0f;							//移動速度。
 	const float		CROUCH_SPEED = 40.0f;							//しゃがみ速度。
 	const float		JUMP_POWER = 140.0f;							//ジャンプ量。
 	const float		GRAVITY = 10.0f;								//重力。
@@ -21,7 +22,6 @@ namespace
 	const float		ADDMOVESPEED_MIN = 1.0f;						//追加の移動速度を終了する値。
 	const float		ADDMOVESPEED_DIV = 5.0f;						//追加の移動速度を除算する値。
 	const float		DAMAGE_TIME = 0.3f;								//ダメージを受ける時間。
-	const float		DEAD_TIME = 2.0f;								//死亡時間。
 }
 
 Player::Player()
@@ -30,14 +30,13 @@ Player::Player()
 
 Player::~Player()
 {
-	DeleteGO(m_portalGun);
-	DeleteGO(m_gameCamera);
 }
 
 bool Player::Start()
 {
-	//ゲームクラスの検索。
+	//オブジェクトの検索。
 	m_game = FindGO<Game>("game");
+	m_gameCamera = FindGO<GameCamera>("gameCamera");
 
 	//アニメーションクリップ。
 	m_animationClips[enState_Idle].Load("Assets/animData/player/idle.tka");
@@ -61,6 +60,10 @@ bool Player::Start()
 	);
 	m_modelRender.SetScale(MODEL_SCALE);
 	m_modelRender.Update();
+	m_modelRender.AddAnimationEvent([&](const wchar_t* clipName, const wchar_t* eventName)
+		{
+			OnAnimationEvent(clipName, eventName);
+		});
 
 	//ダメージ画像の設定。
 	m_damageSpriteRender.Init("Assets/sprite/UI/damage.DDS", 1600.0f, 900.0f);
@@ -70,11 +73,6 @@ bool Player::Start()
 	//キャラクターコントローラーの設定。
 	m_characterController = new CharacterController;
 	m_characterController->Init(CHARACON_RADIUS, CHARACON_HEIGHT, m_position);
-
-	//ポータルガンの設定。
-	m_portalGun = NewGO<PortalGun>(3, "portalGun");
-	//カメラの設定。
-	m_gameCamera = NewGO<GameCamera>(2, "gameCamera");
 
 	//文字の設定。
 	a.SetPosition(Vector3(400.0f, 0.0f, 0.0f));
@@ -88,14 +86,22 @@ bool Player::Start()
 
 void Player::Update()
 {
-	//プレイヤーが死亡していないなら。
-	if (m_playerState != enState_Dead) {
+	if (m_playerState == enState_End ||
+		m_playerState == enState_Dead
+	) {
+		return;
+	}
 
-		Input();
+	Input();
 
-		PlayAnimation();
+	PlayAnimation();
 
-		m_modelRender.Update();
+	m_modelRender.Update();
+
+	Vector3 diff = m_game->GetClearPosition() - m_position;
+	if (diff.LengthSq() < 100.0f * 100.0f) {
+		m_game->NotifyClear();
+		m_playerState = enState_End;
 	}
 
 	State();
@@ -326,10 +332,6 @@ void Player::State()
 	case enState_JumpEnd:
 		ProcessJumpEndStateTransition();
 		break;
-
-	case enState_Dead:
-		ProcessDeadStateTransition();
-		break;
 	}
 }
 
@@ -408,20 +410,6 @@ void Player::ProcessJumpEndStateTransition()
 }
 
 /// <summary>
-/// 死亡状態の遷移処理。
-/// </summary>
-void Player::ProcessDeadStateTransition()
-{
-	m_deadTimer += g_gameTime->GetFrameDeltaTime();
-
-	//死亡時間が経過したら。
-	if (m_deadTimer > DEAD_TIME) {
-		Reset();
-		return;
-	}
-}
-
-/// <summary>
 /// ワープ処理。
 /// </summary>
 /// <param name="pos">座標</param>
@@ -455,7 +443,7 @@ void Player::ReceiveDamage(const int damage, const Vector3& dir)
 	if (m_hp < 0) {
 		//死亡状態にする。
 		m_playerState = enState_Dead;
-		m_gameCamera->Dead();
+		m_game->NotifyReset();
 	}
 
 	m_damageTimer = DAMAGE_TIME;
@@ -477,20 +465,30 @@ void Player::Reset()
 	m_walkSpeed = 0.0f;
 	m_gravityAccel = 0.0f;
 	m_damageTimer = 0.0f;
-	m_deadTimer = 0.0f;
 	m_playerState = enState_Idle;
 	m_addMoveSpeed = Vector3::Zero;
 
-	//ゲームにリセット状態を通知。
-	m_game->NotifyReset();
-
-	//カメラをリセット。
-	m_gameCamera->Reset();
-
 	//座標を初期化。
-	m_position = m_game->GetRespawnPoint();
+	m_position = m_game->GetRespawnPosition();
 	m_characterController->SetPosition(m_position);
+
+	//フェードインを開始。
+	Fade* fade = FindGO<Fade>("fade");
+	fade->StartFadeIn();
 }
+
+
+void Player::OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName)
+{
+	(void)clipName;
+	//イベントなら
+	if (wcscmp(eventName, L"step") == 0)
+	{
+		m_game->AddStepNum();
+	}
+
+}
+
 
 /// <summary>
 /// デバッグ処理。

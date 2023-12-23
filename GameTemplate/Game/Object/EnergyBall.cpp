@@ -3,6 +3,7 @@
 #include "EnergyBallGenerator.h"
 #include "Player.h"
 #include "Stage.h"
+#include "PortalFrame.h"
 
 namespace
 {
@@ -162,9 +163,24 @@ void EnergyBall::Disable()
 	}
 }
 
+/// <summary>
+/// ワープ処理。
+/// </summary>
+/// <param name="pos">座標</param>
+/// <param name="direction">方向</param>
+void EnergyBall::SetWarp(const Vector3& pos, const Vector3& direction)
+{
+	m_position = pos;
+	m_rotation.SetRotation(m_direction, direction);
+	m_direction = direction;
+}
+
 void EnergyBall::Clear()
 {
 	Disable();
+
+	//配列から自身を削除。
+	m_stage->RemoveEnergyBallObject(this);
 
 	if (m_energyBallGenerator != nullptr) {
 		m_energyBallGenerator->Disable();

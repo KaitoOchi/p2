@@ -1,7 +1,9 @@
 #pragma once
 class Player;
+class EnergyBall;
 class GameCamera;
 class PortalCamera;
+class Stage;
 
 /// <summary>
 /// ポータルフレーム。
@@ -77,21 +79,9 @@ public:
 	}
 
 	/// <summary>
-	/// 当たり判定を表示。
+	/// リセット処理。
 	/// </summary>
-	void EnableCollision()
-	{
-		m_collisionObject->SetIsEnable(true);
-	}
-
-	/// <summary>
-	/// 当たり判定を非表示。
-	/// </summary>
-	/// <returns></returns>
-	void DisableCollision()
-	{
-		m_collisionObject->SetIsEnable(false);
-	}
+	void Reset();
 
 	/// <summary>
 	/// ポータルフレームの設置処理。
@@ -104,9 +94,21 @@ private:
 	/// </summary>
 	void Collision();
 	/// <summary>
-	/// 当たったときの処理。
+	/// プレイヤーとの当たり判定。
 	/// </summary>
-	void IsHit();
+	void CollisionPlayer();
+	/// <summary>
+	/// エネルギーボールとの当たり判定。
+	/// </summary>
+	void CollisionEnergyBall();
+	/// <summary>
+	/// プレイヤーに当たったときの処理。
+	/// </summary>
+	void IsHitPlayer();
+	/// <summary>
+	/// エネルギーボールに当たったときの処理。
+	/// </summary>
+	void IsHitEnergyBall(EnergyBall* ball);
 	/// <summary>
 	/// ポータルが設置できるかどうか。
 	/// </summary>
@@ -116,18 +118,20 @@ private:
 	const bool IsCanPut(const Vector3& pos, const Vector3& normal);
 
 private:
-	ModelRender			m_portalFrameModelRender;			//ポータルフレームモデル。
-	ModelRender			m_portalFrameCollisionModelRender;	//ポータルフレームの当たり判定モデル。
-	PhysicsStaticObject m_physicsStaticObject;				//ポータルの物理静的オブジェクト。
-	CollisionObject*	m_collisionObject = nullptr;		//コリジョン。
-	Player*				m_player = nullptr;					//プレイヤー。
-	GameCamera*			m_gameCamera = nullptr;				//ゲームカメラ。
-	PortalFrame*		m_anotherPortalFrame = nullptr;		//別のポータル。
-	PortalCamera*		m_portalCamera = nullptr;			//ポータルカメラ。
-	Vector3				m_position;							//座標。
-	Vector3				m_normal;							//法線。
-	Quaternion			m_rotation;							//回転。
-	PortalType			m_portalType = enPortalType_Num;	//ポータルのタイプ。
-	bool				m_isEnable = false;					//表示しているかどうか。
-	bool				m_isCollisionHit = false;			//当たり判定に当たったかどうか。
+	ModelRender					m_portalFrameModelRender;			//ポータルフレームモデル。
+	ModelRender					m_portalFrameCollisionModelRender;	//ポータルフレームの当たり判定モデル。
+	PhysicsStaticObject			m_physicsStaticObject;				//ポータルの物理静的オブジェクト。
+	CollisionObject*			m_collisionObject = nullptr;		//コリジョン。
+	EffectEmitter*				m_frameEffect = nullptr;			//枠組みエフェクト。
+	Player*						m_player = nullptr;					//プレイヤー。
+	GameCamera*					m_gameCamera = nullptr;				//ゲームカメラ。
+	PortalFrame*				m_anotherPortalFrame = nullptr;		//別のポータル。
+	PortalCamera*				m_portalCamera = nullptr;			//ポータルカメラ。
+	Stage*						m_stage = nullptr;					//ステージ。
+	Vector3						m_position;							//座標。
+	Vector3						m_normal;							//法線。
+	Quaternion					m_rotation;							//回転。
+	PortalType					m_portalType = enPortalType_Num;	//ポータルのタイプ。
+	bool						m_isEnable = false;					//表示しているかどうか。
+	bool						m_isCollisionHit = false;			//当たり判定に当たったかどうか。
 };

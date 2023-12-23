@@ -40,10 +40,10 @@ sampler Sampler : register(s0);
 float4 PSMain(PSInput In) : SV_Target0
 {
     //カメラ空間での深度値をサンプリング。
-    float depth = depthTexture.Sample(Sampler, In.uv).z;
+    float depth = depthTexture.Sample(Sampler, In.uv).a;
 
     //深度値が200以下ならピクセルキル。
-    clip(depth - 400);
+    clip(depth - 200);
 
     //ボケ画像をサンプリング。
     float4 boke = bokeTexture.Sample(Sampler, In.uv);

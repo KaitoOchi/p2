@@ -29,6 +29,14 @@ public:
 		m_landingPos = pos;
 	}
 
+	/// <summary>
+	/// 回転を設定。
+	/// </summary>
+	void SetRotation(const Quaternion& rot)
+	{
+		m_rotation = rot;
+	}
+
 private:
 	/// <summary>
 	/// 当たり判定処理。
@@ -48,6 +56,8 @@ private:
 	Vector3				m_middlePos;					//中間座標。
 	Vector3				m_landingPos;					//着地座標。
 	Vector3				m_bezierPos[3];					//ベジェ座標。
+	Vector3				m_moveSpeed;					//移動速度。
+	Quaternion			m_rotation;						//回転。
 	bool				m_isJump = false;				//ジャンプ中かどうか。
 	float				m_timer = 0.0f;					//タイマー。
 };

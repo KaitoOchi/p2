@@ -110,6 +110,10 @@ namespace nsPortalEngine {
 		/// 更新処理。
 		/// </summary>
 		void Update(const int num);
+		void Update()
+		{
+			Update(m_ptNum);
+		}
 
 	private:
 		PointLig	m_pointLight;		//ポイントライト

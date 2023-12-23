@@ -22,13 +22,13 @@ Turret::Turret()
 
 Turret::~Turret()
 {
-
+	m_laserEffect->Stop();
 }
 
 bool Turret::Start()
 {
 	//モデルの初期化。
-	m_modelRender.Init("Assets/modelData/unityChan.tkm", 0, 0, enModelUpAxisZ, true, true, ModelRender::enModelInitMode_Dithering);
+	m_modelRender.Init("Assets/modelData/unityChan.tkm", 0, 0, enModelUpAxisZ, true, true, ModelRender::enModelInitMode_Outline);
 	m_modelRender.SetPosition(m_position);
 	m_modelRender.SetRotation(m_rotation);
 	m_modelRender.Update();
@@ -38,6 +38,13 @@ bool Turret::Start()
 	modelInitData.m_tkmFilePath = "Assets/modelData/object/turret/turret_collision.tkm";
 	Model turretModel;
 	turretModel.Init(modelInitData);
+
+	//レーザーエフェクトを再生。
+	m_laserEffect = NewGO<EffectEmitter>(0);
+	m_laserEffect->Init(EffectEmitter::enEffect_Turret_Laser);
+	m_laserEffect->SetPosition(m_position);
+	m_laserEffect->SetRotation(m_rotation);
+	m_laserEffect->Play();
 
 	//プレイヤーの検索。
 	m_player = FindGO<Player>("player");

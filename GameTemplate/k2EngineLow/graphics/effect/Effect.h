@@ -82,6 +82,14 @@ namespace nsK2EngineLow {
 			return m_scale;
 		}
 		/// <summary>
+		/// 再生速度を設定。
+		/// </summary>
+		/// <param name="time"></param>
+		void SetTime(const float time)
+		{
+			m_speed = time;
+		}
+		/// <summary>
 		/// エフェクトが再生中か判定。
 		/// </summary>
 		bool IsPlay() const
@@ -98,5 +106,6 @@ namespace nsK2EngineLow {
 		Vector3 m_position;				//座標。
 		Quaternion m_rotation;;			//回転。
 		Vector3 m_scale = g_vec3One;	//拡大率。
+		float m_speed = 1.0f;			//再生速度。
 	};
 }

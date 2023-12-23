@@ -55,11 +55,11 @@ namespace nsPortalEngine {
 	{
 		//ポイントライトの情報を送るための定数バッファを作成。
 		LightCullingCameraData lightCullingCameraData;
-		lightCullingCameraData.mProj = g_camera3D->GetProjectionMatrix();
+		lightCullingCameraData.mProj = m_camera->GetProjectionMatrix();
 		lightCullingCameraData.mProjInv.Inverse(lightCullingCameraData.mProj);
-		lightCullingCameraData.mCameraRot = g_camera3D->GetCameraRotation();
-		lightCullingCameraData.screenParam.x = g_camera3D->GetNear();
-		lightCullingCameraData.screenParam.y = g_camera3D->GetFar();
+		lightCullingCameraData.mCameraRot = m_camera->GetCameraRotation();
+		lightCullingCameraData.screenParam.x = m_camera->GetNear();
+		lightCullingCameraData.screenParam.y = m_camera->GetFar();
 		lightCullingCameraData.screenParam.z = FRAME_BUFFER_W;
 		lightCullingCameraData.screenParam.w = FRAME_BUFFER_H;
 		m_cameraDataCB.CopyToVRAM(lightCullingCameraData);

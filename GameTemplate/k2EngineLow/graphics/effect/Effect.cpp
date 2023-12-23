@@ -34,7 +34,8 @@ namespace nsK2EngineLow {
 			m_handle,
 			m_position,
 			m_rotation,
-			m_scale
+			m_scale,
+			m_speed
 		);
 	}
 }

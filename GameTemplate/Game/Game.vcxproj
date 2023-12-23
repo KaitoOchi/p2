@@ -242,6 +242,7 @@
     <ClCompile Include="Portal\PortalGun.cpp" />
     <ClCompile Include="Scene\Fade.cpp" />
     <ClCompile Include="Scene\Game.cpp" />
+    <ClCompile Include="Scene\Result.cpp" />
     <ClCompile Include="Scene\Setting.cpp" />
     <ClCompile Include="Scene\Title.cpp" />
     <ClCompile Include="Stage\Stage.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="Portal\PortalGun.h" />
     <ClInclude Include="Scene\Fade.h" />
     <ClInclude Include="Scene\Game.h" />
+    <ClInclude Include="Scene\Result.h" />
     <ClInclude Include="Scene\Setting.h" />
     <ClInclude Include="Scene\Title.h" />
     <ClInclude Include="Stage\Stage.h" />

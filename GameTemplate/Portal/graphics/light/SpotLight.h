@@ -168,6 +168,10 @@ namespace nsPortalEngine {
 		/// 更新処理。
 		/// </summary>
 		void Update(const int num);
+		void Update()
+		{
+			Update(m_spNum);
+		}
 
 	private:
 		SpotLig		m_spotLight;	//スポットライト。

@@ -14,7 +14,12 @@ namespace nsK2EngineLow {
 		enum EffectType
 		{
 			enEffect_Turret_Shot,
+			enEffect_Turret_Laser,
 			enEffect_EnergyBall,
+			enEffect_PortalFrame_Blue,
+			enEffect_PortalFrame_Red,
+			enEffect_PortalShot_Blue,
+			enEffect_PortalShot_Red,
 		};
 
 	public:
@@ -96,6 +101,14 @@ namespace nsK2EngineLow {
 		const Quaternion& GetRotation() const
 		{
 			m_effect.GetRotation();
+		}
+		/// <summary>
+		/// Ä¶‘¬“x‚ğİ’èB
+		/// </summary>
+		/// <param name="time"></param>
+		void SetTime(const float time)
+		{
+			m_effect.SetTime(time);
 		}
 		/// <summary>
 		/// Ä¶’†‚©‚Ç‚¤‚©‚ğæ“¾B

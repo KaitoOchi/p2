@@ -105,6 +105,7 @@ private:
 
 private:
 	ModelRender			m_modelRender;					//モデル。
+	EffectEmitter*		m_laserEffect = nullptr;		//レーザーエフェクト。
 	Player*				m_player = nullptr;				//プレイヤー。
 	Vector3				m_position;						//座標。
 	Vector3				m_forward;						//前方向。

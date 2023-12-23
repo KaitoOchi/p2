@@ -19,6 +19,7 @@ public:
 		enState_Jump,			//ジャンプ。
 		enState_JumpEnd,		//ジャンプ終了。
 		enState_Dead,			//死亡。
+		enState_End,			//終了。
 		enState_Num,			//数。
 	};
 
@@ -117,6 +118,9 @@ public:
 	void SetWarp(const Vector3& pos, const float angle);
 
 private:
+	//アニメーションイベント用の関数
+	void OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName);
+
 	/// <summary>
 	/// 入力処理。
 	/// </summary>
@@ -166,10 +170,6 @@ private:
 	/// </summary>
 	void ProcessJumpEndStateTransition();
 	/// <summary>
-	/// 死亡状態の遷移処理。
-	/// </summary>
-	void ProcessDeadStateTransition();
-	/// <summary>
 	/// デバッグ処理。
 	/// </summary>
 	void Debug();
@@ -177,10 +177,9 @@ private:
 private:
 	ModelRender				m_modelRender;					//モデルレンダー。
 	SpriteRender			m_damageSpriteRender;			//ダメージを受けたときのスプライト。
-	CharacterController* m_characterController = nullptr;			//キャラクターコントローラー。
+	CharacterController* m_characterController = nullptr;	//キャラクターコントローラー。
 	AnimationClip			m_animationClips[enState_Num];	//アニメーションクリップ。
 	Game*					m_game = nullptr;				//ゲームクラス。
-	PortalGun*				m_portalGun = nullptr;			//ポータルガン。
 	GameCamera*				m_gameCamera = nullptr;			//ゲームカメラ。
 	Vector3					m_position;						//座標。
 	Vector3					m_moveSpeed;					//移動速度。
@@ -192,7 +191,6 @@ private:
 	float					m_walkSpeed = 0.0f;				//移動速度。
 	float					m_gravityAccel = 0.0f;			//重力加速。
 	float					m_damageTimer = 0.0f;			//ダメージタイマー。
-	float					m_deadTimer = 0.0f;				//死亡時間。
 
 
 	FontRender a; //デバッグ用。

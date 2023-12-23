@@ -57,28 +57,38 @@ Stage::~Stage()
 
 bool Stage::Start()
 {
-	//地面モデルの設定。
-	m_modelRender.Init("Assets/modelData/stage/tile.tkm", 0, 0, enModelUpAxisZ, true, true);
+	//モデルの作成。
+	m_decorationModelRender.Init("Assets/modelData/stage/level00/level00_decoration.tkm", 0, 0, enModelUpAxisZ, false, true);
+	m_physicsModelRender.Init("Assets/modelData/stage/level00/level00_collision.tkm", 0, 0, enModelUpAxisZ, false, true);
 	//モデルから静的オブジェクトを作成。
-	m_physicsStaticObject.CreateFromModel(m_modelRender.GetModel(), m_modelRender.GetModel().GetWorldMatrix());
+	m_physicsStaticObject.CreateFromModel(m_physicsModelRender.GetModel(), m_physicsModelRender.GetModel().GetWorldMatrix());
 
 	InitLevelRender();
-
-	JumpBoard* jumpBoard = NewGO<JumpBoard>(0, "jumpBoard");
-	jumpBoard->SetPosition(Vector3(0.0f, 0.0f, 100.0f));
-	jumpBoard->SetLandingPosition(Vector3(0.0f, 0.0f, 1250.0f));
 
 	return true;
 }
 
 void Stage::InitLevelRender()
 {
+	//ポイントライトとスポットライトの数。
+	int ptNum = 0;
+	int spNum = 0;	
+
+	std::map<int, JumpBoard*> jumpBoardObjects;
+	std::map<int, Vector3> landingPosObjects;
+
 	// レベルデザイン処理。
 	m_levelRender.Init("Assets/level/stage/level00.tkl", [&](LevelObjectData& objData) {
 		//名前がプレイヤーの時。
 		if (objData.EqualObjectName(L"Player") == true) {
 			//初期座標を設定。
-			m_respawnPoint = objData.position;
+			m_respawnPosition = objData.position;
+			return true;
+		}
+		//名前がクリア地点の時。
+		if (objData.EqualObjectName(L"ClearPosition") == true) {
+			//クリア座標を設定。
+			m_clearPosition = objData.position;
 			return true;
 		}
 		//名前がタレットの時。
@@ -112,14 +122,92 @@ void Stage::InitLevelRender()
 			m_gimmickObjects.emplace_back(door);
 			return true;
 		}
+		//名前がジャンプ台の時。
+		if (objData.ForwardMatchName(L"JumpBoard") == true) {
+			JumpBoard* jumpBoard = NewGO<JumpBoard>(0, "jumpBoard");
+			jumpBoard->SetPosition(objData.position);
+			jumpBoard->SetRotation(objData.rotation);
+			jumpBoardObjects.emplace(objData.number, jumpBoard);
+			jumpBoard->SetLandingPosition(Vector3(0.0f, 0.0f, 1250.0f));
+			return true;
+		}
+		//名前が着地地点の時。
+		if (objData.ForwardMatchName(L"LandingPos") == true) {
+			landingPosObjects.emplace(objData.number, objData.position);
+			return true;
+		}
+		//名前が黒ポイントライトなら。
+		if (objData.ForwardMatchName(L"pointLight_black") == true) {
+			PointLight* ptLight = new PointLight;
+			ptLight->SetPointLight(
+				ptNum,
+				objData.position,
+				Vector3(-10.0f, -10.0f, -10.0f),
+				objData.number
+			);
+			m_pointLightObjects.emplace_back(ptLight);
+			ptNum++;
+			return true;
+		}
+		//名前がポイントライトなら。
+		if (objData.ForwardMatchName(L"pointLight") == true) {
+			PointLight* ptLight = new PointLight;
+			ptLight->SetPointLight(
+				ptNum,
+				objData.position,
+				objData.scale,
+				objData.number
+			);
+			m_pointLightObjects.emplace_back(ptLight);
+			ptNum++;
+			return true;
+		}
+		//名前がスポットライトなら。
+		if (objData.ForwardMatchName(L"spotLight") == true) {
+			Vector3 dir = Vector3::AxisX;
+			objData.rotation.Apply(dir);
+			dir.Normalize();
+			SpotLight* spLight = new SpotLight;
+			spLight->SetSpotLight(
+				spNum,
+				objData.position,
+				objData.scale,
+				objData.number,
+				dir,
+				120.0f
+			);
+			m_spotLightObjects.emplace_back(spLight);
+			spNum++;
+			return true;
+		}
 		return true;
 		}
 	);
+	RenderingEngine::GetInstance()->GetLightCB().ptNum = ptNum;
+	RenderingEngine::GetInstance()->GetLightCB().spNum = spNum;
+
+	//ジャンプ台と着地地点の同期。
+	auto itr = landingPosObjects.begin();
+	for (auto& obj : jumpBoardObjects)
+	{
+		obj.second->SetLandingPosition(itr->second);
+		itr = std::next(itr, 1);
+	}
+	jumpBoardObjects.clear();
+	landingPosObjects.clear();
 }
 
 void Stage::Update()
 {
+	for (auto& light : m_pointLightObjects)
+	{
+		light->Update();
+	}
 
+	for (auto& light : m_spotLightObjects)
+	{
+		light->Update();
+	}
 }
 
 void Stage::ClearGimmickObject(const int num)
@@ -134,5 +222,5 @@ void Stage::ClearGimmickObject(const int num)
 
 void Stage::Render(RenderContext& rc)
 {
-	m_modelRender.Draw(rc);
+	m_decorationModelRender.Draw(rc);
 }

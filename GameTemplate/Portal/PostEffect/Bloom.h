@@ -31,14 +31,14 @@ namespace nsPortalEngine {
 		/// 初期化処理。
 		/// </summary>
 		/// <param name="mainRenderTarget"></param>
-		void OnInit(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget) override;
+		void OnInit(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget) override;
 
 		/// <summary>
 		/// 描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		/// <param name="mainRenderTarget"></param>
-		void OnRender(RenderContext& rc, RenderTarget& mainRenderTarget) override;
+		void OnRender(RenderContext& rc, RenderTarget* mainRenderTarget) override;
 
 		/// <summary>
 		/// 閾値を設定。

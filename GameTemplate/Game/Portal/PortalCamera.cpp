@@ -7,7 +7,6 @@ PortalCamera::PortalCamera()
 	//ポータルフレームを初期化。
 	for (int i = 0; i < PORTAL_NUM; i++) {
 		m_portalFrame[i] = nullptr;
-		m_angle[i] = 0.0f;
 	}
 }
 
@@ -65,10 +64,7 @@ void PortalCamera::SetCameraPosition(const int portalNum)
 {
 	//プレイヤーからポータルに向かうベクトルを計算。
 	Vector3 diff = m_portalFrame[portalNum]->GetPosition() - g_camera3D->GetPosition();
-
-	if (fabsf(m_portalFrame[portalNum]->GetNormal().y) < 0.1f) {
-		diff.y = 0.0f;
-	}
+	diff.y = 0.0f;
 
 	//注視点を回転させる。
 	m_rotation[portalNum].Apply(diff);
@@ -88,11 +84,10 @@ void PortalCamera::SetCameraTarget(const int portalNum)
 
 	//注視点を回転させる。
 	m_rotation[portalNum].Apply(playerTarget);
-	
+
 	//カメラの注視点はもう一方のポータルの座標 + プレイヤーからポータルに向かうベクトル。
 	Vector3 targetPos = m_portalFrame[1 - portalNum]->GetPosition() + playerTarget;
 	m_portalCamera[portalNum].SetTarget(targetPos);
-
 }
 
 void PortalCamera::UpdateAngle()
@@ -106,14 +101,14 @@ void PortalCamera::UpdateAngle()
 		//2つのポータルの角度を計算。
 		m_angle[portalNum] = acosf(thisPortalNormal.Dot(anotherPortalNormal));
 
-		//2つのポータルの回転を計算。
-		m_rotation[portalNum].SetRotation(m_portalFrame[portalNum]->GetNormal(), m_portalFrame[1 - portalNum]->GetNormal() * -1.0f);
-
 		//外積を求め、y軸を使って±を補正する。
 		Vector3 cross = thisPortalNormal;
 		cross.Cross(anotherPortalNormal);
 		if (cross.y <= -1.0f) {
 			m_angle[portalNum] *= -1.0f;
 		}
+
+		//2つのポータルの回転を計算。
+		m_rotation[portalNum].SetRotation(thisPortalNormal, anotherPortalNormal);
 	}
 }

@@ -13,15 +13,15 @@ namespace nsPortalEngine {
 
 	}
 
-	void Bloom::OnInit(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget)
+	void Bloom::OnInit(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget)
 	{
 		//レンダーターゲットの初期化。
 		m_luminanceRenderTarget.Create(
-			mainRenderTarget.GetWidth(),
-			mainRenderTarget.GetHeight(),
+			mainRenderTarget[0].GetWidth(),
+			mainRenderTarget[0].GetHeight(),
 			1,
 			1,
-			mainRenderTarget.GetColorBufferFormat(),
+			mainRenderTarget[0].GetColorBufferFormat(),
 			DXGI_FORMAT_D32_FLOAT
 		);
 
@@ -32,17 +32,17 @@ namespace nsPortalEngine {
 		}
 
 		//輝度抽出用のスプライトを初期化。
-		InitLuminanceSprite(mainRenderTarget);
+		InitLuminanceSprite(mainRenderTarget[0]);
 
 		//加算合成用スプライトを初期化。
-		InitFinalSprite(mainRenderTarget);
+		InitFinalSprite(mainRenderTarget[0]);
 
 		//メインレンダリングターゲットに合成用のスプライトを初期化。
 		SpriteInitData initData;
-		initData.m_width = mainRenderTarget.GetWidth();
-		initData.m_height = mainRenderTarget.GetHeight();
+		initData.m_width = mainRenderTarget[0].GetWidth();
+		initData.m_height = mainRenderTarget[0].GetHeight();
 		initData.m_fxFilePath = "Assets/shader/Sprite.fx";
-		initData.m_textures[0] = &mainRenderTarget.GetRenderTargetTexture();
+		initData.m_textures[0] = &mainRenderTarget[0].GetRenderTargetTexture();
 		m_copyMainRtSprite.Init(initData);
 	}
 
@@ -90,7 +90,7 @@ namespace nsPortalEngine {
 		m_finalSprite.Init(finalSpriteInitData);
 	}
 
-	void Bloom::OnRender(RenderContext& rc, RenderTarget& mainRenderTarget)
+	void Bloom::OnRender(RenderContext& rc, RenderTarget* mainRenderTarget)
 	{
 		// 輝度抽出
 		// 輝度抽出用のレンダリングターゲットに変更
@@ -114,15 +114,15 @@ namespace nsPortalEngine {
 
 		// 4枚のボケ画像を合成してメインレンダリングターゲットに加算合成
 		// レンダリングターゲットとして利用できるまで待つ
-		rc.WaitUntilToPossibleSetRenderTarget(mainRenderTarget);
+		rc.WaitUntilToPossibleSetRenderTarget(mainRenderTarget[0]);
 		// レンダリングターゲットを設定
-		rc.SetRenderTargetAndViewport(mainRenderTarget);
+		rc.SetRenderTargetAndViewport(mainRenderTarget[0]);
 
 		// 最終合成
 		m_finalSprite.Draw(rc);
 
 		// レンダリングターゲットへの書き込み終了待ち
-		rc.WaitUntilFinishDrawingToRenderTarget(mainRenderTarget);
+		rc.WaitUntilFinishDrawingToRenderTarget(mainRenderTarget[0]);
 
 		// メインレンダリングターゲットの絵をフレームバッファーにコピー
 		rc.SetRenderTarget(

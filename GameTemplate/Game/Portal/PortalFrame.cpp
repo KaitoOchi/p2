@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "PortalFrame.h"
 #include "Player.h"
+#include "EnergyBall.h"
 #include "GameCamera.h"
 #include "PortalCamera.h"
+#include "Stage.h"
 
 namespace
 {
@@ -21,6 +23,7 @@ PortalFrame::PortalFrame()
 PortalFrame::~PortalFrame()
 {
 	DeleteGO(m_collisionObject);
+	DeleteGO(m_frameEffect);
 }
 
 bool PortalFrame::Start()
@@ -29,11 +32,13 @@ bool PortalFrame::Start()
 	m_player = FindGO<Player>("player");
 	m_gameCamera = FindGO<GameCamera>("gameCamera");
 	m_portalCamera = FindGO<PortalCamera>("portalCamera");
+	m_stage = FindGO<Stage>("stage");
 
 	//当たり判定を初期化。
 	m_collisionObject = NewGO<CollisionObject>(0, "collision");
 	m_collisionObject->CreateBox(m_position, m_rotation, PORTAL_COLLISION_SIZE);
 	m_collisionObject->SetName("portal_red");
+	m_collisionObject->SetIsEnable(false);
 
 	//ポータルフレームを初期化。
 	//ModelInitDataを使用して初期化する。
@@ -62,7 +67,6 @@ bool PortalFrame::Start()
 	m_physicsStaticObject.SetPosition(m_position);
 	m_physicsStaticObject.GetbtCollisionObject()->setUserIndex(enCollisionAttr_PortalFrame);
 
-
 	return true;
 }
 
@@ -81,10 +85,19 @@ void PortalFrame::Update()
 void PortalFrame::Collision()
 {
 	//当たり判定が無効なら。
-	if (!m_collisionObject->IsEnable()) {
+	if (!m_anotherPortalFrame->GetIsEnable()) {
 		return;
 	}
 
+	CollisionPlayer();
+	CollisionEnergyBall();
+}
+
+/// <summary>
+/// プレイヤーとの当たり判定処理。
+/// </summary>
+void PortalFrame::CollisionPlayer()
+{
 	//ポータルとプレイヤーのベクトルが範囲外なら、衝突判定を行わない。
 	Vector3 length = m_player->GetPosition() - m_position;
 	if (length.LengthSq() > PORTAL_LENGTH * PORTAL_LENGTH) {
@@ -130,7 +143,7 @@ void PortalFrame::Collision()
 
 		//プレイヤーの座標がポータルの座標を超えていたら。
 		if (compareLargePos > compareSmallPos) {
-			IsHit();
+			IsHitPlayer();
 		}
 	}
 	//衝突していないなら。
@@ -143,9 +156,61 @@ void PortalFrame::Collision()
 }
 
 /// <summary>
-/// 当たったときの処理。
+/// エネルギーボールとの当たり判定処理。
 /// </summary>
-void PortalFrame::IsHit()
+void PortalFrame::CollisionEnergyBall()
+{
+	for (auto& ball : m_stage->GetEnergyBallObjects())
+	{
+		//ポータルとプレイヤーのベクトルが範囲外なら、衝突判定を行わない。
+		Vector3 length = ball->GetPosition() - m_position;
+		if (length.LengthSq() > PORTAL_LENGTH * PORTAL_LENGTH) {
+			return;
+		}
+
+		//エネルギーボールと接触しているなら。
+		if (m_collisionObject->IsHit(ball->GetCollisionObject())) {
+			//比較用の座標を設定。
+			float compareSmallPos = 0.0f;
+			float compareLargePos = 0.0f;
+
+			if (m_normal.x >= 1.0f) {
+				compareLargePos = m_position.x;
+				compareSmallPos = ball->GetPosition().x;
+			}
+			else if (m_normal.x <= -1.0f) {
+				compareLargePos = ball->GetPosition().x;
+				compareSmallPos = m_position.x;
+			}
+			else if (m_normal.z >= 1.0f) {
+				compareLargePos = m_position.z;
+				compareSmallPos = ball->GetPosition().z;
+			}
+			else if (m_normal.z <= -1.0f) {
+				compareLargePos = ball->GetPosition().z;
+				compareSmallPos = m_position.z;
+			}
+			else if (m_normal.y >= 1.0f) {
+				compareLargePos = m_position.y;
+				compareSmallPos = ball->GetPosition().y;
+			}
+			else if (m_normal.y <= -1.0f) {
+				compareLargePos = ball->GetPosition().y;
+				compareSmallPos = m_position.y;
+			}
+
+			//プレイヤーの座標がポータルの座標を超えていたら。
+			if (compareLargePos > compareSmallPos) {
+				IsHitEnergyBall(ball);
+			}
+		}
+	}
+}
+
+/// <summary>
+/// プレイヤーに当たったときの処理。
+/// </summary>
+void PortalFrame::IsHitPlayer()
 {
 	//2つのポータルの角度を計算。
 	float angle = acosf(m_normal.Dot(m_anotherPortalFrame->GetNormal()));
@@ -162,6 +227,15 @@ void PortalFrame::IsHit()
 	m_player->SetWarp(m_anotherPortalFrame->GetPosition(), angle);
 
 	m_isCollisionHit = false;
+}
+
+/// <summary>
+/// エネルギーボールに当たったときの処理。
+/// </summary>
+void PortalFrame::IsHitEnergyBall(EnergyBall* ball)
+{
+	//もう一方のポータルの座標まで移動する。
+	ball->SetWarp(m_anotherPortalFrame->GetPosition(), m_anotherPortalFrame->GetNormal());
 }
 
 //衝突したときに呼ばれる関数オブジェクト(地面用)
@@ -300,89 +374,89 @@ const bool PortalFrame::IsCanPut(const Vector3& pos, const Vector3& normal)
 
 	Vector3 finalPos = pos;
 
-	//右方向を調べる。
-	{
-		btTransform start, end;
-		start.setIdentity();
-		end.setIdentity();
-		//視点は座標の中心。
-		start.setOrigin(btVector3(pos.x, pos.y, pos.z));
-		//終点はコリジョンの右辺。
-		end.setOrigin(btVector3(
-			startPos.x - ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z)),
-			startPos.y,
-			startPos.z - ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x))
-		));
+	////右方向を調べる。
+	//{
+	//	btTransform start, end;
+	//	start.setIdentity();
+	//	end.setIdentity();
+	//	//視点は座標の中心。
+	//	start.setOrigin(btVector3(startPos.x, startPos.y, startPos.z));
+	//	//終点はコリジョンの右辺。
+	//	end.setOrigin(btVector3(
+	//		startPos.x - ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z)),
+	//		startPos.y,
+	//		startPos.z - ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x))
+	//	));
 
-		SweepResultWall callback;
-		callback.me = &m_collisionObject->GetbtCollisionObject();
-		callback.startPos = startPos;
+	//	SweepResultWall callback;
+	//	callback.me = &m_collisionObject->GetbtCollisionObject();
+	//	callback.startPos = startPos;
 
-		PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
+	//	PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
 
-		//衝突した。
-		if (callback.isHit) {
-			finalPos.x = (callback.hitPos.x - (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z));
-			finalPos.z = (callback.hitPos.z - (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x));
-			isHit = callback.isHit;
-		}
-	}
+	//	//衝突した。
+	//	if (callback.isHit) {
+	//		finalPos.x = (callback.hitPos.x - (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z));
+	//		finalPos.z = (callback.hitPos.z - (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x));
+	//		isHit = callback.isHit;
+	//	}
+	//}
 
-	//左方向を調べる。
-	{
-		//右方向を調べる。
-		btTransform start, end;
-		start.setIdentity();
-		end.setIdentity();
-		//視点は座標の中心。
-		start.setOrigin(btVector3(pos.x, pos.y, pos.z));
-		//終点はコリジョンの左辺。
-		end.setOrigin(btVector3(
-			startPos.x + ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z)),
-			startPos.y,
-			startPos.z + ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x))
-		));
+	////左方向を調べる。
+	//{
+	//	//右方向を調べる。
+	//	btTransform start, end;
+	//	start.setIdentity();
+	//	end.setIdentity();
+	//	//視点は座標の中心。
+	//	start.setOrigin(btVector3(pos.x, pos.y, pos.z));
+	//	//終点はコリジョンの左辺。
+	//	end.setOrigin(btVector3(
+	//		startPos.x + ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z)),
+	//		startPos.y,
+	//		startPos.z + ((PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x))
+	//	));
 
-		SweepResultWall callback;
-		callback.me = &m_collisionObject->GetbtCollisionObject();
-		callback.startPos = startPos;
+	//	SweepResultWall callback;
+	//	callback.me = &m_collisionObject->GetbtCollisionObject();
+	//	callback.startPos = startPos;
 
-		PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
+	//	PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
 
-		//衝突した。
-		if (callback.isHit) {
-			finalPos.x = (callback.hitPos.x + (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z));
-			finalPos.z = (callback.hitPos.z + (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x));
-			isHit = callback.isHit;
-		}
-	}
+	//	//衝突した。
+	//	if (callback.isHit) {
+	//		finalPos.x = (callback.hitPos.x + (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.z));
+	//		finalPos.z = (callback.hitPos.z + (PORTAL_COLLISION_SIZE.x / 2.0f) * fabsf(normal.x));
+	//		isHit = callback.isHit;
+	//	}
+	//}
 
-	//上方向を調べる。
-	{
-		btTransform start, end;
-		start.setIdentity();
-		end.setIdentity();
-		//視点は座標の中心。
-		start.setOrigin(btVector3(pos.x, pos.y, pos.z));
-		//終点はコリジョンの上辺。
-		end.setOrigin(btVector3(
-			startPos.x,
-			startPos.y + (PORTAL_COLLISION_SIZE.y / 2.0f),
-			startPos.z));
+	////上方向を調べる。
+	//{
+	//	btTransform start, end;
+	//	start.setIdentity();
+	//	end.setIdentity();
+	//	//視点は座標の中心。
+	//	start.setOrigin(btVector3(startPos.x, startPos.y, startPos.z));
+	//	//終点はコリジョンの上辺。
+	//	end.setOrigin(btVector3(
+	//		startPos.x,
+	//		startPos.y + (PORTAL_COLLISION_SIZE.y / 2.0f),
+	//		startPos.z));
 
-		SweepResultGround callback;
-		callback.me = &m_collisionObject->GetbtCollisionObject();
-		callback.isResultGround = false;
-		callback.startPos = startPos;
+	//	SweepResultGround callback;
+	//	callback.me = &m_collisionObject->GetbtCollisionObject();
+	//	callback.isResultGround = false;
+	//	callback.startPos = startPos;
 
-		PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
+	//	PhysicsWorld::GetInstance()->ConvexSweepTest((const btConvexShape*)m_collisionObject->GetGhostObject().GetBody(), start, end, callback);
 
-		//衝突した。
-		if (callback.isHit) {
-			finalPos.y = callback.hitPos.y - (PORTAL_COLLISION_SIZE.y / 2.0f);
-			isHit = callback.isHit;
-		}
-	}
+	//	//衝突した。
+	//	if (callback.isHit) {
+	//		finalPos.y = callback.hitPos.y - (PORTAL_COLLISION_SIZE.y / 2.0f);
+	//		isHit = callback.isHit;
+	//	}
+	//}
 
 	//下方向を調べる。
 	{
@@ -390,7 +464,7 @@ const bool PortalFrame::IsCanPut(const Vector3& pos, const Vector3& normal)
 		start.setIdentity();
 		end.setIdentity();
 		//視点は座標の中心。
-		start.setOrigin(btVector3(pos.x, pos.y, pos.z));
+		start.setOrigin(btVector3(startPos.x, startPos.y, startPos.z));
 		//終点はコリジョンの下辺。
 		end.setOrigin(btVector3(
 			startPos.x,
@@ -419,6 +493,23 @@ const bool PortalFrame::IsCanPut(const Vector3& pos, const Vector3& normal)
 	return isHit;
 }
 
+void PortalFrame::Reset()
+{
+	m_position = Vector3(0.0f, -1000.0f, 0.0f);
+	m_collisionObject->SetPosition(m_position);
+	m_collisionObject->SetIsEnable(false);
+	m_portalFrameModelRender.SetPosition(m_position);
+	m_portalFrameModelRender.Update();
+	m_physicsStaticObject.SetPosition(m_position);
+	m_isEnable = false;
+
+	if (m_frameEffect != nullptr) {
+		m_frameEffect->Stop();
+		DeleteGO(m_frameEffect);
+	}
+}
+
+
 /// <summary>
 /// ポータルフレームを設定。
 /// </summary>
@@ -426,9 +517,10 @@ const bool PortalFrame::IsCanPut(const Vector3& pos, const Vector3& normal)
 /// <param name="normal">法線</param>
 void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 {
-	if (IsCanPut(pos, normal) == false) {
-		return;
-	}
+	//if (IsCanPut(pos, normal) == false) {
+	//	return;
+	//}
+	m_position = pos;
 
 	m_isEnable = true;
 	m_normal = normal;
@@ -461,10 +553,23 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 	//ポータルの当たり判定を設定。
 	m_collisionObject->SetPosition(m_position);
 	m_collisionObject->SetRotation(m_rotation);
+	m_collisionObject->SetIsEnable(true);
 
 	//物理静的オブジェクトを設定。
 	m_physicsStaticObject.SetPosition(m_position);
 	m_physicsStaticObject.SetRotation(m_rotation);
+
+	if (m_frameEffect != nullptr) {
+		m_frameEffect->Stop();
+		DeleteGO(m_frameEffect);
+	}
+
+	//枠組みエフェクトを再生。
+	m_frameEffect = NewGO<EffectEmitter>(0);
+	m_frameEffect->Init(EffectEmitter::enEffect_PortalFrame_Blue);
+	m_frameEffect->SetPosition(m_position);
+	m_frameEffect->SetRotation(m_rotation);
+	m_frameEffect->Play();
 }
 
 void PortalFrame::Render(RenderContext& rc)

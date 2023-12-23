@@ -138,7 +138,7 @@ float3 CalcLimLight(float3 normal, float normalInViewZ, float3 dirDirection, flo
 	float limPower = power1 * power2;
 
 	//強さの変化を指数関数的にする。
-	limPower = pow(limPower, 3.0f);
+	limPower = pow(limPower, 5.0f);
 
 	return limPower * dirColor;
 }

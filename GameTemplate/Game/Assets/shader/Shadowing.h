@@ -39,12 +39,6 @@ float ShadowMap(Texture2D<float4>shadowMap, float4 posInLVP)
 			float lit_factor = variance / (variance + md * md);
 
 			return 1.0f - lit_factor;
-
-			//シャドウカラーを求める。
-			//float3 shadowColor = albedo.xyz * 0.5f;
-
-			//光が当たる確率を使って通常カラーとシャドウカラーを線形補間。
-			//albedo.xyz = lerp( shadowColor, albedo.xyz, lit_factor);
 		}
     }
 

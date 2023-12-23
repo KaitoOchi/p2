@@ -3,6 +3,7 @@
 
 #include "Game.h"
 #include "PortalCamera.h"
+#include "Fade.h"
 
 
 // priority
@@ -21,11 +22,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	InitGame(hInstance, hPrevInstance, lpCmdLine, nCmdShow, TEXT("Game"));
 
 	NewGO<Game>(0, "game");
+	NewGO<Fade>(10, "fade");
 
 	//ポータルカメラを生成。
 	PortalCamera* portalCamera = NewGO<PortalCamera>(3, "portalCamera");
 	//レンダリングエンジンにポータルカメラのポインタを入れる。
 	RenderingEngine::GetInstance()->SetPortalCameraPointer(portalCamera);
+	RenderingEngine::GetInstance()->SetLightCullingCamera(1, portalCamera->GetPortalCamera(0));
+	RenderingEngine::GetInstance()->SetLightCullingCamera(2, portalCamera->GetPortalCamera(1));
 
 	// ここからゲームループ。
 	while (DispatchWindowMessage())

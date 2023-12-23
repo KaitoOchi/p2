@@ -17,7 +17,7 @@ namespace nsPortalEngine {
 		m_postEffectType.clear();
 	}
 
-	void PostEffect::Init(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget)
+	void PostEffect::Init(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget)
 	{
 		m_bloom->Init(mainRenderTarget, zprepassRenderTarget);
 		m_postEffectType.emplace_back(m_bloom);
@@ -26,16 +26,24 @@ namespace nsPortalEngine {
 		m_postEffectType.emplace_back(m_dof);
 	}
 
-	void PostEffect::Render(RenderContext& rc, RenderTarget& mainRenderTarget)
+	void PostEffect::Render(RenderContext& rc, RenderTarget* mainRenderTarget)
 	{
 		m_bloom->Render(rc, mainRenderTarget);
 
+		RenderTarget* rts[] = {
+			&mainRenderTarget[0],
+			&mainRenderTarget[1],
+			&mainRenderTarget[2]
+		};
+
 		RenderingEngine::GetInstance()->SetMainRenderTargetAndDepthStencilBuffer(rc);
 
-		rc.WaitUntilToPossibleSetRenderTarget(mainRenderTarget);
+		rc.WaitUntilToPossibleSetRenderTarget(mainRenderTarget[0]);
+
 		//ここでエフェクトドロー。
 		EffectEngine::GetInstance()->Draw();
-		rc.WaitUntilFinishDrawingToRenderTarget(mainRenderTarget);
+
+		rc.WaitUntilFinishDrawingToRenderTarget(mainRenderTarget[0]);
 
 		m_dof->Render(rc, mainRenderTarget);
 	}

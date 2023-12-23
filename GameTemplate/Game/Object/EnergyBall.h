@@ -26,6 +26,15 @@ public:
 	}
 
 	/// <summary>
+	/// 座標を取得。
+	/// </summary>
+	/// <returns></returns>
+	const Vector3& GetPosition()
+	{
+		return m_position;
+	}
+
+	/// <summary>
 	/// 方向を設定。
 	/// </summary>
 	/// <param name="dir"></param>
@@ -48,10 +57,21 @@ public:
 	/// </summary>
 	void Enable();
 
+	/// <summary>
+	/// コリジョンを取得。
+	/// </summary>
+	/// <returns></returns>
 	CollisionObject* GetCollisionObject()
 	{
 		return m_collisionObject;
 	}
+
+	/// <summary>
+	/// ワープ処理。
+	/// </summary>
+	/// <param name="pos">座標</param>
+	/// <param name="direction">方向</param>
+	void SetWarp(const Vector3& pos, const Vector3& direction);
 
 	/// <summary>
 	/// ギミックの成功処理。

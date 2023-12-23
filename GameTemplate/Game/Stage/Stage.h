@@ -17,12 +17,19 @@ public:
 
 public:
 	/// <summary>
-	/// 復活地点を取得。
+	/// 復活座標を取得。
 	/// </summary>
-	/// <returns></returns>
-	const Vector3& GetRespawnPoint() const
+	const Vector3& GetRespawnPosition() const
 	{
-		return m_respawnPoint;
+		return m_respawnPosition;
+	}
+
+	/// <summary>
+	/// クリア座標を取得。
+	/// </summary>
+	const Vector3& GetClearPosition() const
+	{
+		return m_clearPosition;
 	}
 
 	/// <summary>
@@ -80,8 +87,12 @@ private:
 private:
 	std::vector<Gimmick*>		m_gimmickObjects;			//解除用のギミックオブジェクト。
 	std::vector<EnergyBall*>	m_energyBallObjects;		//エネルギーボールオブジェクト。
+	std::vector<PointLight*>	m_pointLightObjects;		//ポイントライトオブジェクト。
+	std::vector<SpotLight*>		m_spotLightObjects;			//スポットライトオブジェクト。
 	PhysicsStaticObject			m_physicsStaticObject;		//物理静的オブジェクト。
-	ModelRender					m_modelRender;				//地面モデル。
+	ModelRender					m_decorationModelRender;	//装飾モデル。
+	ModelRender					m_physicsModelRender;		//物理モデル。
 	LevelRender					m_levelRender;				//レベルレンダー。
-	Vector3						m_respawnPoint;				//リスポーン地点。
+	Vector3						m_respawnPosition;			//リスポーン座標。
+	Vector3						m_clearPosition;			//クリア座標。
 };

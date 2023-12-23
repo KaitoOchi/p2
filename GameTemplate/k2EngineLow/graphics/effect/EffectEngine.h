@@ -57,7 +57,7 @@ namespace nsK2EngineLow {
 		/// <param name="pos"></param>
 		/// <param name="rot"></param>
 		/// <param name="scale"></param>
-		void UpdateEffectWorldMatrix(int handle, Vector3 pos, Quaternion rot, Vector3 scale)
+		void UpdateEffectWorldMatrix(int handle, Vector3 pos, Quaternion rot, Vector3 scale, float time)
 		{
 			Matrix mTrans, mRot, mScale, mBase;
 			mTrans.MakeTranslation(pos);
@@ -83,6 +83,7 @@ namespace nsK2EngineLow {
 			baseMat.Value[3][1] = mBase.m[3][1];
 			baseMat.Value[3][2] = mBase.m[3][2];
 
+			m_manager->SetTimeScaleByHandle(handle, time);
 			m_manager->SetBaseMatrix(handle, baseMat);
 		}
 		/// <summary>

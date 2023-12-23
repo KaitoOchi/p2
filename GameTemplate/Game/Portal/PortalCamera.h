@@ -57,4 +57,3 @@ private:
 	std::array<Quaternion,	 PORTAL_NUM> m_rotation;		//角度。
 	std::array<float,		 PORTAL_NUM> m_angle;			//角度。
 };
-

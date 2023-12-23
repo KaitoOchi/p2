@@ -1,7 +1,6 @@
 ///////////////////////////////////////
 // 構造体。
 ///////////////////////////////////////
-#include "../PBRLighting_struct.h"
 
 //ピクセルシェーダーへの入力。
 struct SPSIn
@@ -35,6 +34,11 @@ struct SPSOut
 ////////////////////////////////////////////////
 #include "../Shader_function.h"
 
+////////////////////////////////////////////////
+// ライトの構造体。
+////////////////////////////////////////////////
+#include "../PBRLighting_struct.h"
+
 ///////////////////////////////////////
 // グローバル変数。
 ///////////////////////////////////////
@@ -51,8 +55,12 @@ sampler             g_sampler               : register(s0);		//サンプラー�
 /// <summary>
 /// 法線を計算。
 /// </summary>
-float3 CalcNormal(float3 normal, float3 tangent, float3 biNormal, float2 uv)
-{
+float3 CalcNormal(
+    float3 normal,
+    float3 tangent,
+    float3 biNormal,
+    float2 uv
+) {
 	//法線マップからタンジェントスペースの法線をサンプリングする。
 	float3 localNormal = g_normal.Sample(g_sampler, uv).xyz;
 
@@ -92,10 +100,11 @@ SPSIn VSMainCore(SVSIn vsIn, float4x4 mWorldLocal)
 
     //頂点の正規化スクリーン座標系の座標をピクセルシェーダーにわたす
 	psIn.posInProj = psIn.pos;
+    psIn.posInProj.xy /= psIn.posInProj.w;
 
     //カメラからの距離を計算する。
     float3 objPosInCamera = mul(mWorldLocal, mWorldLocal[3]);
-    psIn.distToEye = length(objPosInCamera - eyePos);
+    psIn.distToEye = length(objPosInCamera - eyePos[0]);
 
     psIn.uv = vsIn.uv;
 
@@ -182,7 +191,7 @@ SPSOut PSMainOutline( SPSIn psIn )
     psOut = PSMainCore(psIn, psOut, 1);
     
     //輪郭線。
-    psOut.albedo = psOut.albedo * Outline(psIn.posInProj, g_depthTexture, g_sampler);
+    psOut.albedo = Outline(psIn.posInProj, g_depthTexture, g_sampler, psOut.albedo);
 
 	return psOut;
 }
@@ -213,7 +222,7 @@ SPSOut PSPortalFrameCore(SPSIn psIn, uniform float maskParam)
 	float4 albedoColor = g_albedo.Sample(g_sampler, psIn.uv);
     clip(albedoColor.a - 0.001f);
 
-    //psOut.albedo *= Outline(psIn.posInProj, g_depthTexture, g_sampler);
+    psOut.albedo = Outline(psIn.posInProj, g_depthTexture, g_sampler, psOut.albedo);
 
     //ライティングパラメータ。
     psOut.param.g = 0.0f;

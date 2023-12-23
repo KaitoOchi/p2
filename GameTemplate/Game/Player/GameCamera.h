@@ -49,24 +49,17 @@ public:
 	/// <summary>
 	/// 死亡状態にする。
 	/// </summary>
-	void Dead()
-	{
-		m_isCrouch = false;
-		m_isDead = true;
-		g_camera3D->Move(Vector3(0.0f, -50.0f, 0.0f));
-		g_camera3D->SetUp(Vector3(-1.0f, 0.0f, 0.0f));
-		g_camera3D->Update();
-	}
+	void Dead();
 
 	/// <summary>
 	/// リセット処理。
 	/// </summary>
-	void Reset()
-	{
-		m_isDead = false;
-		g_camera3D->SetUp(Vector3(0.0f, 1.0f, 0.0f));
-		g_camera3D->Update();
-	}
+	void Reset();
+
+	/// <summary>
+	/// 終了処理。
+	/// </summary>
+	void End();
 
 private:
 	/// <summary>
@@ -77,6 +70,10 @@ private:
 	/// 回転処理。
 	/// </summary>
 	void Rotation();
+	/// <summary>
+	/// 画面揺れの処理。
+	/// </summary>
+	void Shake();
 
 private:
 	Vector3		m_position;				//座標。
@@ -84,8 +81,11 @@ private:
 	Vector3		m_rotSpeed;				//回転量。
 	Vector3		m_firstCrouchPos;		//しゃがみ開始の座標。
 	Vector3		m_lastCrouchPos;		//しゃがみ終了の座標。
+	Vector3		m_shakeMoveSpeedTmp;	//画面揺れの保存用。
 	bool		m_isCrouch = false;		//しゃがみ状態か。
 	bool		m_isDead = false;		//死亡状態か。
+	bool		m_isIdle = false;		//待機状態か。
 	float		m_crouchTimer = 0.0f;	//しゃがみ状態のタイマー。
+	float		m_shakeTimer = 0.0f;	//画面揺れ用タイマー。
 };
 

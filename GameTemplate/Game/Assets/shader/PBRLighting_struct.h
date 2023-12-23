@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////
 // ライト用定数バッファの構造体。
 ////////////////////////////////////////////////
-
 static const int MAX_POINT_LIGHT = 256;
 static const int MAX_SPOT_LIGHT = 256;
 
@@ -60,11 +59,11 @@ struct ShadowCB
 cbuffer LightCB : register(b1) {
 
 	DirectionLig dirLig;				//ディレクションライト用の構造体。
-	float3 eyePos;						//視点の位置。
+	float3 eyePos[3];					//視点の位置。
 	PointLig ptLig[MAX_POINT_LIGHT];	//ポイントライト用の構造体。
 	SpotLig spLig[MAX_SPOT_LIGHT];		//スポットライト用の構造体。
 	ShadowCB shadow;					//シャドウ用の構造体。
-    float4x4 mViewProjInv;      		//ビュープロジェクション行列の逆行列。
+    float4x4 mViewProjInv[3];      		//ビュープロジェクション行列の逆行列。
 	int ptNum;							//ポイントライトの数。
 	int spNum;							//スポットライトの数。
 }

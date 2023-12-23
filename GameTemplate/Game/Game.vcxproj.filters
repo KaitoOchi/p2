@@ -80,6 +80,9 @@
     <ClCompile Include="Object\Door.cpp">
       <Filter>Object\Gimmick</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Result.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="Object\Door.h">
       <Filter>Object\Gimmick</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Result.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

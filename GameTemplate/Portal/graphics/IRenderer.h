@@ -48,7 +48,7 @@ namespace nsPortalEngine {
 		/// ZPrepass用パスから呼ばれる処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		virtual void OnRenderToZPrepass(RenderContext& rc)
+		virtual void OnRenderToZPrepass(RenderContext& rc, const int num, Camera& camera)
 		{
 
 		}

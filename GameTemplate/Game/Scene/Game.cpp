@@ -1,13 +1,27 @@
 #include "stdafx.h"
 #include "Game.h"
 #include "Player.h"
+#include "GameCamera.h"
+#include "PortalGun.h"
 #include "PortalFrame.h"
 #include "PortalCamera.h"
 #include "Stage.h"
+#include "Result.h"
+
+namespace
+{
+	const Vector3	TIMER_FONT_POS = { -400.0f, 400.0f, 0.0f };		//画像の座標。
+	const int		SCORE_POINT_DEFAULT = 9999;						//スコアの初期値。
+	const int		STEP_SUB_POINT = 2;								//歩き一歩毎の減点数。
+	const int		SHOT_SUB_POINT = 50;							//ショット一発毎の減点数。
+	const float		TIME_LIMIT = 3599.99f;							//時間制限。
+	const float		RESET_TIME = 2.0f;								//リセット時間。
+}
 
 
 Game::Game()
 {
+
 }
 
 Game::~Game()
@@ -17,14 +31,28 @@ Game::~Game()
 		DeleteGO(portalFrame);
 		return true;
 	});
+
+	DeleteGO(m_player);
+	DeleteGO(m_gameCamera);
+	DeleteGO(m_portalGun);
 }
 
 bool Game::Start()
 {
 	//タレットの射撃エフェクト。
 	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_Turret_Shot, u"Assets/effect/turret/turret_shot.efk");
+	//タレットのレーザーエフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_Turret_Laser, u"Assets/effect/turret/turret_laser.efk");
 	//エナジーボールのエフェクト。
 	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_EnergyBall, u"Assets/effect/energyBall/energyBall.efk");
+	//ポータルの青枠組みエフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalFrame_Blue, u"Assets/effect/portal/portalFrame_blue.efk");
+	//ポータルの青枠組みエフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalFrame_Red, u"Assets/effect/portal/portalFrame_blue.efk");
+	//ポータルの発射エフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalShot_Blue, u"Assets/effect/portal/portalShot_blue.efk");
+	//ポータルの発射エフェクト。
+	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalShot_Red, u"Assets/effect/portal/portalShot_blue.efk");
 
 
 	//フレームレートを固定
@@ -37,7 +65,9 @@ bool Game::Start()
 	PortalCamera* portalCamera = FindGO<PortalCamera>("portalCamera");
 
 	//プレイヤーを生成。
-	NewGO<Player>(1, "player");
+	m_player = NewGO<Player>(1, "player");
+	m_gameCamera = NewGO<GameCamera>(2, "gameCamera");
+	m_portalGun = NewGO<PortalGun>(3, "portalGun");
 
 	//ポータルを生成。
 	PortalFrame* portalFrame[PORTAL_NUM];
@@ -55,111 +85,106 @@ bool Game::Start()
 	//ステージを生成。
 	m_stage = NewGO<Stage>(0, "stage");
 
-	int num = 0;
-
-	for (auto& light : m_pointLight)
-	{
-		float x = Math::Random(-500, 500);
-		float y = Math::Random(10, 50);
-		float z = Math::Random(-500, 500);
-		float r = Math::Random(0, 1);
-		float g = Math::Random(0, 1);
-		float b = Math::Random(0, 1);
-		float range = Math::Random(50, 200);
-
-		Vector3 color = Vector3(r, g, b);
-		color.Div(2.0f);
-
-		//ポイントライトを設定。
-		light.SetPointLight(
-			num,
-			Vector3(x, y, z),
-			color,
-			range
-		);
-
-		num++;
-	}
-	RenderingEngine::GetInstance()->GetLightCB().ptNum = POINT_LIGHT_NUM;
-
-	num = 0;
-
-	for (auto& light : m_spotLight)
-	{
-		float x = Math::Random(-500, 500);
-		float y = Math::Random(5, 10);
-		float z = Math::Random(-500, 500);
-		float r = Math::Random(0, 1);
-		float g = Math::Random(0, 1);
-		float b = Math::Random(0, 1);
-		float range = Math::Random(50, 200);
-
-		float dx = Math::Random(-1, 1);
-		float dy = Math::Random(-1, 1);
-		float dz = Math::Random(-1, 1);
-		float angle = Math::Random(45, 90);
-
-		Vector3 color = Vector3(r, g, b);
-
-		//スポットライトを設定。
-		light.SetSpotLight(
-			num,
-			Vector3(x, y, z),
-			color,
-			range,
-			Vector3(dx, dy, dz),
-			angle
-		);
-
-		num++;
-	}
-	RenderingEngine::GetInstance()->GetLightCB().ptNum = SPOT_LIGHT_NUM;
+	//タイマー文字の設定。
+	m_timerFontRender.SetPosition(Vector3(-400.0f, 400.0f, 0.0f));
+	m_timerFontRender.SetColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_timerFontRender.SetShadowParam(true, 2.0f, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	return true;
 }
 
 void Game::Update()
 {
-	// ライトを回す
-	Quaternion qRot;
-	qRot.SetRotationDegY(1.0f);
+	Reset();
 
-	int num = 0;
+	Timer();
+}
 
-	for (auto& light : m_pointLight)
-	{
-		Vector3 pos = light.GetPosition();
-		qRot.Apply(pos);
-		light.SetPosition(pos);
-		light.Update(num);
-
-		num++;
+/// <summary>
+/// リセット処理。
+/// </summary>
+void Game::Reset()
+{
+	//リセット中でないなら。
+	if (m_gameState != enGameState_Reset) {
+		return;
 	}
 
-	num = 0;
+	m_resetTimer -= g_gameTime->GetFrameDeltaTime();
 
-	for (auto& light : m_spotLight)
-	{
-		Vector3 pos = light.GetPosition();
-		qRot.Apply(pos);
-		light.SetPosition(pos);
-		light.Update(num);
+	if (m_resetTimer < 0.0f) {
+		m_player->Reset();
+		m_gameCamera->Reset();
+		m_portalGun->ResetPortal();
+		m_gameState = enGameState_Game;
+	}
+}
 
-		num++;
+/// <summary>
+/// 時間計測処理。
+/// </summary>
+void Game::Timer()
+{
+	//リザルト中なら。
+	if (m_gameState == enGameState_Result) {
+		return;
 	}
 
+	m_gameScore.timer += g_gameTime->GetFrameDeltaTime();
+	//現在の時間。
+	float timer = m_gameScore.timer;
+
+	if (timer >= TIME_LIMIT) {
+		m_gameScore.timer = TIME_LIMIT;
+	}
+
+	//分を計算。
+	int m = timer / 60;
+	//秒を計算。
+	float s = static_cast<int>(timer) % 60;
+	//ミリ秒を計算。
+	s += timer - static_cast<int>(timer);
+
+	wchar_t text[256];
+	swprintf_s(text, 255, L"Time %d:%05.02f", m, s);
+	m_timerFontRender.SetText(text);
 }
 
 void Game::NotifyReset()
 {
-
+	m_gameCamera->Dead();
+	m_gameState = enGameState_Reset;
+	m_resetTimer = RESET_TIME;
 }
 
-const Vector3& Game::GetRespawnPoint() const
+void Game::NotifyClear()
 {
-	return m_stage->GetRespawnPoint();
+	//スコアを計算。
+	int score = SCORE_POINT_DEFAULT;
+	score -= static_cast<int>(m_gameScore.timer);
+	score -= m_gameScore.stepNum * STEP_SUB_POINT;
+	score -= m_gameScore.shotPortal * SHOT_SUB_POINT;
+
+	m_gameState = enGameState_Result;
+
+	m_gameCamera->End();
+
+	//リザルトシーンを呼び出す。
+	Result* result = NewGO<Result>(9, "result");
+	result->SetScore(score);
+}
+
+const Vector3& Game::GetRespawnPosition() const
+{
+	return m_stage->GetRespawnPosition();
+}
+
+const Vector3& Game::GetClearPosition() const
+{
+	return m_stage->GetClearPosition();
 }
 
 void Game::Render(RenderContext& rc)
 {
+	m_timerFontRender.Draw(rc);
 }

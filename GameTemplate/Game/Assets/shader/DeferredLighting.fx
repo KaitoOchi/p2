@@ -1,7 +1,6 @@
 ///////////////////////////////////////
 // ディファードライティング。
 ///////////////////////////////////////
-static const float PI = 3.1415926f;         // 円周率。
 
 ///////////////////////////////////////
 // 構造体。
@@ -121,7 +120,7 @@ float3 CalcPointLight(
 		//影響率は距離に比例して小さくなっていく。
 		float affect = 1.0f - min(1.0f, distance / ptLig[ligNo].ptRange);
 		//影響を指数関数的にする。
-		affect = pow(affect, 2.0f);
+		affect = pow(affect, 10.0f);
 		//減衰率を乗算して影響を弱める。
         lig *= affect;
 
@@ -183,7 +182,7 @@ float3 CalcSpotLight(
             spLig[ligNo].spColor,
             specColor,
             metallic,
-            smooth
+            0.3
         );
 
 		//距離による影響率を計算する。
@@ -223,7 +222,7 @@ PSInput VSMain(VSInput vsIn)
 }
 
 //ピクセルシェーダー。
-float4 PSMainCore(PSInput psIn)
+float4 PSMainCore(PSInput psIn, uniform int rtsNum)
 {
     //GBufferの内容を使ってライティング。
     //アルベドカラー。
@@ -262,9 +261,9 @@ float4 PSMainCore(PSInput psIn)
     //スペキュラカラー。
     float3 specColor = albedoColor.xyz;
     //ワールド座標を計算する。
-    float3 worldPos = CalcWorldPosFromUVZ(psIn.uv, albedoColor.w, mViewProjInv);
+    float3 worldPos = CalcWorldPosFromUVZ(psIn.uv, albedoColor.w, mViewProjInv[rtsNum]);
     //視点に向かって伸びるベクトルを計算する。
-    float3 toEye = normalize(eyePos - worldPos);
+    float3 toEye = normalize(eyePos[rtsNum] - worldPos);
     //ライトビュースクリーン空間を求める。
 	float4 posInLVP = mul(shadow.mLVP, float4(worldPos, 1.0f));
     //シャドウの計算。
@@ -279,7 +278,7 @@ float4 PSMainCore(PSInput psIn)
         specColor,
         metallic,
         smooth
-    ) * (1.0f - shadowRate);
+    );
 
     //ポイントライトを計算。
     lig += CalcPointLight(
@@ -310,7 +309,9 @@ float4 PSMainCore(PSInput psIn)
         dirLig.dirDirection,
         dirLig.dirColor
     );
-
+    
+    //影を与える。
+    lig *= ((1.0f - shadowRate));
     //環境光でライトを底上げする。
     lig += dirLig.ambient * albedoColor.xyz;
 
@@ -324,13 +325,15 @@ float4 PSMainCore(PSInput psIn)
 /// </summary>
 float4 PSMain(PSInput psIn) : SV_Target0
 {
-    return PSMainCore(psIn);
+    return PSMainCore(psIn, 0);
 }
 
-/// <summary>
-/// ライティング無しのエントリー関数。
-/// </summary>
-float4 PSMainNotLighting(PSInput psIn) : SV_Target0
+float4 PSMainBluePortal(PSInput psIn) : SV_Target0
 {
-    return g_albedoTexture.Sample(g_sampler, psIn.uv);
+    return PSMainCore(psIn, 1);
+}
+
+float4 PSMainRedPortal(PSInput psIn) : SV_Target0
+{
+    return PSMainCore(psIn, 2);
 }

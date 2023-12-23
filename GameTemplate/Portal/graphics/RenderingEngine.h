@@ -7,6 +7,8 @@
 #include "preRender/lightCulling.h"
 #include "../Game/Portal/PortalCamera.h"
 
+#include  "ModelRender.h"
+
 namespace nsPortalEngine {
 
 	namespace
@@ -41,13 +43,17 @@ namespace nsPortalEngine {
 		{
 			DirectionalLight::DirectionLig directionLig;		//ディレクションライト。
 			Vector3 eyePos;										//視点の位置。
-			float pad0 = 0.0f;
+			float pad0;
+			Vector3 eyePosBlue;									//視点の位置。
+			float pad1;
+			Vector3 eyePosRed;									//視点の位置。
+			float pad2;
 			PointLight::PointLig pointLig[POINT_LIGHT_NUM];		//ポイントライト。
 			SpotLight::SpotLig spotLig[SPOT_LIGHT_NUM];			//スポットライト。
 			ShadowCB shadowCB;									//シャドウ。
-			Matrix mViewProjInv;								//ビュープロジェクション行列の逆行列。
-			int ptNum = POINT_LIGHT_NUM;						//ポイントライトの数。
-			int spNum = SPOT_LIGHT_NUM;							//スポットライトの数。
+			Matrix mViewProjInv[3];								//ビュープロジェクション行列の逆行列。
+			int ptNum = 0;										//ポイントライトの数。
+			int spNum = 0;										//スポットライトの数。
 		};
 
 	private:
@@ -103,13 +109,18 @@ namespace nsPortalEngine {
 			m_portalCamera = portalCamera;
 		}
 
+		void SetLightCullingCamera(const int num, Camera& camera)
+		{
+			m_lightCulling[num].SetCamera(camera);
+		}
+
 		/// <summary>
 		/// メインレンダーターゲットに戻す。
 		/// </summary>
 		/// <param name="rc"></param>
 		void SetMainRenderTargetAndDepthStencilBuffer(RenderContext& rc)
 		{
-			rc.SetRenderTarget(m_mainRenderTarget.GetRTVCpuDescriptorHandle(), m_zprepassRenderTarget.GetDSVCpuDescriptorHandle());
+			rc.SetRenderTarget(m_mainRenderTarget[0].GetRTVCpuDescriptorHandle(), m_zprepassRenderTarget[0].GetDSVCpuDescriptorHandle());
 		}
 
 		/// <summary>
@@ -131,13 +142,19 @@ namespace nsPortalEngine {
 		}
 
 		/// <summary>
-		/// ポータル用レンダーターゲットを取得。
+		/// ポイントライト用のUAVを取得。
 		/// </summary>
-		/// <param name="num"></param>
-		/// <returns></returns>
-		RenderTarget& GetPortalRenderTarget(const int num)
+		RWStructuredBuffer& GetPointLightNoListInTileUAV()
 		{
-			return m_portalRenderTarget[num];
+			return m_pointLightNoListInTileUAV[0];
+		}
+
+		/// <summary>
+		/// スポットライト用のUAVを取得。
+		/// </summary>
+		RWStructuredBuffer& GetSpotLightNoListInTileUAV()
+		{
+			return m_spotLightNoListInTileUAV[0];
 		}
 
 		/// <summary>
@@ -146,7 +163,15 @@ namespace nsPortalEngine {
 		/// <returns></returns>
 		RenderTarget& GetZPrepassRenderTarget()
 		{
-			return m_zprepassRenderTarget;
+			return m_zprepassRenderTarget[0];
+		}
+
+		/// <summary>
+		/// シャドウマップ用のボケ画像を取得。
+		/// </summary>
+		Texture& GetShadowBokeTexture()
+		{
+			return m_shadowBlur.GetBokeTexture();
 		}
 
 		/// <summary>
@@ -179,10 +204,6 @@ namespace nsPortalEngine {
 		/// 2Dレンダーターゲットの初期化処理。
 		/// </summary>
 		void Init2DRenderTarget();
-		/// <summary>
-		/// ポータル用レンダーターゲットの初期化処理。
-		/// </summary>
-		void InitPortalRenderTarget();
 		/// <summary>
 		/// シャドウ用レンダーターゲットの初期化処理。
 		/// </summary>
@@ -241,22 +262,20 @@ namespace nsPortalEngine {
 		static RenderingEngine* m_instance;									//インスタンス。
 		std::vector<IRenderer*> m_renderObjects;							//レンダーオブジェクト。
 		RenderTarget			m_gBuffer[1 + PORTAL_NUM][enGBufferNum];	//GBuffer。
-		RenderTarget			m_mainRenderTarget;							//メインレンダーターゲット。
+		RenderTarget			m_mainRenderTarget[1 + PORTAL_NUM];			//メインレンダーターゲット。
 		RenderTarget			m_2DRenderTarget;							//2D用レンダーターゲット。
-		RenderTarget			m_portalRenderTarget[PORTAL_NUM];			//ポータル用レンダーターゲット。
 		RenderTarget			m_shadowMapRenderTarget;					//シャドウマップ用レンダーターゲット。
-		RenderTarget			m_zprepassRenderTarget;						//ZPrepass用レンダーターゲット。
-		Sprite					m_deferredLightingSprite;					//ディファードライティング用スプライト。
-		Sprite					m_portalSprite[PORTAL_NUM];					//ポータル用スプライト。
+		RenderTarget			m_zprepassRenderTarget[1 + PORTAL_NUM];		//ZPrepass用レンダーターゲット。
+		Sprite					m_deferredLightingSprite[1 + PORTAL_NUM];	//ディファードライティング用スプライト。
 		Sprite					m_2DSprite;									//2Dスプライト。
 		Sprite					m_mainSprite;								//メインスプライト。
 		GaussianBlur			m_shadowBlur;								//シャドウ用ガウシアンブラー。
 		Camera					m_lightCamera;								//ライトカメラ。
 		PostEffect				m_postEffect;								//ポストエフェクト。
-		LightCulling			m_lightCulling;								//ライトカリング。
+		LightCulling			m_lightCulling[1 + PORTAL_NUM];				//ライトカリング。
 		LightCB					m_lightCB;									//ライト用構造体。
-		RWStructuredBuffer		m_pointLightNoListInTileUAV;				//ポイントライト用UAV。
-		RWStructuredBuffer		m_spotLightNoListInTileUAV;				//スポットライト用UAV。
+		RWStructuredBuffer		m_pointLightNoListInTileUAV[1 + PORTAL_NUM];//ポイントライト用UAV。
+		RWStructuredBuffer		m_spotLightNoListInTileUAV[1 + PORTAL_NUM];	//スポットライト用UAV。
 		PortalCamera*			m_portalCamera = nullptr;					//ポータル用カメラ。
 	};
 }

@@ -16,14 +16,14 @@ namespace nsPortalEngine
 		/// </summary>
 		/// <param name="mainRenderTarget"></param>
 		/// <param name="zprepassRenderTarget"></param>
-		void Init(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget);
+		void Init(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget);
 
 		/// <summary>
 		/// 描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		/// <param name="mainRenderTarget"></param>
-		void Render(RenderContext& rc, RenderTarget& mainRenderTarget);
+		void Render(RenderContext& rc, RenderTarget* mainRenderTarget);
 
 		/// <summary>
 		/// 有効化処理。
@@ -47,14 +47,14 @@ namespace nsPortalEngine
 		/// </summary>
 		/// <param name="mainRenderTarget"></param>
 		/// <param name="zprepassRenderTarget"></param>
-		virtual void OnInit(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget) = 0;
+		virtual void OnInit(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget) = 0;
 
 		/// <summary>
 		/// 描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		/// <param name="mainRenderTarget"></param>
-		virtual void OnRender(RenderContext& rc, RenderTarget& mainRenderTarget) = 0;
+		virtual void OnRender(RenderContext& rc, RenderTarget* mainRenderTarget) = 0;
 
 	private:
 		bool m_isEnable = true;		//有効かどうか。

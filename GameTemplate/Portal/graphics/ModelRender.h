@@ -92,7 +92,7 @@ namespace nsPortalEngine {
 			else if (m_forwardRenderModel.IsInited()) {
 				return m_forwardRenderModel;
 			}
-			return m_zprepassModel;
+			return m_zprepassModel[0];
 		}
 
 		/// <summary>
@@ -166,13 +166,11 @@ namespace nsPortalEngine {
 		/// </summary>
 		/// <param name="filePath"></param>
 		void InitSkeleton(const char* filePath);
-
 		/// <summary>
 		/// アニメーションの初期化。
 		/// </summary>
 		/// <param name="animationClips"></param>
 		void InitAnimation(AnimationClip* animationClips, const int numAnimationClips);
-
 		/// <summary>
 		/// モデルの初期化。
 		/// </summary>
@@ -188,27 +186,23 @@ namespace nsPortalEngine {
 			const bool isShadowReceiver,
 			const ModelInitMode enModelInitMode = enModelInitMode_DiferredLighting
 		);
-
 		/// <summary>
 		/// シャドウ用モデルの初期化。
 		/// </summary>
 		/// <param name="tkmFilePath"></param>
 		/// <param name="modelUpAxis"></param>
 		void InitShadowModel(const char* tkmFilePath, const EnModelUpAxis modelUpAxis);
-
 		/// <summary>
 		/// ZPrepass用モデルの初期化。
 		/// </summary>
 		/// <param name="tkmFilePath"></param>
 		/// <param name="modelUpAxis"></param>
 		void InitZPrepassModel(const char* tkmFilePath, const EnModelUpAxis modelUpAxis);
-
 		/// <summary>
 		/// モデルにあるスケルトンを設定。
 		/// </summary>
 		/// <param name="modelInitData"></param>
 		void SetModelHasSkeleton(ModelInitData& modelInitData);
-
 		/// <summary>
 		/// モデルの更新処理。
 		/// </summary>
@@ -220,44 +214,40 @@ namespace nsPortalEngine {
 		/// </summary>
 		/// <param name="rc"></param>
 		void OnRenderGBuffer(RenderContext& rc) override;
-
 		/// <summary>
 		/// フォワードレンダーの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		void OnForwardRender(RenderContext& rc) override;
-
 		/// <summary>
 		/// ポータル用レンダーの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		void OnPortalRender(RenderContext& rc, const int num, Camera& camera) override;
-
 		/// <summary>
 		/// シャドウマップの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		/// <param name="camera"></param>
 		void OnRenderShadowMap(RenderContext& rc, Camera& camera) override;
-
 		/// <summary>
 		/// ZPrepassの描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
-		void OnRenderToZPrepass(RenderContext& rc) override;
+		void OnRenderToZPrepass(RenderContext& rc, const int num, Camera& camera) override;
 
 	private:
-		Skeleton						m_skeleton;					//スケルトン。
-		Animation						m_animation;				//アニメーション。
-		Model							m_gBufferModel;				//GBufferモデル。
-		Model							m_forwardRenderModel;		//フォワードレンダリング用モデル。
-		std::array<Model, PORTAL_NUM>	m_portalModel;				//ポータル越しのモデル。
-		Model							m_shadowModel;				//シャドウモデル。
-		Model							m_zprepassModel;			//ZPrepassモデル。
-		Vector3							m_position;					//座標。
-		Vector3							m_scale = Vector3::One;		//拡大率。
-		Quaternion						m_rotation;					//回転。
-		float							m_animationSpeed = 1.0f;	//アニメーション速度。
+		Skeleton							m_skeleton;					//スケルトン。
+		Animation							m_animation;				//アニメーション。
+		Model								m_gBufferModel;				//GBufferモデル。
+		Model								m_forwardRenderModel;		//フォワードレンダリング用モデル。
+		Model								m_shadowModel;				//シャドウモデル。
+		std::array<Model, PORTAL_NUM>		m_portalModel;				//ポータル越しのモデル。
+		std::array<Model, 1 + PORTAL_NUM>	m_zprepassModel;			//ZPrepassモデル。
+		Vector3								m_position;					//座標。
+		Vector3								m_scale = Vector3::One;		//拡大率。
+		Quaternion							m_rotation;					//回転。
+		float								m_animationSpeed = 1.0f;	//アニメーション速度。
 	};
 
 }

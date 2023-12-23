@@ -1,6 +1,7 @@
 #pragma once
 #include "PortalFrame.h"
 class PortalCamera;
+class Game;
 
 /// <summary>
 /// ポータルガンクラス。
@@ -30,6 +31,11 @@ public:
 	/// <param name="type">種類</param>
 	void SetPortal(const PortalFrame::PortalType type);
 
+	/// <summary>
+	/// ポータルのリセット処理。
+	/// </summary>
+	void ResetPortal();
+
 private:
 	/// <summary>
 	/// ポータルガンの位置を設定。
@@ -39,7 +45,9 @@ private:
 private:
 	std::array<PortalFrame*, PORTAL_NUM>	m_portalFrame;					//ポータル。
 	PortalCamera*							m_portalCamera = nullptr;		//ポータル用カメラ。
+	Game*									m_game = nullptr;				//ゲームシーン。
 	ModelRender								m_portalGunModelRender;			//ポータルガンモデル。
-	SpriteRender							m_crossHairSpriteRender;		//クロスヘア。
+	std::array<SpriteRender, 3>				m_cursorSpriteRender;			//クロスヘア。
+	float									m_shotDuration = 0.0f;			//発射間隔。
 };	
 

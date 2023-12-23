@@ -6,7 +6,7 @@ namespace
 {
 	const float FADE_MAX = 1.0f;			//フェードの最大値。
 	const float FADE_MIN = 0.0f;			//フェードの最小値。
-	const float FADE_SPEED = 1.0f;			//フェード速度。
+	const float FADE_SPEED = 0.5f;			//フェード速度。
 }
 
 Fade::Fade()
@@ -68,7 +68,7 @@ void Fade::Update()
 void Fade::SpriteUpdate()
 {
 	Vector4 alpha = Vector4::White;
-	alpha.a = 0.0f;
+	alpha.a = m_alpha;
 
 	//背景画像を設定
 	m_spriteRender.SetMulColor(alpha);

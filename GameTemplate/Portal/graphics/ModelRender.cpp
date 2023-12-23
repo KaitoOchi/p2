@@ -80,6 +80,7 @@ namespace nsPortalEngine {
 		modelInitData.m_expandConstantBuffer = &RenderingEngine::GetInstance()->GetLightCB();
 		modelInitData.m_expandConstantBufferSize = sizeof(RenderingEngine::GetInstance()->GetLightCB());
 		modelInitData.m_expandShaderResoruceView[0] = &RenderingEngine::GetInstance()->GetZPrepassRenderTarget().GetRenderTargetTexture();
+		modelInitData.m_expandShaderResoruceView[1] = &RenderingEngine::GetInstance()->GetShadowBokeTexture();
 
 		//スケルトンを設定。
 		SetModelHasSkeleton(modelInitData);
@@ -102,9 +103,12 @@ namespace nsPortalEngine {
 			InitZPrepassModel(filePath, enModelUpAxis);
 			break;
 
-		//フォワードレンダリング。
+		//フォワードライティング。
 		case enModelInitMode_ForwardLighting:
 			modelInitData.m_fxFilePath = "Assets/shader/ForwardLighting.fx";
+			//ポイントライトとスポットライトのUAV。
+			modelInitData.m_expandShaderResoruceView[2] = &RenderingEngine::GetInstance()->GetPointLightNoListInTileUAV();
+			modelInitData.m_expandShaderResoruceView[3] = &RenderingEngine::GetInstance()->GetSpotLightNoListInTileUAV();
 			m_forwardRenderModel.Init(modelInitData);
 
 			InitZPrepassModel(filePath, enModelUpAxis);
@@ -119,6 +123,7 @@ namespace nsPortalEngine {
 			modelInitData.m_fxFilePath = "Assets/shader/preProcess/RenderToGBuffer.fx";
 			modelInitData.m_psEntryPointFunc = "PSMainOutline";
 			m_gBufferModel.Init(modelInitData);
+			InitZPrepassModel(filePath, enModelUpAxis);
 			break;
 
 		//ディザリング。
@@ -177,7 +182,9 @@ namespace nsPortalEngine {
 		SetModelHasSkeleton(zprepassModelInitData);
 
 		//ZPrepassモデルを初期化。
-		m_zprepassModel.Init(zprepassModelInitData);
+		for (int i = 0; i <= PORTAL_NUM; i++) {
+			m_zprepassModel[i].Init(zprepassModelInitData);
+		}
 	}
 
 	void ModelRender::SetModelHasSkeleton(ModelInitData& modelInitData)
@@ -202,8 +209,10 @@ namespace nsPortalEngine {
 		if (m_shadowModel.IsInited()) {
 			m_shadowModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
 		}
-		if (m_zprepassModel.IsInited()) {
-			m_zprepassModel.UpdateWorldMatrix(m_position, m_rotation, m_scale);
+		if (m_zprepassModel[0].IsInited()) {
+			for (int i = 0; i <= PORTAL_NUM; i++) {
+				m_zprepassModel[i].UpdateWorldMatrix(m_position, m_rotation, m_scale);
+			}
 		}
 		if (m_portalModel[0].IsInited()) {
 			for (int i = 0; i < PORTAL_NUM; i++) {
@@ -252,10 +261,10 @@ namespace nsPortalEngine {
 		}
 	}
 
-	void ModelRender::OnRenderToZPrepass(RenderContext& rc)
+	void ModelRender::OnRenderToZPrepass(RenderContext& rc, const int num, Camera& camera)
 	{
-		if (m_zprepassModel.IsInited()) {
-			m_zprepassModel.Draw(rc);
+		if (m_zprepassModel[num].IsInited()) {
+			m_zprepassModel[num].Draw(rc, camera, 1);
 		}
 	}
 

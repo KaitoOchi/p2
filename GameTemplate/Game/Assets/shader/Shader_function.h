@@ -56,30 +56,35 @@ void Dithering(float2 pos, float distToEye)
 /// <param name="posInProj">頂点の正規化スクリーン座標系</param>
 /// <param name="depthTexture">深度テクスチャ</param>
 /// <param name="Sampler">サンプラー</param>
-float Outline(float4 posInProj, Texture2D<float4> depthTexture, sampler Sampler)
-{
+/// <param name="albedo">元のカラー</param>
+float4 Outline(
+    float4 posInProj, 
+    Texture2D<float4> depthTexture,
+    sampler Sampler,
+    float4 albedo
+) {
     // 近傍8テクセルの深度値を計算して、エッジを抽出する
     // 正規化スクリーン座標系からUV座標系に変換する
-    float2 uv = (posInProj.xy / posInProj.w) * float2( 0.5f, -0.5f) + 0.5f;
+    float2 uv = posInProj.xy * float2(0.5f, -0.5f) + 0.5f;
 
     // このピクセルの深度値を取得
-    float depth = depthTexture.Sample(Sampler, uv).x;
+    float depth = depthTexture.Sample(Sampler, uv).z;
 
     // 近傍8テクセルの深度値の平均値を計算する
     float depth2 = 0.0f;
     for( int i = 0; i < 8; i++)
     {
-        depth2 += depthTexture.Sample(Sampler, uv + uvOffset[i]).x;
+        depth2 += depthTexture.Sample(Sampler, uv + uvOffset[i]).z;
     }
     depth2 /= 8.0f;
 
     // 自身の深度値と近傍8テクセルの深度値の差を調べる
-    if(abs(depth - depth2) > 0.01f)
+    if(abs(depth - depth2) > 0.0001f)
     {
-        // 深度値が結構違う場合はピクセルカラーを黒にする
-        return 0.0f;
+        // 深度値が結構違う場合はピクセルカラーを変える。
+        return float4(1.0f, 0.0f, 0.0f, 1.0f);
     }
 
     // 普通のテクスチャ
-    return 1.0f ;
+    return albedo;
 }

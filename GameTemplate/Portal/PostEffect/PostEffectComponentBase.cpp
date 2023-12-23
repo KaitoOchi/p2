@@ -13,12 +13,12 @@ namespace nsPortalEngine
 
 	}
 
-	void PostEffectComponentBase::Init(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget)
+	void PostEffectComponentBase::Init(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget)
 	{
 		OnInit(mainRenderTarget, zprepassRenderTarget);
 	}
 
-	void PostEffectComponentBase::Render(RenderContext& rc, RenderTarget& mainRenderTarget)
+	void PostEffectComponentBase::Render(RenderContext& rc, RenderTarget* mainRenderTarget)
 	{
 		if (!m_isEnable) {
 			return;

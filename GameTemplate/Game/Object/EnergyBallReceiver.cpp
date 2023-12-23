@@ -48,8 +48,6 @@ void EnergyBallReceiver::Update()
 	{
 		//エネルギーボールと接触したら。
 		if (m_collisionObject->IsHit(col->GetCollisionObject())) {
-			//クリア判定。
-			m_stage->RemoveEnergyBallObject(col);
 			col->Clear();
 			Clear();
 		}

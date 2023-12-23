@@ -28,14 +28,14 @@ namespace nsPortalEngine {
 		/// 初期化処理。
 		/// </summary>
 		/// <param name="mainRenderTarget"></param>
-		void Init(RenderTarget& mainRenderTarget, RenderTarget& zprepassRenderTarget);
+		void Init(RenderTarget* mainRenderTarget, RenderTarget& zprepassRenderTarget);
 
 		/// <summary>
 		/// 描画処理。
 		/// </summary>
 		/// <param name="rc"></param>
 		/// <param name="mainRenderTarget"></param>
-		void Render(RenderContext& rc, RenderTarget& mainRenderTarget);
+		void Render(RenderContext& rc, RenderTarget* mainRenderTarget);
 
 		/// <summary>
 		/// ブルームの閾値を設定。
