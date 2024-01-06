@@ -1,4 +1,5 @@
 #pragma once
+class PortalCamera;
 
 namespace nsPortalEngine {
 
@@ -17,8 +18,12 @@ namespace nsPortalEngine {
 			float pad0 = 0.0f;
 			Vector3 ptColor;		//カラー。
 			float ptRange = 0.0f;	//影響範囲。
-			Vector3 posInView;		//カメラ空間での座標。
+			Vector3 posInViewMainCamera;		//カメラ空間での座標。
 			float pad1 = 0.0f;
+			Vector3 posInViewBluePortal;		//カメラ空間での座標。
+			float pad2 = 0.0f;
+			Vector3 posInViewRedPortal;		//カメラ空間での座標。
+			float pad3 = 0.0f;
 		};
 
 		PointLight() {};
@@ -98,6 +103,11 @@ namespace nsPortalEngine {
 			return m_pointLight.ptRange;
 		}
 
+		void SetPortalCameraPointer(PortalCamera* portalCamera)
+		{
+			m_portalCamera = portalCamera;
+		}
+
 		/// <summary>
 		/// 構造体を取得
 		/// </summary>
@@ -117,6 +127,7 @@ namespace nsPortalEngine {
 
 	private:
 		PointLig	m_pointLight;		//ポイントライト
+		PortalCamera* m_portalCamera = nullptr;
 		int			m_ptNum = 0;	//番号
 	};
 }

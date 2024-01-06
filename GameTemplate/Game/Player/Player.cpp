@@ -78,9 +78,6 @@ bool Player::Start()
 	a.SetPosition(Vector3(400.0f, 0.0f, 0.0f));
 	a.SetShadowParam(true, 0.5f, Vector4::Black);
 
-	//リセット処理。
-	Reset();
-
 	return true;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+class PortalCamera;
 
 namespace nsPortalEngine {
 
@@ -19,10 +20,18 @@ namespace nsPortalEngine {
 			float spRange = 0.0f;		//影響範囲。
 			Vector3 spDirection;		//方向。
 			float spAngle = 0.0f;		//射出角度。
-			Vector3 posInView;			//カメラ空間での座標。
+			Vector3 posInViewMainCamera;		//カメラ空間での座標。
 			float pad1;	
-			Vector3 directionInView;	//カメラ空間での方向。
+			Vector3 posInViewBluePortal;		//カメラ空間での座標。
 			float pad2;
+			Vector3 posInViewRedPortal;			//カメラ空間での座標。
+			float pad3;
+			Vector3 directionInViewMainCamera;	//カメラ空間での方向。
+			float pad4;
+			Vector3 directionInViewBluePortal;	//カメラ空間での方向。
+			float pad5;
+			Vector3 directionInViewRedPortal;	//カメラ空間での方向。
+			float pad6;
 		};
 
 	public:
@@ -155,6 +164,11 @@ namespace nsPortalEngine {
 			return m_spotLight.spAngle;
 		}
 
+		void SetPortalCameraPointer(PortalCamera* portalCamera)
+		{
+			m_portalCamera = portalCamera;
+		}
+
 		/// <summary>
 		/// 構造体を取得。
 		/// </summary>
@@ -175,6 +189,7 @@ namespace nsPortalEngine {
 
 	private:
 		SpotLig		m_spotLight;	//スポットライト。
+		PortalCamera* m_portalCamera = nullptr;
 		int			m_spNum = 0;	//番号。
 	};
 }

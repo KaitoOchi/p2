@@ -70,10 +70,6 @@ private:
 	/// 回転処理。
 	/// </summary>
 	void Rotation();
-	/// <summary>
-	/// 画面揺れの処理。
-	/// </summary>
-	void Shake();
 
 private:
 	Vector3		m_position;				//座標。
@@ -81,11 +77,8 @@ private:
 	Vector3		m_rotSpeed;				//回転量。
 	Vector3		m_firstCrouchPos;		//しゃがみ開始の座標。
 	Vector3		m_lastCrouchPos;		//しゃがみ終了の座標。
-	Vector3		m_shakeMoveSpeedTmp;	//画面揺れの保存用。
 	bool		m_isCrouch = false;		//しゃがみ状態か。
 	bool		m_isDead = false;		//死亡状態か。
-	bool		m_isIdle = false;		//待機状態か。
 	float		m_crouchTimer = 0.0f;	//しゃがみ状態のタイマー。
-	float		m_shakeTimer = 0.0f;	//画面揺れ用タイマー。
 };
 

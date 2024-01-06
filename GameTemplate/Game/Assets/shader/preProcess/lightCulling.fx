@@ -78,7 +78,8 @@ float3 ComputePositionInCamera(uint2 globalCoords)
 /// <param name="frustumPlanes">視錐台平面</param>
 void CreatePointLightIndexArrayInTile(
     uint threadNoInTile,
-    float4 frustumPlanes[6]
+    float4 frustumPlanes[6],
+    uniform uint portalNo
 ){
     for(
         uint lightIndex = threadNoInTile;
@@ -90,7 +91,7 @@ void CreatePointLightIndexArrayInTile(
         bool inFrustum = true;
         for(uint i = 0; i < 6; ++i){
             //ライトの座標と平面の法線とで内積を求め、ライトと平面との距離を計算する。
-            float4 lp = float4(light.posInView, 1.0f);
+            float4 lp = float4(light.posInView[portalNo], 1.0f);
             float d = dot(frustumPlanes[i], lp);
 
             //ライトと平面の距離を使って衝突判定を行う。
@@ -113,7 +114,8 @@ void CreatePointLightIndexArrayInTile(
 /// <param name="frustumPlanes">視錐台平面</param>
 void CreateSpotLightIndexArrayInTile(
     uint threadNoInTile,
-    float4 frustumPlanes[6]
+    float4 frustumPlanes[6],
+    uniform uint portalNo
 ){
     for(
         uint lightIndex = threadNoInTile;
@@ -125,12 +127,12 @@ void CreateSpotLightIndexArrayInTile(
         bool inFrustum = true;
         for(uint i = 0; i < 6; ++i){
             //ライトの座標と平面の法線とで内積を求め、ライトと平面との距離を計算。
-            float4 lp = float4(light.posInView, 1.0f);
+            float4 lp = float4(light.posInView[portalNo], 1.0f);
             float d = dot(frustumPlanes[i], lp);
 
             if(d < 0.0f){
                 //スポットライトが視錐台の外にあるので、視錐台の方向を向いているか調べる。
-                float t = dot(frustumPlanes[i].xyz, light.directionInView);
+                float t = dot(frustumPlanes[i].xyz, light.directionInView[portalNo]);
                 if(t < 0.0f){
                     //タイルに当たらない。
                     inFrustum = false;
@@ -198,11 +200,12 @@ void WriteLightIndexInTileNoList(uint threadNoInTile, uint2 frameUV)
     }
 }
 
-[numthreads(TILE_WIDTH, TILE_HEIGHT, 1)]
+
 void CSMain(
-    uint3 groupId           : SV_GroupID,
-    uint3 dispatchThreadId  : SV_DispatchThreadId,
-    uint3 groupThreadId     : SV_GroupThreadID
+    uint3 groupId,
+    uint3 dispatchThreadId,
+    uint3 groupThreadId,
+    uniform uint portalNo
 ) {
 
     //タイル内でのインデックスを求める。
@@ -234,12 +237,39 @@ void CSMain(
     GetTileFrustumPlane(frustumPlanes, groupId);
 
     //タイルに含まれているポイントライトのインデックス配列を作成。
-    CreatePointLightIndexArrayInTile(groupIndex, frustumPlanes);
+    CreatePointLightIndexArrayInTile(groupIndex, frustumPlanes, portalNo);
     //タイルに含まれているスポットライトのインデックス配列を作成。
-    CreateSpotLightIndexArrayInTile(groupIndex, frustumPlanes);
+    CreateSpotLightIndexArrayInTile(groupIndex, frustumPlanes, portalNo);
 
     GroupMemoryBarrierWithGroupSync();
 
     //ライトインデックスを出力バッファーに出力。
     WriteLightIndexInTileNoList(groupIndex, frameUV);
+}
+
+[numthreads(TILE_WIDTH, TILE_HEIGHT, 1)]
+void CSMainMainCamera(
+    uint3 groupId           : SV_GroupID,
+    uint3 dispatchThreadId  : SV_DispatchThreadId,
+    uint3 groupThreadId     : SV_GroupThreadID
+) {
+    CSMain(groupId, dispatchThreadId, groupThreadId, 0);
+}
+
+[numthreads(TILE_WIDTH, TILE_HEIGHT, 1)]
+void CSMainBluePortal(
+    uint3 groupId           : SV_GroupID,
+    uint3 dispatchThreadId  : SV_DispatchThreadId,
+    uint3 groupThreadId     : SV_GroupThreadID
+) {
+    CSMain(groupId, dispatchThreadId, groupThreadId, 1);
+}
+
+[numthreads(TILE_WIDTH, TILE_HEIGHT, 1)]
+void CSMainRedPortal(
+    uint3 groupId           : SV_GroupID,
+    uint3 dispatchThreadId  : SV_DispatchThreadId,
+    uint3 groupThreadId     : SV_GroupThreadID
+) {
+    CSMain(groupId, dispatchThreadId, groupThreadId, 2);
 }

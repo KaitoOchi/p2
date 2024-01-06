@@ -250,7 +250,7 @@ namespace nsPortalEngine {
 	void ModelRender::OnForwardRender(RenderContext& rc)
 	{
 		if (m_forwardRenderModel.IsInited()) {
-			m_forwardRenderModel.Draw(rc, 1);
+			m_forwardRenderModel.Draw(rc);
 		}
 	}
 

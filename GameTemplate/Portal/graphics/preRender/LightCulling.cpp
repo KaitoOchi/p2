@@ -3,6 +3,15 @@
 
 namespace nsPortalEngine {
 
+	namespace
+	{
+		std::string ENTRYPOINT_NAME[3] = {
+			"CSMainMainCamera",
+			"CSMainBluePortal",
+			"CSMainRedPortal"
+		};
+	}
+
 	LightCulling::LightCulling()
 	{
 
@@ -17,13 +26,14 @@ namespace nsPortalEngine {
 		ConstantBuffer& lightCB,
 		Texture& zprepassRenderTargetTexture,
 		RWStructuredBuffer& pointLightNoListInTileUAV,
-		RWStructuredBuffer& spotLightNoListInTileUAV
+		RWStructuredBuffer& spotLightNoListInTileUAV,
+		const int portalNo
 	) {
 		m_pointLightNoListInTileUAV = &pointLightNoListInTileUAV;
 		m_spotLightNoListInTileUAV = &spotLightNoListInTileUAV;
 
 		//シェーダーをロード。
-		m_lightCullingShader.LoadCS("Assets/shader/preProcess/lightCulling.fx", "CSMain");
+		m_lightCullingShader.LoadCS("Assets/shader/preProcess/lightCulling.fx", ENTRYPOINT_NAME[portalNo].c_str());
 
 		//ルートシグネチャを作成。
 		m_rootSignature.Init(D3D12_FILTER_MIN_MAG_MIP_LINEAR,

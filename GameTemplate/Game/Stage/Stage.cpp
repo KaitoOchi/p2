@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Stage.h"
 
+#include "Player.h"
 #include "Gimmick.h"
 #include "Turret.h"
 #include "EnergyBall.h"
@@ -8,6 +9,7 @@
 #include "EnergyBallReceiver.h"
 #include "Door.h"
 #include "JumpBoard.h"
+#include "PortalCamera.h"
 
 Stage::Stage()
 {
@@ -57,6 +59,8 @@ Stage::~Stage()
 
 bool Stage::Start()
 {
+	m_portalCamera = FindGO<PortalCamera>("portalCamera");
+
 	//モデルの作成。
 	m_decorationModelRender.Init("Assets/modelData/stage/level00/level00_decoration.tkm", 0, 0, enModelUpAxisZ, false, true);
 	m_physicsModelRender.Init("Assets/modelData/stage/level00/level00_collision.tkm", 0, 0, enModelUpAxisZ, false, true);
@@ -83,6 +87,8 @@ void Stage::InitLevelRender()
 		if (objData.EqualObjectName(L"Player") == true) {
 			//初期座標を設定。
 			m_respawnPosition = objData.position;
+			Player* player = FindGO<Player>("player");
+			player->Reset();
 			return true;
 		}
 		//名前がクリア地点の時。
@@ -139,6 +145,7 @@ void Stage::InitLevelRender()
 		//名前が黒ポイントライトなら。
 		if (objData.ForwardMatchName(L"pointLight_black") == true) {
 			PointLight* ptLight = new PointLight;
+			ptLight->SetPortalCameraPointer(m_portalCamera);
 			ptLight->SetPointLight(
 				ptNum,
 				objData.position,
@@ -152,6 +159,7 @@ void Stage::InitLevelRender()
 		//名前がポイントライトなら。
 		if (objData.ForwardMatchName(L"pointLight") == true) {
 			PointLight* ptLight = new PointLight;
+			ptLight->SetPortalCameraPointer(m_portalCamera);
 			ptLight->SetPointLight(
 				ptNum,
 				objData.position,
@@ -168,6 +176,7 @@ void Stage::InitLevelRender()
 			objData.rotation.Apply(dir);
 			dir.Normalize();
 			SpotLight* spLight = new SpotLight;
+			spLight->SetPortalCameraPointer(m_portalCamera);
 			spLight->SetSpotLight(
 				spNum,
 				objData.position,

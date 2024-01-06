@@ -116,6 +116,7 @@ void PortalFrame::CollisionPlayer()
 		float compareSmallPos = 0.0f;
 		float compareLargePos = 0.0f;
 
+
 		if (m_normal.x >= 1.0f) {
 			compareLargePos = m_position.x;
 			compareSmallPos = m_player->GetPosition().x;
@@ -520,13 +521,15 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 	//if (IsCanPut(pos, normal) == false) {
 	//	return;
 	//}
+
 	m_position = pos;
 
 	m_isEnable = true;
 	m_normal = normal;
 
 	//法線の方向に少し移動させる。
-	m_position += m_normal * PORTAL_POS_NORMAL;
+	m_displayPosition = pos + m_normal * PORTAL_POS_NORMAL;
+	m_position = m_displayPosition + m_normal * 10.0;
 
 	//当たったオブジェクトの法線に合わせて回転する。
 	Quaternion portalRot;
@@ -546,7 +549,7 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 	m_portalCamera->UpdateAngle();
 
 	//ポータルモデルを設定。
-	m_portalFrameModelRender.SetPosition(m_position);
+	m_portalFrameModelRender.SetPosition(m_displayPosition);
 	m_portalFrameModelRender.SetRotation(m_rotation);
 	m_portalFrameModelRender.Update();
 
@@ -567,7 +570,7 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 	//枠組みエフェクトを再生。
 	m_frameEffect = NewGO<EffectEmitter>(0);
 	m_frameEffect->Init(EffectEmitter::enEffect_PortalFrame_Blue);
-	m_frameEffect->SetPosition(m_position);
+	m_frameEffect->SetPosition(m_displayPosition);
 	m_frameEffect->SetRotation(m_rotation);
 	m_frameEffect->Play();
 }

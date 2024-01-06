@@ -72,7 +72,7 @@ bool Game::Start()
 	//ポータルを生成。
 	PortalFrame* portalFrame[PORTAL_NUM];
 	for (int i = 0; i < PORTAL_NUM; i++) {
-		portalFrame[i] = NewGO<PortalFrame>(2, "portalFrame");
+		portalFrame[i] = NewGO<PortalFrame>(0, "portalFrame");
 
 		//ポータルカメラにポータルのポインタを設定。
 		portalCamera->SetPortalFramePointer(portalFrame[i], i);
@@ -83,7 +83,7 @@ bool Game::Start()
 	portalFrame[1]->SetPortalType(PortalFrame::enPortalType_Red);
 
 	//ステージを生成。
-	m_stage = NewGO<Stage>(0, "stage");
+	m_stage = NewGO<Stage>(4, "stage");
 
 	//タイマー文字の設定。
 	m_timerFontRender.SetPosition(Vector3(-400.0f, 400.0f, 0.0f));

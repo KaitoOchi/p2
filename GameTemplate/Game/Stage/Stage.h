@@ -2,6 +2,7 @@
 #include "LevelRender/Level3DRender.h"
 class Gimmick;
 class EnergyBall;
+class PortalCamera;
 
 /// <summary>
 /// ステージクラス。
@@ -93,6 +94,7 @@ private:
 	ModelRender					m_decorationModelRender;	//装飾モデル。
 	ModelRender					m_physicsModelRender;		//物理モデル。
 	LevelRender					m_levelRender;				//レベルレンダー。
+	PortalCamera* m_portalCamera = nullptr;
 	Vector3						m_respawnPosition;			//リスポーン座標。
 	Vector3						m_clearPosition;			//クリア座標。
 };

@@ -22,7 +22,8 @@ namespace nsPortalEngine {
 			ConstantBuffer& lightCB,
 			Texture& zprepassRenderTargetTexture,
 			RWStructuredBuffer& pointLightNoListInTileUAV,
-			RWStructuredBuffer& spotLightNoListInTileUAV
+			RWStructuredBuffer& spotLightNoListInTileUAV,
+			const int portalNo
 		);
 
 		void SetCamera(Camera& camera)

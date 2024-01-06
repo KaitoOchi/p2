@@ -87,8 +87,8 @@ float3 CalcDirectionLight(
 {
 	//フレネル反射を考慮した拡散反射を計算。
 	float diffuseFromFrenel = CalcDiffuseFromFresnel(
-		normal,
 		-dirDirection,
+		normal,
 		toEye,
 		smooth
 	);

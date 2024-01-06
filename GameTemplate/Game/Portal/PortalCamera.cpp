@@ -70,7 +70,7 @@ void PortalCamera::SetCameraPosition(const int portalNum)
 	m_rotation[portalNum].Apply(diff);
 
 	//カメラの座標はもう一方のポータルの座標 - プレイヤーからポータルに向かうベクトルの反対。
-	Vector3 cameraPos = m_portalFrame[1 - portalNum]->GetPosition() - diff;
+	Vector3 cameraPos = m_portalFrame[1 - portalNum]->GetPosition() + diff;
 	m_portalCamera[portalNum].SetPosition(cameraPos);
 }
 
@@ -80,10 +80,11 @@ void PortalCamera::SetCameraPosition(const int portalNum)
 void PortalCamera::SetCameraTarget(const int portalNum)
 {
 	//ポータルからプレイヤーの注視点に伸びるベクトルを計算。
-	Vector3 playerTarget = g_camera3D->GetTarget() - m_portalFrame[portalNum]->GetPosition();
+	Vector3 playerTarget = g_camera3D->GetPosition() - g_camera3D->GetTarget();
 
 	//注視点を回転させる。
 	m_rotation[portalNum].Apply(playerTarget);
+	playerTarget.y *= -1.0f;
 
 	//カメラの注視点はもう一方のポータルの座標 + プレイヤーからポータルに向かうベクトル。
 	Vector3 targetPos = m_portalFrame[1 - portalNum]->GetPosition() + playerTarget;

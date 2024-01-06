@@ -128,6 +128,7 @@ private:
 	PortalFrame*				m_anotherPortalFrame = nullptr;		//別のポータル。
 	PortalCamera*				m_portalCamera = nullptr;			//ポータルカメラ。
 	Stage*						m_stage = nullptr;					//ステージ。
+	Vector3						m_displayPosition;					//ポータルの表示位置
 	Vector3						m_position;							//座標。
 	Vector3						m_normal;							//法線。
 	Quaternion					m_rotation;							//回転。

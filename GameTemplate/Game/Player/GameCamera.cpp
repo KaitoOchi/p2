@@ -14,15 +14,12 @@ namespace
 	const float CROUCH_TIMER_START = 0.0f;		//しゃがみ開始の時間。
 	const float CROUCH_TIMER_END = 1.0f;		//しゃがみ終了の時間。
 	const float WARP_ANGLE_ADD = 180.0f;		//ワープ時に加算する回転量。
-	const float SHAKE_SPEED = 5.0f;				//画面揺れの速度。
-	const float SHAKE_POWER = 4.0f;			//画面揺れの量。
 }
 
 
 GameCamera::GameCamera()
 {
 	m_rotSpeed.x = Math::DegToRad(90);
-	m_shakeMoveSpeedTmp = m_position;
 }
 
 GameCamera::~GameCamera()
@@ -48,8 +45,6 @@ void GameCamera::Update()
 	Move();
 
 	Rotation();
-
-	Shake();
 
 	g_camera3D->Update();
 }
@@ -98,6 +93,8 @@ void GameCamera::Move()
 			m_position.y += CAMERA_HEIGHT;
 		}
 	}
+
+	g_camera3D->SetPosition(m_position);
 }
 
 /// <summary>
@@ -132,47 +129,6 @@ void GameCamera::Rotation()
 	g_camera3D->SetTarget(m_targetPos);
 }
 
-void GameCamera::Shake()
-{
-	m_shakeTimer += g_gameTime->GetFrameDeltaTime();
-
-	Vector2 input;
-	input.x = g_pad[0]->GetLStickXF();
-	input.y = g_pad[0]->GetLStickYF();
-	float shakeValue = max(fabsf(input.x), fabsf(input.y));
-
-	Vector3 shakeMoveSpeed;
-
-	//スティックの入力があるなら。
-	if (shakeValue) {
-		if (m_isIdle) {
-			m_shakeTimer = 0.0f;
-			m_isIdle = false;
-		}
-
-		//揺れを追加。
-		shakeMoveSpeed.y = sin(m_shakeTimer * shakeValue * SHAKE_SPEED) * SHAKE_POWER;
-		m_shakeMoveSpeedTmp = shakeMoveSpeed;
-	}
-	else {
-		if (!m_isIdle) {
-			m_shakeTimer = 0.0f;
-			m_isIdle = true;
-		}
-
-		//1秒を超えないようにする。
-		m_shakeTimer = min(m_shakeTimer, 1.0f);
-
-		//線形補間で元の位置に戻す。
-		shakeMoveSpeed.Lerp(m_shakeTimer, m_shakeMoveSpeedTmp + m_position, m_position);
-		shakeMoveSpeed -= m_position;
-	}
-
-	//揺れの移動量を加算。
-	shakeMoveSpeed += m_position;
-	g_camera3D->SetPosition(shakeMoveSpeed);
-}
-
 /// <summary>
 /// ワープ処理。
 /// </summary>
@@ -183,7 +139,9 @@ void GameCamera::SetWarp(const float angle)
 	m_rotSpeed.x += Math::DegToRad(WARP_ANGLE_ADD - angle);
 	//m_rotSpeed.y += Math::DegToRad(-angle);
 
+	Move();
 	Rotation();
+	g_camera3D->Update();
 }
 
 /// <summary>
@@ -203,11 +161,7 @@ void GameCamera::Dead()
 /// </summary>
 void GameCamera::Reset()
 {
-	m_isDead = false;
-	m_isIdle = false;
 	m_rotSpeed.x = Math::DegToRad(90);
-	m_shakeMoveSpeedTmp = Vector3::Zero;
-	m_shakeTimer = 0.0f;
 	g_camera3D->SetUp(Vector3(0.0f, 1.0f, 0.0f));
 	g_camera3D->Update();
 }

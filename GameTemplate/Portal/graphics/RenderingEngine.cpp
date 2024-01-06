@@ -6,7 +6,7 @@ namespace nsPortalEngine {
 	namespace
 	{
 		const Vector3	SHADOW_CAMERA_POS = Vector3(200.0f, 3000.0f, 200.0f);		//シャドウカメラの位置。
-		const int		SHADOW_TEXTURE_SIZE = 1024;								//シャドウテクスチャのサイズ。
+		const int		SHADOW_TEXTURE_SIZE = 2048;								//シャドウテクスチャのサイズ。
 		const float		RENDER_TARGET_CLEAR_COLOR[4] = { 0.5f, 0.5f, 0.5f, 0.0f };	//クリアカラー。
 		const float		SHADOW_BLUR_POWER = 5.0f;									//シャドウブラーの強さ。
 		const char*		DEFERREDLIGHTING_SPRITE_PS[3] = {
@@ -51,7 +51,8 @@ namespace nsPortalEngine {
 				m_deferredLightingSprite[0].GetExpandConstantBufferGPU(),
 				m_zprepassRenderTarget[i].GetRenderTargetTexture(),
 				m_pointLightNoListInTileUAV[i],
-				m_spotLightNoListInTileUAV[i]
+				m_spotLightNoListInTileUAV[i],
+				i
 			);
 		}
 		m_lightCulling[0].SetCamera(*g_camera3D);
@@ -280,6 +281,7 @@ namespace nsPortalEngine {
 		m_lightCB.eyePosRed = m_portalCamera->GetPortalCamera(1).GetPosition();
 
 		//シャドウ用カメラの位置を設定。
+		Vector3 forward = g_camera3D->GetForward() * 100.0f;
 		m_lightCamera.SetPosition(g_camera3D->GetPosition() + SHADOW_CAMERA_POS);
 		m_lightCamera.SetTarget(g_camera3D->GetPosition());
 		m_lightCamera.Update();
@@ -416,7 +418,7 @@ namespace nsPortalEngine {
 	void RenderingEngine::DrawDeferredLighting(RenderContext& rc)
 	{
 		//ポータルの数だけスプライトの描画を行う。
-		for (int i = 0; i <= PORTAL_NUM; i++) {
+		for (int i = PORTAL_NUM; i >= 0; i--) {
 
 			//メインレンダーターゲットの書き込み待ち。
 			rc.WaitUntilToPossibleSetRenderTarget(m_mainRenderTarget[i]);

@@ -29,7 +29,7 @@ static const int MAX_SPOT_LIGHT = 256;
 	float3 ptPosition;		//ライトの位置。
 	float3 ptColor;			//ライトのカラー。
 	float ptRange;			//ライトの影響範囲。
-	float3 posInView;		//カメラ空間での座標。
+	float3 posInView[3];	//カメラ空間での座標。
  };
 
 /// <summary>
@@ -42,8 +42,8 @@ static const int MAX_SPOT_LIGHT = 256;
 	float spRange;			//ライトの影響範囲。
 	float3 spDirection;		//ライトの方向。
 	float spAngle;			//ライトの射出角度。
-	float3 posInView;		//カメラ空間での座標。
-	float3 directionInView;	//カメラ空間での方向。
+	float3 posInView[3];		//カメラ空間での座標。
+	float3 directionInView[3];	//カメラ空間での方向。
  };
 
 /// <summary>

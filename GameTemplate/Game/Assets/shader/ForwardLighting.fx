@@ -318,7 +318,7 @@ float4 PSMainCore(SPSIn psIn, uniform bool hasShadow)
 		smooth
 	) * (1.0f - shadowRate);
 
-/*
+
 	//ポイントライトを計算。
 	lig += CalcPointLight(
 		psIn.pos.xyz,
@@ -340,8 +340,6 @@ float4 PSMainCore(SPSIn psIn, uniform bool hasShadow)
 		metallic,
 		smooth
 	);
-
-	*/
 
 	//リムライトを計算。
 	lig += CalcLimLight(

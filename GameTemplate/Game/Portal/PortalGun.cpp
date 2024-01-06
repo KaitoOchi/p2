@@ -11,6 +11,8 @@ namespace
 	const float		RAY_LENGTH = 5000.0f;							//レイの長さ。
 	const float		SHOT_EFFECT_SPEED = 200.0f;						//エフェクトの再生速度。
 	const float		SHOT_DURATION = 0.5f;							//発射間隔。
+	const float		SHAKE_SPEED = 8.0f;								//画面揺れの速度。
+	const float		SHAKE_POWER = 2.0f;								//画面揺れの量。
 }
 
 
@@ -36,6 +38,8 @@ bool PortalGun::Start()
 	m_portalCamera = FindGO<PortalCamera>("portalCamera");
 	//ゲームシーンを検索。
 	m_game = FindGO<Game>("game");
+
+	m_shakeMoveSpeedTmp = m_position;
 	
 	//ポインタに格納。
 	for (int i = 0; i < PORTAL_NUM; i++) {
@@ -140,6 +144,13 @@ void PortalGun::ResetPortal()
 	}
 }
 
+void PortalGun::Reset()
+{
+	m_isIdle = false;
+	m_shakeMoveSpeedTmp = Vector3::Zero;
+	m_shakeTimer = 0.0f;
+}
+
 /// <summary>
 /// モデルの設定処理。
 /// </summary>
@@ -168,10 +179,55 @@ void PortalGun::SetPortalGunModel()
 	portalGunRot.SetRotationYFromDirectionXZ(forward);
 	portalGunRot.AddRotationDegX(-rotY);
 
+	m_position = portalGunPos;
+
+	Shake();
+
 	//ポータルガンを設定。
-	m_portalGunModelRender.SetPosition(portalGunPos);
+	m_portalGunModelRender.SetPosition(m_position);
 	m_portalGunModelRender.SetRotation(portalGunRot);
 	m_portalGunModelRender.Update();
+}
+
+void PortalGun::Shake()
+{
+	m_shakeTimer += g_gameTime->GetFrameDeltaTime() * SHAKE_SPEED;
+
+	Vector2 input;
+	input.x = g_pad[0]->GetLStickXF();
+	input.y = g_pad[0]->GetLStickYF();
+	float shakeValue = max(fabsf(input.x), fabsf(input.y));
+
+	Vector3 shakeMoveSpeed;
+
+	//スティックの入力があるなら。
+	if (shakeValue) {
+		if (m_isIdle) {
+			m_shakeTimer = 0.0f;
+			m_isIdle = false;
+		}
+
+		//揺れを追加。
+		shakeMoveSpeed.y = sin(m_shakeTimer * shakeValue) * SHAKE_POWER;
+		m_shakeMoveSpeedTmp = shakeMoveSpeed;
+	}
+	else {
+		if (!m_isIdle) {
+			m_shakeTimer = 0.0f;
+			m_isIdle = true;
+		}
+
+		//1秒を超えないようにする。
+		m_shakeTimer = min(m_shakeTimer, 1.0f);
+
+		//線形補間で元の位置に戻す。
+		shakeMoveSpeed.Lerp(m_shakeTimer, m_shakeMoveSpeedTmp + m_position, m_position);
+		shakeMoveSpeed -= m_position;
+	}
+
+	//揺れの移動量を加算。
+	m_position += shakeMoveSpeed;
+	m_portalGunModelRender.SetPosition(shakeMoveSpeed);
 }
 
 void PortalGun::Render(RenderContext& rc)
