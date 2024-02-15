@@ -15,6 +15,12 @@ bool Door::Start()
 {
 	m_gimmickType = enGimmickType_Defuse;
 
+	//アニメーションクリップ。
+	m_animationClips[enState_Idle].Load("Assets/animData/door/idle.tka");
+	m_animationClips[enState_Idle].SetLoopFlag(false);
+	m_animationClips[enState_Open].Load("Assets/animData/door/open.tka");
+	m_animationClips[enState_Open].SetLoopFlag(true);
+
 	//モデルを設定。
 	m_modelRender.Init("Assets/modelData/object/door/door.tkm");
 	m_modelRender.SetPosition(m_position);
@@ -32,12 +38,15 @@ bool Door::Start()
 
 void Door::Update()
 {
-
 }
 
 void Door::Clear()
 {
+	m_modelRender.PlayAnimation(enState_Open, 0.0f);
+
 	m_physicsStaticObject.Release();
+
+	DeleteGO(this);
 }
 
 void Door::Render(RenderContext& rc)

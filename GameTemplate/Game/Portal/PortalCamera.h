@@ -32,6 +32,12 @@ public:
 		m_portalFrame[num] = portal;
 	}
 
+	void DeletePortalFramePointer()
+	{
+		m_portalFrame[0] = nullptr;
+		m_portalFrame[1] = nullptr;
+	}
+
 
 	void UpdateAngle();
 

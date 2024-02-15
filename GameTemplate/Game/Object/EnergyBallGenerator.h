@@ -43,6 +43,11 @@ public:
 	}
 
 	/// <summary>
+	/// —LŒø‰»B
+	/// </summary>
+	void Enable();
+
+	/// <summary>
 	/// –³Œø‰»B
 	/// </summary>
 	void Disable();

@@ -43,13 +43,13 @@ float4 PSMain(PSInput In) : SV_Target0
     float depth = depthTexture.Sample(Sampler, In.uv).a;
 
     //深度値が200以下ならピクセルキル。
-    clip(depth - 200);
+    clip(depth - 20);
 
     //ボケ画像をサンプリング。
     float4 boke = bokeTexture.Sample(Sampler, In.uv);
 
     //200からボケが始まり、800で最大。
-    boke.a = min(1.0f, (depth - 500) / 1000.0f);
+    boke.a = min(1.0f, (depth - 100) / 1000.0f);
 
     return boke;
 }

@@ -8,7 +8,6 @@ namespace
 	const int		DAMAGE_AMOUNT = 10;										//ダメージ量。
 	const int		SHOOTING_RANGE = 10;									//発射時のばらつき。
 	const float		SEARCH_LENGTH = pow(600.0f, 2.0f);						//索敵する距離。
-	const float		TURRET_COLLISION_FORWARD = 10.0f;						//コリジョンの前方向。
 	const float		SEARCH_COOLDOWN = 1.0f;									//発見時のクールダウン。
 	const float		DAMAGE_COOLDOWN = 0.1f;									//射撃時の硬直時間。
 	const float		MISSING_COOLDOWN = 3.0f;								//見失う際の経過時間。
@@ -28,23 +27,19 @@ Turret::~Turret()
 bool Turret::Start()
 {
 	//モデルの初期化。
-	m_modelRender.Init("Assets/modelData/unityChan.tkm", 0, 0, enModelUpAxisZ, true, true, ModelRender::enModelInitMode_Outline);
+	m_modelRender.Init("Assets/modelData/object/turret/turret.tkm", 0, 0, enModelUpAxisZ, true, true, ModelRender::enModelInitMode_Outline);
 	m_modelRender.SetPosition(m_position);
 	m_modelRender.SetRotation(m_rotation);
 	m_modelRender.Update();
 
-	//コリジョン用のモデルを初期化。
-	ModelInitData modelInitData;
-	modelInitData.m_tkmFilePath = "Assets/modelData/object/turret/turret_collision.tkm";
-	Model turretModel;
-	turretModel.Init(modelInitData);
-
 	//レーザーエフェクトを再生。
 	m_laserEffect = NewGO<EffectEmitter>(0);
 	m_laserEffect->Init(EffectEmitter::enEffect_Turret_Laser);
-	m_laserEffect->SetPosition(m_position);
+	m_laserEffect->SetPosition(m_position + TURRET_HEIGHT);
 	m_laserEffect->SetRotation(m_rotation);
 	m_laserEffect->Play();
+
+	m_rotation.Apply(m_forward);
 
 	//プレイヤーの検索。
 	m_player = FindGO<Player>("player");
@@ -68,6 +63,10 @@ void Turret::Update()
 /// </summary>
 void Turret::SearchPlayer()
 {
+	if (m_player == nullptr) {
+		return;
+	}
+
 	//プレイヤーからタレットに伸びるベクトルを求める。
 	Vector3 diff = m_player->GetPosition() - m_position;
 
@@ -210,7 +209,7 @@ void Turret::ProcessShotStateTransition()
 	//始点を設定。
 	Vector3 startPos = m_position + TURRET_HEIGHT;
 	//終点を設定。
-	Vector3 endPos = m_oldPlayerPos + ((m_oldPlayerPos - startPos) * TURRET_COLLISION_FORWARD);
+	Vector3 endPos = m_oldPlayerPos;
 	//レイを飛ばす。
 	bool isHit = PhysicsWorld::GetInstance()->RayTest(startPos, endPos, hit);
 
@@ -230,9 +229,11 @@ void Turret::ProcessShotStateTransition()
 	}
 
 	//射撃エフェクトの回転量を設定。
-	float rotX = -(m_position.y - m_position.y) + random;
+	Vector3 normalize = endPos - startPos;
+	normalize.Normalize();
 	Quaternion rot;
-	rot.SetRotationYFromDirectionXZ(endPos);
+	rot.SetRotationYFromDirectionXZ(normalize);
+	float rotX = -(m_position.y - m_position.y) + random;
 	rot.AddRotationDegX(rotX);
 
 	//射撃エフェクトを再生。

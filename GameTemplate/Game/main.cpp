@@ -2,16 +2,9 @@
 #include "system/system.h"
 
 #include "Game.h"
+#include "Title.h"
 #include "PortalCamera.h"
 #include "Fade.h"
-
-
-// priority
-// 0..Default
-// 1..Player
-// 2..GameCamera, PortalFrame
-// 3..PortalCamera, PortalGun
-//
 
 /// <summary>
 /// メイン関数
@@ -21,8 +14,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	// ゲームの初期化。
 	InitGame(hInstance, hPrevInstance, lpCmdLine, nCmdShow, TEXT("Game"));
 
-	NewGO<Game>(0, "game");
+	//NewGO<Game>(0, "game");
 	NewGO<Fade>(10, "fade");
+	NewGO<Title>(0, "title");
 
 	//ポータルカメラを生成。
 	PortalCamera* portalCamera = NewGO<PortalCamera>(3, "portalCamera");

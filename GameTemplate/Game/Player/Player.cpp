@@ -89,17 +89,17 @@ void Player::Update()
 		return;
 	}
 
-	Input();
-
-	PlayAnimation();
-
-	m_modelRender.Update();
-
 	Vector3 diff = m_game->GetClearPosition() - m_position;
 	if (diff.LengthSq() < 100.0f * 100.0f) {
 		m_game->NotifyClear();
 		m_playerState = enState_End;
 	}
+
+	Input();
+
+	PlayAnimation();
+
+	m_modelRender.Update();
 
 	State();
 
@@ -418,6 +418,8 @@ void Player::SetWarp(const Vector3& pos, const float angle)
 	m_characterController->SetPosition(m_position);
 	//カメラもワープさせる。
 	m_gameCamera->SetWarp(angle);
+
+	
 }
 
 /// <summary>
@@ -483,7 +485,6 @@ void Player::OnAnimationEvent(const wchar_t* clipName, const wchar_t* eventName)
 	{
 		m_game->AddStepNum();
 	}
-
 }
 
 

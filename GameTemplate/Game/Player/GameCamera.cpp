@@ -164,6 +164,7 @@ void GameCamera::Reset()
 	m_rotSpeed.x = Math::DegToRad(90);
 	g_camera3D->SetUp(Vector3(0.0f, 1.0f, 0.0f));
 	g_camera3D->Update();
+	m_isDead = false;
 }
 
 /// <summary>

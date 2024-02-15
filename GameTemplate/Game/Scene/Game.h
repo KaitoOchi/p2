@@ -17,6 +17,16 @@ class Game : public IGameObject
 {
 public:
 	/// <summary>
+	/// ゲームステート。
+	/// </summary>
+	enum GameState
+	{
+		enGameState_Game,
+		enGameState_Result,
+		enGameState_Reset,
+	};
+
+	/// <summary>
 	/// スコア。
 	/// </summary>
 	struct GameScore
@@ -43,6 +53,14 @@ public:
 	/// </summary>
 	void NotifyClear();
 	/// <summary>
+	/// リトライを通知。
+	/// </summary>
+	void NotifyRetry();
+	/// <summary>
+	/// ゲーム終了を通知。
+	/// </summary>
+	void NotifyEnd();
+	/// <summary>
 	/// 復活座標を取得。
 	/// </summary>
 	/// <returns></returns>
@@ -51,6 +69,16 @@ public:
 	/// クリア座標を取得。
 	/// </summary>
 	const Vector3& GetClearPosition() const;
+
+	/// <summary>
+	/// ステートを取得。
+	/// </summary>
+	/// <returns></returns>
+	const GameState GetGameState() const
+	{
+		return m_gameState;
+	}
+
 	/// <summary>
 	/// 歩いた回数を加算。
 	/// </summary>
@@ -77,16 +105,6 @@ private:
 	void Timer();
 
 private:
-	/// <summary>
-	/// ゲームステート。
-	/// </summary>
-	enum GameState
-	{
-		enGameState_Game,
-		enGameState_Result,
-		enGameState_Reset,
-	};
-
 	FontRender			m_timerFontRender;					//時間スプライト。
 	Stage*				m_stage = nullptr;					//ステージ。
 	Player*				m_player = nullptr;					//プレイヤー。

@@ -66,6 +66,10 @@ bool PortalGun::Start()
 
 void PortalGun::Update()
 {
+	if (m_game->GetGameState() != Game::enGameState_Game) {
+		return;
+	}
+
 	if (m_shotDuration <= 0.0f) {
 		//青ポータルを設置。
 		if (g_pad[0]->IsTrigger(enButtonLB1)) {
@@ -109,7 +113,7 @@ void PortalGun::SetPortal(const PortalFrame::PortalType type)
 	Vector3 portalPos = hit.position;
 	//ポータルを設置。
 	int num = static_cast<int>(type);
-	m_portalFrame[num]->SetPortalFrame(portalPos, hit.normal);
+	m_portalFrame[num]->SetPortalFrame(portalPos, hit.normal, type);
 
 	//カーソルを設定。
 	m_cursorSpriteRender[num].SetMulColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -233,7 +237,7 @@ void PortalGun::Shake()
 void PortalGun::Render(RenderContext& rc)
 {
 	//ポータルガンを描画。
-	m_portalGunModelRender.Draw(rc);
+	//m_portalGunModelRender.Draw(rc);
 
 	//クロスヘアの描画。
 	m_cursorSpriteRender[2].Draw(rc);

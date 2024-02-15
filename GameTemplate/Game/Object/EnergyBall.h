@@ -67,6 +67,11 @@ public:
 	}
 
 	/// <summary>
+	/// 削除処理。
+	/// </summary>
+	void Delete();
+
+	/// <summary>
 	/// ワープ処理。
 	/// </summary>
 	/// <param name="pos">座標</param>

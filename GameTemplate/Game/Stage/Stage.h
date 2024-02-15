@@ -18,6 +18,12 @@ public:
 
 public:
 	/// <summary>
+	/// 初期化処理。
+	/// </summary>
+	/// <param name="filePath"></param>
+	void Init(const char* filePath);
+
+	/// <summary>
 	/// 復活座標を取得。
 	/// </summary>
 	const Vector3& GetRespawnPosition() const
@@ -81,7 +87,7 @@ public:
 
 private:
 	/// <summary>
-	/// レベルデザインを初期化。
+	/// レベルレンダーの初期化。
 	/// </summary>
 	void InitLevelRender();
 
@@ -97,4 +103,5 @@ private:
 	PortalCamera* m_portalCamera = nullptr;
 	Vector3						m_respawnPosition;			//リスポーン座標。
 	Vector3						m_clearPosition;			//クリア座標。
+	const char*					m_filePath = nullptr;		//ファイルパス。
 };

@@ -349,6 +349,9 @@ float4 PSMainCore(SPSIn psIn, uniform bool hasShadow)
 		dirLig.dirColor
 	);
 
+	albedoColor.r = 0.0f;
+	albedoColor.b = 0.0f;
+
 	lig += dirLig.ambient * albedoColor.xyz;
 
 	float4 finalColor;

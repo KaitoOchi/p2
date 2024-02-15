@@ -1,4 +1,6 @@
 #pragma once
+#include "level2D/Level2D.h"
+class Fade;
 
 /// <summary>
 /// リザルトシーン。
@@ -16,9 +18,14 @@ public:
 	/// スコアを設定。
 	/// </summary>
 	/// <param name="score"></param>
-	void SetScore(const int score)
-	{
-		m_score = score;
+	void SetScore(
+		const float time,
+		const int stepNum,
+		const int shotNum
+	) {
+		m_scoreTime = time;
+		m_scoreStepNum = stepNum;
+		m_scoreShotNum = shotNum;
 	}
 
 private:
@@ -34,6 +41,14 @@ private:
 	/// モードセレクト処理。。
 	/// </summary>
 	void Select();
+	/// <summary>
+	/// ゲーム終了処理。
+	/// </summary>
+	void GameEnd();
+	/// <summary>
+	/// カーソルの更新処理。
+	/// </summary>
+	void CursorUpdate();
 
 private:
 	/// <summary>
@@ -47,11 +62,21 @@ private:
 		enResultState_End,
 	};
 
-	SpriteRender	m_backGroundSpriteRender;				//背景画像。
-	FontRender		m_scoreFontRender;						//スコア文字。
-	ResultState		m_resultState = enResultState_FadeOut;	//リザルトステート。
-	int				m_score = 0;							//スコア。
-	int				m_cursor = 0;							//カーソル。
-	float			m_timer = 0.0f;							//タイマー。
+	Level2D						m_level2DRender;
+	SpriteRender				m_backGroundSpriteRender;				//背景画像。
+	SpriteRender				m_pressSpriteRender;					//リトライ、タイトル画像。
+	SpriteRender				m_cursorSpriteRender;
+	std::array<SpriteRender, 4> m_scoreSpriteRender;					//スコア画像。
+	std::array<FontRender, 4>	m_scoreFontRender;						//スコア文字。
+	ResultState					m_resultState = enResultState_FadeOut;	//リザルトステート。
+	Fade*						m_fade = nullptr;						//フェード。
+	std::array<Vector3, 2>		m_cursorPos;
+	std::array<bool, 5>			m_isActive;								//表示状態が有効かどうか。
+	bool						m_isFadeOut = false;					//フェード終了かどうか。
+	int							m_cursor = 0;							//カーソル。
+	int							m_scoreStepNum = 0;
+	int							m_scoreShotNum = 0;
+	float						m_timer = 0.0f;							//タイマー。
+	float						m_scoreTime = 0.0f;
 };
 

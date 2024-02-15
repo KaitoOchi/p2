@@ -1,0 +1,4 @@
+3
+11,title_start,46,../../Game/Assets/sprite/title/title_start.png,0.0,-100.0,183,65,10,1.0,1.0,0.5,0.5,15,title_start.dds
+11,title_howto,46,../../Game/Assets/sprite/title/title_howto.png,0.0,-200.0,220,65,10,1.0,1.0,0.5,0.5,15,title_howto.dds
+10,title_exit,45,../../Game/Assets/sprite/title/title_exit.png,0.0,-300.0,146,65,10,1.0,1.0,0.5,0.5,14,title_exit.dds

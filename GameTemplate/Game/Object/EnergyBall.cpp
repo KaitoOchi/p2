@@ -112,6 +112,10 @@ void EnergyBall::RayCast()
 /// </summary>
 void EnergyBall::Collision()
 {
+	if (m_player == nullptr) {
+		return;
+	}
+
 	//プレイヤーと接触したら。
 	if (m_collisionObject->IsHit(const_cast<CharacterController&>(*m_player->GetCharacterController()))) {
 		//ダメージを与える。
@@ -160,6 +164,14 @@ void EnergyBall::Disable()
 	if (m_energyBallGenerator != nullptr) {
 		//生成機に非表示を通知。
 		m_energyBallGenerator->NotifyDisable();
+	}
+}
+
+void EnergyBall::Delete()
+{
+	if (m_ballEffect != nullptr) {
+		m_ballEffect->Stop();
+		DeleteGO(m_ballEffect);
 	}
 }
 

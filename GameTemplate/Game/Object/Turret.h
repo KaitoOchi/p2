@@ -44,9 +44,6 @@ public:
 	void SetRotation(const Quaternion& rot)
 	{
 		m_rotation = rot;
-
-		//‘O•ûŒü‚àİ’èB
-		SetForward(rot);
 	}
 
 	/// <summary>

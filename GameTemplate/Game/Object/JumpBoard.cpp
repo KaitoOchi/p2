@@ -57,6 +57,10 @@ void JumpBoard::Update()
 /// </summary>
 void JumpBoard::Collision()
 {
+	if (m_player == nullptr) {
+		return;
+	}
+
 	if (m_collisionObject->IsHit(const_cast<CharacterController&>(*m_player->GetCharacterController()))) {
 		m_isJump = true;
 		m_moveSpeed = m_position;

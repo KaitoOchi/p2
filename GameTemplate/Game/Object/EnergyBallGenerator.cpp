@@ -14,7 +14,7 @@ EnergyBallGenerator::EnergyBallGenerator()
 
 EnergyBallGenerator::~EnergyBallGenerator()
 {
-	DeleteGO(m_energyBall);
+
 }
 
 bool EnergyBallGenerator::Start()
@@ -45,6 +45,11 @@ void EnergyBallGenerator::Update()
 			m_isEnableEnergyBall = true;
 		}
 	}
+}
+
+void EnergyBallGenerator::Enable()
+{
+	m_isClear = false;
 }
 
 void EnergyBallGenerator::Disable()

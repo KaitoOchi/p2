@@ -510,14 +510,22 @@ void PortalFrame::Reset()
 	}
 }
 
+void PortalFrame::Delete()
+{
+	m_frameEffect->Stop();
+}
+
 
 /// <summary>
 /// ポータルフレームを設定。
 /// </summary>
 /// <param name="pos">座標</param>
 /// <param name="normal">法線</param>
-void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
-{
+void PortalFrame::SetPortalFrame(
+	const Vector3& pos,
+	const Vector3& normal,
+	const PortalType type
+) {
 	//if (IsCanPut(pos, normal) == false) {
 	//	return;
 	//}
@@ -569,7 +577,12 @@ void PortalFrame::SetPortalFrame(const Vector3& pos, const Vector3& normal)
 
 	//枠組みエフェクトを再生。
 	m_frameEffect = NewGO<EffectEmitter>(0);
-	m_frameEffect->Init(EffectEmitter::enEffect_PortalFrame_Blue);
+	if (type == PortalType::enPortalType_Blue) {
+		m_frameEffect->Init(EffectEmitter::enEffect_PortalFrame_Blue);
+	}
+	else {
+		m_frameEffect->Init(EffectEmitter::enEffect_PortalFrame_Red);
+	}
 	m_frameEffect->SetPosition(m_displayPosition);
 	m_frameEffect->SetRotation(m_rotation);
 	m_frameEffect->Play();

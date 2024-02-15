@@ -175,6 +175,15 @@ namespace nsPortalEngine {
 		}
 
 		/// <summary>
+		/// ポストエフェクトを取得。
+		/// </summary>
+		/// <returns></returns>
+		PostEffect& GetPostEffet()
+		{
+			return m_postEffect;
+		}
+
+		/// <summary>
 		/// 実行処理。
 		/// </summary>
 		void Execute(RenderContext& rc);

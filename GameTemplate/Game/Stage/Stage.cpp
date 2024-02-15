@@ -26,6 +26,7 @@ Stage::~Stage()
 
 	//エネルギーボールを削除。
 	QueryGOs<EnergyBall>("energyBall", [&](EnergyBall* energyBall) {
+		energyBall->Delete();
 		DeleteGO(energyBall);
 		return true;
 		});
@@ -64,6 +65,8 @@ bool Stage::Start()
 	//モデルの作成。
 	m_decorationModelRender.Init("Assets/modelData/stage/level00/level00_decoration.tkm", 0, 0, enModelUpAxisZ, false, true);
 	m_physicsModelRender.Init("Assets/modelData/stage/level00/level00_collision.tkm", 0, 0, enModelUpAxisZ, false, true);
+	//m_decorationModelRender.Init("Assets/modelData/stage/debug/debug_collision.tkm", 0, 0, enModelUpAxisZ, false, true);
+	//m_physicsModelRender.Init("Assets/modelData/stage/debug/debug_collision.tkm", 0, 0, enModelUpAxisZ, false, true);
 	//モデルから静的オブジェクトを作成。
 	m_physicsStaticObject.CreateFromModel(m_physicsModelRender.GetModel(), m_physicsModelRender.GetModel().GetWorldMatrix());
 
@@ -72,17 +75,22 @@ bool Stage::Start()
 	return true;
 }
 
+void Stage::Init(const char* filePath)
+{
+	m_filePath = filePath;
+}
+
 void Stage::InitLevelRender()
 {
 	//ポイントライトとスポットライトの数。
 	int ptNum = 0;
-	int spNum = 0;	
+	int spNum = 0;
 
 	std::map<int, JumpBoard*> jumpBoardObjects;
 	std::map<int, Vector3> landingPosObjects;
 
 	// レベルデザイン処理。
-	m_levelRender.Init("Assets/level/stage/level00.tkl", [&](LevelObjectData& objData) {
+	m_levelRender.Init(m_filePath, [&](LevelObjectData& objData) {
 		//名前がプレイヤーの時。
 		if (objData.EqualObjectName(L"Player") == true) {
 			//初期座標を設定。
@@ -187,6 +195,16 @@ void Stage::InitLevelRender()
 			);
 			m_spotLightObjects.emplace_back(spLight);
 			spNum++;
+			return true;
+		}
+		//名前がカメラ座標の時。
+		if (objData.EqualObjectName(L"cameraPosition") == true) {
+			g_camera3D->SetPosition(objData.position);
+			return true;
+		}
+		//名前がカメラ注視点の時。
+		if (objData.EqualObjectName(L"cameraTarget") == true) {
+			g_camera3D->SetTarget(objData.position);
 			return true;
 		}
 		return true;

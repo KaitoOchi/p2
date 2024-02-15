@@ -10,34 +10,13 @@
 
 namespace
 {
-	const Vector3	TIMER_FONT_POS = { -400.0f, 400.0f, 0.0f };		//画像の座標。
-	const int		SCORE_POINT_DEFAULT = 9999;						//スコアの初期値。
-	const int		STEP_SUB_POINT = 2;								//歩き一歩毎の減点数。
-	const int		SHOT_SUB_POINT = 50;							//ショット一発毎の減点数。
+	const Vector3	TIMER_FONT_POS = { -950.0f, 525.0f, 0.0f };		//画像の座標。
 	const float		TIME_LIMIT = 3599.99f;							//時間制限。
 	const float		RESET_TIME = 2.0f;								//リセット時間。
 }
 
 
 Game::Game()
-{
-
-}
-
-Game::~Game()
-{
-	//ポータルフレームを削除。
-	QueryGOs<PortalFrame>("portalFrame", [&](PortalFrame* portalFrame) {
-		DeleteGO(portalFrame);
-		return true;
-	});
-
-	DeleteGO(m_player);
-	DeleteGO(m_gameCamera);
-	DeleteGO(m_portalGun);
-}
-
-bool Game::Start()
 {
 	//タレットの射撃エフェクト。
 	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_Turret_Shot, u"Assets/effect/turret/turret_shot.efk");
@@ -53,8 +32,15 @@ bool Game::Start()
 	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalShot_Blue, u"Assets/effect/portal/portalShot_blue.efk");
 	//ポータルの発射エフェクト。
 	EffectEngine::GetInstance()->ResistEffect(EffectEmitter::enEffect_PortalShot_Red, u"Assets/effect/portal/portalShot_blue.efk");
+}
 
+Game::~Game()
+{
 
+}
+
+bool Game::Start()
+{
 	//フレームレートを固定
 	//g_engine->SetFrameRateMode(K2EngineLow::enFrameRateMode_Fix, 60);
 
@@ -84,10 +70,12 @@ bool Game::Start()
 
 	//ステージを生成。
 	m_stage = NewGO<Stage>(4, "stage");
+	m_stage->Init("Assets/level/stage/level00.tkl");
 
 	//タイマー文字の設定。
-	m_timerFontRender.SetPosition(Vector3(-400.0f, 400.0f, 0.0f));
+	m_timerFontRender.SetPosition(TIMER_FONT_POS);
 	m_timerFontRender.SetColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	m_timerFontRender.SetScale(1.5f);
 	m_timerFontRender.SetShadowParam(true, 2.0f, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	return true;
@@ -159,19 +147,46 @@ void Game::NotifyReset()
 
 void Game::NotifyClear()
 {
-	//スコアを計算。
-	int score = SCORE_POINT_DEFAULT;
-	score -= static_cast<int>(m_gameScore.timer);
-	score -= m_gameScore.stepNum * STEP_SUB_POINT;
-	score -= m_gameScore.shotPortal * SHOT_SUB_POINT;
-
 	m_gameState = enGameState_Result;
 
 	m_gameCamera->End();
 
 	//リザルトシーンを呼び出す。
 	Result* result = NewGO<Result>(9, "result");
-	result->SetScore(score);
+	result->SetScore(
+		m_gameScore.timer,
+		m_gameScore.stepNum,
+		m_gameScore.shotPortal
+	);
+}
+
+void Game::NotifyRetry()
+{
+	m_player->Reset();
+	m_gameCamera->Reset();
+	m_portalGun->ResetPortal();
+	m_gameState = enGameState_Game;
+	memset(&m_gameScore, 0, sizeof(GameScore));
+}
+
+void Game::NotifyEnd()
+{
+	//ポータルフレームを削除。
+	QueryGOs<PortalFrame>("portalFrame", [&](PortalFrame* portalFrame) {
+		portalFrame->Delete();
+		DeleteGO(portalFrame);
+		return true;
+		});
+
+	DeleteGO(m_player);
+	DeleteGO(m_gameCamera);
+	DeleteGO(m_portalGun);
+	DeleteGO(m_stage);
+	DeleteGO(this);
+
+	//ポータルカメラを検索。
+	PortalCamera* portalCamera = FindGO<PortalCamera>("portalCamera");
+	portalCamera->DeletePortalFramePointer();
 }
 
 const Vector3& Game::GetRespawnPosition() const

@@ -1,3 +1,4 @@
+
 #pragma once
 class Player;
 class EnergyBall;
@@ -84,9 +85,18 @@ public:
 	void Reset();
 
 	/// <summary>
+	/// 削除処理。
+	/// </summary>
+	void Delete();
+
+	/// <summary>
 	/// ポータルフレームの設置処理。
 	/// </summary>
-	void SetPortalFrame(const Vector3& pos, const Vector3& normal);
+	void SetPortalFrame(
+		const Vector3& pos,
+		const Vector3& normal,
+		const PortalType type
+	);
 
 private:
 	/// <summary>

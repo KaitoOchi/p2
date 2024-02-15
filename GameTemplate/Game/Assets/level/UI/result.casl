@@ -1,0 +1,12 @@
+11
+12,result_stick,44,../../Game/Assets/sprite/UI/result_stick.png,-51.923076923076906,-188.46153846153845,1224,8,10,1.0,1.0,0.5,0.5,16,result_stick.dds
+11,timer_score,44,../../Game/Assets/sprite/UI/result_stick.png,-300.0,330.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
+14,footstep_score,44,../../Game/Assets/sprite/UI/result_stick.png,-300.0,130.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
+12,portal_score,44,../../Game/Assets/sprite/UI/result_stick.png,-300.0,-70.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
+11,final_score,44,../../Game/Assets/sprite/UI/result_stick.png,-300.0,-300.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
+12,result_timer,44,../../Game/Assets/sprite/UI/result_timer.png,-400.0,270.0,128,128,10,0.5,0.5,0.5,0.5,16,result_timer.dds
+15,result_footstep,47,../../Game/Assets/sprite/UI/result_footstep.png,-400.0,100.0,128,128,10,0.5,0.5,0.5,0.5,19,result_footstep.dds
+13,result_portal,45,../../Game/Assets/sprite/UI/result_portal.png,-400.0,-70.0,128,128,10,0.5,0.5,0.5,0.5,17,result_portal.dds
+12,result_press,44,../../Game/Assets/sprite/UI/result_press.png,0.0,-350.0000000000001,441,51,10,0.75,0.75,0.5,0.5,16,result_press.dds
+11,cursor_pos0,44,../../Game/Assets/sprite/UI/result_stick.png,-250.0,-350.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
+11,cursor_pos1,44,../../Game/Assets/sprite/UI/result_stick.png,50.0,-350.0,122,8,10,0.1,1.0,0.5,0.5,16,result_stick.dds
