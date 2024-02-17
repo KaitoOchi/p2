@@ -42,7 +42,7 @@ void Door::Update()
 
 void Door::Clear()
 {
-	m_modelRender.PlayAnimation(enState_Open, 0.0f);
+	//m_modelRender.PlayAnimation(enState_Open, 0.0f);
 
 	m_physicsStaticObject.Release();
 

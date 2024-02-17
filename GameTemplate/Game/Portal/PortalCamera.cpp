@@ -122,6 +122,7 @@ void PortalCamera::UpdateAngle()
 		//2つのポータルの角度を計算。
 		m_angle[portalNum] = acosf(thisPortalNormal.Dot(anotherPortalNormal));
 
+
 		//外積を求め、y軸を使って±を補正する。
 		Vector3 cross = thisPortalNormal;
 		cross.Cross(anotherPortalNormal);
